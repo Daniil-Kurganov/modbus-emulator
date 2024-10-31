@@ -1,23 +1,23 @@
-package main
+package trafficanalysis
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"modbus-emulator/utils"
 )
 
-func main() {
-	log.SetFlags(0)
-	var err error
+func ParsePackets(filename string) (err error) {
 	var handle *pcap.Handle
-	if handle, err = pcap.OpenOffline(`./traffic_analysis/examples/IR_read.pcapng`); err != nil {
-		log.Fatalf("Error on opening file: %s\n", err)
+	if handle, err = pcap.OpenOffline(fmt.Sprintf("./%s/%s.pcapng", utils.Foldername, filename)); err != nil {
+		return fmt.Errorf("Error on opening file: %s\n", err)
 	}
 	defer handle.Close()
 	if err = handle.SetBPFFilter("tcp src port 1502"); err != nil {
-		log.Fatalf("Error on setting handle filter: %s\n", err)
+		return fmt.Errorf("Error on setting handle filter: %s\n", err)
 	}
 	packetsSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for currentPacket := range packetsSource.Packets() {
@@ -53,4 +53,5 @@ func main() {
 		log.Printf("Transaction %v:\n protocol - %s;\n body length - %v;\n unit ID - %v;\n object - %s;\n data length - %v;\n data - %v\n\n",
 			currentPacketNumber, currentProtocol, currentBodyLength, currentUnitID, currentObjectType, currentDataLength, currentData)
 	}
+	return
 }
