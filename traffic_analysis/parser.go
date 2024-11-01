@@ -4,20 +4,23 @@ import (
 	"fmt"
 	"log"
 
+	"modbus-emulator/utils"
+
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
-	"modbus-emulator/utils"
 )
 
-func ParsePackets(filename string) (err error) {
+func ParsePackets(filename string) (payload [][]byte, err error) {
 	var handle *pcap.Handle
 	if handle, err = pcap.OpenOffline(fmt.Sprintf("./%s/%s.pcapng", utils.Foldername, filename)); err != nil {
-		return fmt.Errorf("Error on opening file: %s\n", err)
+		err = fmt.Errorf("error on opening file: %s", err)
+		return 
 	}
 	defer handle.Close()
 	if err = handle.SetBPFFilter("tcp src port 1502"); err != nil {
-		return fmt.Errorf("Error on setting handle filter: %s\n", err)
+		err = fmt.Errorf("error on setting handle filter: %s", err)
+		return 
 	}
 	packetsSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for currentPacket := range packetsSource.Packets() {
@@ -26,6 +29,7 @@ func ParsePackets(filename string) (err error) {
 		if len(currentPayload) == 0 {
 			continue
 		}
+		payload = append(payload, currentPayload)
 		currentPacketNumber := currentPayload[0] + currentPayload[1]
 		var currentProtocol string
 		if currentPayload[2] == 0 && currentPayload[3] == 0 {
