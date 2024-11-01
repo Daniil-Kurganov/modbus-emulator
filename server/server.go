@@ -20,7 +20,7 @@ func main() {
 	for {
 		time.Sleep(2 * time.Second)
 		server.InputRegisters[0] = data[counter]
-		log.Printf("Set 0 input register to: %d", data[counter])
+		log.Printf("Set 0 IR to: %d", data[counter])
 		counter++
 		if counter >= len(data) {
 			counter = 0

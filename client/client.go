@@ -20,7 +20,7 @@ func main() {
 	for {
 		time.Sleep(500 * time.Millisecond)
 		if registers, err = client.ReadInputRegisters(0, 1); err != nil {
-			log.Fatalf("Error on reading input registers: %s\n", err)
+			log.Fatalf("Error on reading IR: %s\n", err)
 		}
 		log.Printf("Registers: %v\n", registers)
 	}

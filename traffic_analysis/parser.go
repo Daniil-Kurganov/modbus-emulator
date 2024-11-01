@@ -11,13 +11,13 @@ import (
 )
 
 type TCPPacket struct {
-	packetNumber byte
-	protocol     string
-	bodyLength   byte
-	unitID       byte
-	objectType   byte
-	dataLength   byte
-	data         []byte
+	PacketNumber byte
+	Protocol     string
+	BodyLength   byte
+	UnitID       byte
+	ObjectType   byte
+	DataLength   byte
+	Data         []byte
 }
 
 func ParsePackets(filename string) (packets []TCPPacket, err error) {
@@ -39,17 +39,17 @@ func ParsePackets(filename string) (packets []TCPPacket, err error) {
 			continue
 		}
 		var currentPacketResponse TCPPacket
-		currentPacketResponse.packetNumber = currentPayload[0] + currentPayload[1]
+		currentPacketResponse.PacketNumber = currentPayload[0] + currentPayload[1]
 		if currentPayload[2] == 0 && currentPayload[3] == 0 {
-			currentPacketResponse.protocol = "modbus"
+			currentPacketResponse.Protocol = "modbus"
 		} else {
-			currentPacketResponse.protocol = "unknown"
+			currentPacketResponse.Protocol = "unknown"
 		}
-		currentPacketResponse.bodyLength = currentPayload[4] + currentPayload[5]
-		currentPacketResponse.unitID = currentPayload[6]
-		currentPacketResponse.objectType = currentPayload[7]
-		currentPacketResponse.dataLength = currentPayload[8]
-		currentPacketResponse.data = currentPayload[9:]
+		currentPacketResponse.BodyLength = currentPayload[4] + currentPayload[5]
+		currentPacketResponse.UnitID = currentPayload[6]
+		currentPacketResponse.ObjectType = currentPayload[7]
+		currentPacketResponse.DataLength = currentPayload[8]
+		currentPacketResponse.Data = currentPayload[9:]
 		packets = append(packets, currentPacketResponse)
 	}
 	return
