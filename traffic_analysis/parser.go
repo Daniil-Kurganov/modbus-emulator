@@ -28,7 +28,7 @@ func ParsePackets(typeObject string, filename string) (packets []TCPPacket, err 
 		return
 	}
 	defer handle.Close()
-	if err = handle.SetBPFFilter("tcp dst port 1502"); err != nil {
+	if err = handle.SetBPFFilter("tcp port 1502"); err != nil {
 		err = fmt.Errorf("error on setting handle filter: %s", err)
 		return
 	}
