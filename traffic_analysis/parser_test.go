@@ -18,7 +18,7 @@ func TestParsePackets(t *testing.T) {
 		{
 			filename:         "",
 			responseExpected: nil,
-			errorExpected:    fmt.Errorf("error on opening file: %s/%s/.pcapng: No such file or directory", utils.ModulePath, utils.Foldername),
+			errorExpected:    fmt.Errorf("error on opening file: %s/%s/%s/.pcapng: No such file or directory", utils.ModulePath, utils.Foldername, utils.TypeObject),
 		},
 		{
 			filename: "coils_read",

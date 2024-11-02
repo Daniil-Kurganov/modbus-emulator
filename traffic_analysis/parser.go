@@ -2,6 +2,7 @@ package trafficanalysis
 
 import (
 	"fmt"
+	"log"
 
 	"modbus-emulator/utils"
 
@@ -22,12 +23,12 @@ type TCPPacket struct {
 
 func ParsePackets(filename string) (packets []TCPPacket, err error) {
 	var handle *pcap.Handle
-	if handle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, filename)); err != nil {
+	if handle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, utils.TypeObject, filename)); err != nil {
 		err = fmt.Errorf("error on opening file: %s", err)
 		return
 	}
 	defer handle.Close()
-	if err = handle.SetBPFFilter("tcp src port 1502"); err != nil {
+	if err = handle.SetBPFFilter("tcp dst port 1502"); err != nil {
 		err = fmt.Errorf("error on setting handle filter: %s", err)
 		return
 	}
@@ -38,6 +39,7 @@ func ParsePackets(filename string) (packets []TCPPacket, err error) {
 		if len(currentPayload) == 0 {
 			continue
 		}
+		log.Println(currentPayload)
 		var currentPacketResponse TCPPacket
 		currentPacketResponse.PacketNumber = currentPayload[0] + currentPayload[1]
 		if currentPayload[2] == 0 && currentPayload[3] == 0 {
