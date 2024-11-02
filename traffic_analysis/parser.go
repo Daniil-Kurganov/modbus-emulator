@@ -21,9 +21,9 @@ type TCPPacket struct {
 	Data         []byte
 }
 
-func ParsePackets(filename string) (packets []TCPPacket, err error) {
+func ParsePackets(typeObject string, filename string) (packets []TCPPacket, err error) {
 	var handle *pcap.Handle
-	if handle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, utils.TypeObject, filename)); err != nil {
+	if handle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, typeObject, filename)); err != nil {
 		err = fmt.Errorf("error on opening file: %s", err)
 		return
 	}

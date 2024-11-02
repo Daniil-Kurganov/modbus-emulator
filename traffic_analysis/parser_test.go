@@ -11,17 +11,20 @@ import (
 
 func TestParsePackets(t *testing.T) {
 	testTable := []struct {
+		typeObject       string
 		filename         string
 		responseExpected []ta.TCPPacket
 		errorExpected    error
 	}{
 		{
+			typeObject:       "coils",
 			filename:         "",
 			responseExpected: nil,
-			errorExpected:    fmt.Errorf("error on opening file: %s/%s/%s/.pcapng: No such file or directory", utils.ModulePath, utils.Foldername, utils.TypeObject),
+			errorExpected:    fmt.Errorf("error on opening file: %s/%s/coils/.pcapng: No such file or directory", utils.ModulePath, utils.Foldername),
 		},
 		{
-			filename: "coils_read",
+			typeObject: "coils",
+			filename:   "read_01",
 			responseExpected: []ta.TCPPacket{
 				{
 					PacketNumber: 1,
@@ -75,7 +78,7 @@ func TestParsePackets(t *testing.T) {
 	for _, currentTestCase := range testTable {
 		var currentResponseRecieved []ta.TCPPacket
 		var err error
-		if currentResponseRecieved, err = ta.ParsePackets(currentTestCase.filename); err != nil {
+		if currentResponseRecieved, err = ta.ParsePackets(currentTestCase.typeObject, currentTestCase.filename); err != nil {
 			assert.EqualErrorf(t, err, currentTestCase.errorExpected.Error(),
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", currentTestCase.errorExpected, err,
 			)
