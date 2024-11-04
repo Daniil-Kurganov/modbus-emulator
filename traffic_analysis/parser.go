@@ -11,24 +11,14 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-type TCPPacket struct {
-	PacketNumber byte
-	Protocol     string
-	BodyLength   byte
-	UnitID       byte
-	ObjectType   byte
-	DataLength   byte
-	Data         []byte
-}
-
-func ParsePackets(typeObject string, filename string) (packets []TCPPacket, err error) {
+func ParsePackets(typeObject string, filename string, r string) (packets []TCPPacket, err error) {
 	var handle *pcap.Handle
 	if handle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, typeObject, filename)); err != nil {
 		err = fmt.Errorf("error on opening file: %s", err)
 		return
 	}
 	defer handle.Close()
-	if err = handle.SetBPFFilter("tcp port 1502"); err != nil {
+	if err = handle.SetBPFFilter(fmt.Sprintf("tcp %s port 1502", r)); err != nil {
 		err = fmt.Errorf("error on setting handle filter: %s", err)
 		return
 	}
@@ -51,7 +41,7 @@ func ParsePackets(typeObject string, filename string) (packets []TCPPacket, err 
 		currentPacketResponse.UnitID = currentPayload[6]
 		currentPacketResponse.ObjectType = currentPayload[7]
 		currentPacketResponse.DataLength = currentPayload[8]
-		currentPacketResponse.Data = currentPayload[9:]
+		// currentPacketResponse.DataPayload = currentPayload[9:]
 		packets = append(packets, currentPacketResponse)
 	}
 	return

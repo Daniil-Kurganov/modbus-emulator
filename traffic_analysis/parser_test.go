@@ -13,18 +13,21 @@ func TestParsePackets(t *testing.T) {
 	testTable := []struct {
 		typeObject       string
 		filename         string
+		filter           string
 		responseExpected []ta.TCPPacket
 		errorExpected    error
 	}{
 		{
 			typeObject:       "coils",
 			filename:         "",
+			filter:           "",
 			responseExpected: nil,
 			errorExpected:    fmt.Errorf("error on opening file: %s/%s/coils/.pcapng: No such file or directory", utils.ModulePath, utils.Foldername),
 		},
 		{
 			typeObject: "coils",
 			filename:   "read_01",
+			filter:     "src",
 			responseExpected: []ta.TCPPacket{
 				{
 					PacketNumber: 1,
@@ -33,7 +36,7 @@ func TestParsePackets(t *testing.T) {
 					UnitID:       0,
 					ObjectType:   1,
 					DataLength:   1,
-					Data:         []byte{1},
+					DataPayload:  nil, //[]byte{1},
 				},
 				{
 					PacketNumber: 2,
@@ -42,7 +45,7 @@ func TestParsePackets(t *testing.T) {
 					UnitID:       0,
 					ObjectType:   1,
 					DataLength:   1,
-					Data:         []byte{1},
+					DataPayload:  nil, //[]byte{1},
 				},
 				{
 					PacketNumber: 3,
@@ -51,7 +54,7 @@ func TestParsePackets(t *testing.T) {
 					UnitID:       0,
 					ObjectType:   1,
 					DataLength:   1,
-					Data:         []byte{1},
+					DataPayload:  nil, //[]byte{1},
 				},
 				{
 					PacketNumber: 4,
@@ -60,7 +63,7 @@ func TestParsePackets(t *testing.T) {
 					UnitID:       0,
 					ObjectType:   1,
 					DataLength:   1,
-					Data:         []byte{1},
+					DataPayload:  nil, //[]byte{1},
 				},
 				{
 					PacketNumber: 5,
@@ -69,7 +72,7 @@ func TestParsePackets(t *testing.T) {
 					UnitID:       0,
 					ObjectType:   1,
 					DataLength:   1,
-					Data:         []byte{1},
+					DataPayload:  nil, //[]byte{1},
 				},
 			},
 			errorExpected: nil,
@@ -78,7 +81,7 @@ func TestParsePackets(t *testing.T) {
 	for _, currentTestCase := range testTable {
 		var currentResponseRecieved []ta.TCPPacket
 		var err error
-		if currentResponseRecieved, err = ta.ParsePackets(currentTestCase.typeObject, currentTestCase.filename); err != nil {
+		if currentResponseRecieved, err = ta.ParsePackets(currentTestCase.typeObject, currentTestCase.filename, currentTestCase.filter); err != nil {
 			assert.EqualErrorf(t, err, currentTestCase.errorExpected.Error(),
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", currentTestCase.errorExpected, err,
 			)
