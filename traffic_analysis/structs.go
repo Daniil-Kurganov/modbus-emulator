@@ -1,7 +1,7 @@
 package trafficanalysis
 
 type (
-	handshake struct {
+	Handshake struct {
 		request  TCPPacket
 		responce TCPPacket
 	}
@@ -10,8 +10,8 @@ type (
 		Protocol     string
 		BodyLength   byte
 		UnitID       byte
-		ObjectType   byte
-		DataLength   byte
+		FunctionType byte
+		AddressStart []byte
 		DataPayload  dataPayload
 	}
 	dataPayload interface {
@@ -19,7 +19,7 @@ type (
 	}
 	readRequest struct {
 		operationCode int
-		payload       byte // number of reading bits
+		payload       []byte // number of reading bits
 	}
 	readResponce struct {
 		operationCode int

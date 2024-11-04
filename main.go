@@ -7,10 +7,10 @@ import (
 
 func main() {
 	log.SetFlags(0)
-	var payloads []ta.TCPPacket
+	var history []ta.TCPPacket
 	var err error
-	if payloads, err = ta.ParsePackets("coils", "write_32", "dst"); err != nil {
+	if history, err = ta.ParsePackets("coils", "write_32"); err != nil {
 		log.Fatalf("Error on parsing file: %v\n", err)
 	}
-	log.Printf("Payloads: %v", payloads)
+	log.Printf("Payloads: %v", history)
 }
