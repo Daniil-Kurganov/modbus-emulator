@@ -23,7 +23,11 @@ func main() {
 	var registers []byte
 	for {
 		time.Sleep(500 * time.Millisecond)
-		if registers, err = client.ReadInputRegisters(3, 6); err != nil {
+		if registers, err = client.WriteMultipleCoils(2, 3, []byte{1, 0, 1}); err != nil {
+			log.Fatalf("Error on reading coils: %s\n", err)
+		}
+		log.Printf("Registers: %v\n", registers)
+		if registers, err = client.WriteMultipleCoils(2, 3, []byte{0, 1, 0}); err != nil {
 			log.Fatalf("Error on reading coils: %s\n", err)
 		}
 		log.Printf("Registers: %v\n", registers)
