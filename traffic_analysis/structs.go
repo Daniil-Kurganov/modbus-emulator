@@ -1,75 +1,116 @@
 package trafficanalysis
 
 type (
+	DataPayload interface {
+		Marshal() []byte
+		Unmarshal([]byte)
+	}
+	TCPPacket interface {
+		UnmarshalHeader([]byte) MBAPHeader
+	}
 	Handshake struct {
-		request  TCPPacket
-		responce TCPPacket
+		request  TCPPacketRequest
+		responce TCPPacketResponce
 	}
-	TCPPacket struct {
-		PacketNumber byte
-		Protocol     string
-		BodyLength   byte
-		UnitID       byte
-		FunctionType byte
+	MBAPHeader struct {
+		TransactionID []byte // [hight leve, low level]
+		Protocol      string
+		BodyLength    byte
+		UnitID        byte
+		FunctionType  byte
+		Data          DataPayload
+	}
+	TCPPacketRequest struct {
+		Header       MBAPHeader
 		AddressStart []byte
-		DataPayload  dataPayload
+		Data         DataPayload
 	}
-	dataPayload interface {
-		getOperationCode() int // 0 - read, 1 - write simple, 2 - write multiple
+	TCPPacketResponce struct {
+		Header MBAPHeader
+		Data   DataPayload
 	}
-	readRequest struct {
-		operationCode int
-		payload       []byte // number of reading bits
+	ReadRequest struct {
+		numberReadingBits []byte // number of reading bits
 	}
-	readResponce struct {
-		operationCode int
-		payload       struct {
-			numberBits byte
-			data       [][]byte // like: [[0, 26], [0, 130]]; len = numberBytes
-		}
+	ReadBitResponce struct { // for coils and DI
+		bits []byte // like: [0, 1]
 	}
-	writeSimpleRequest struct {
-		operationCode int
-		payload       []byte // like: [0, 6]
+	ReadByteResponce struct { // for HR and IR
+		numberBits byte
+		data       [][]byte // like: [[0, 26], [0, 130]]; len = numberBytes
 	}
-	writeMultipleRequest struct {
-		operationCode int
-		payload       struct {
-			numberRegisters []byte // 2 bits, like: [0, 3] or [0, 2]
-			numberBits      byte
-			data            [][]byte // like: [[0, 45], [0, 35]]; len = numberRegisters[1]
-		}
-	}
-	writeSingleResponce struct {
-		operationCode int
-		payload       []byte // written bits
-	}
-	writeMultipleResponce struct {
-		operationCode int
-		payload       byte // number of written bits
-	}
+	// WriteSimpleRequest struct {
+	// 	payload []byte // like: [0, 6]
+	// }
+	// WriteMultipleRequest struct {
+	// 	payload struct {
+	// 		numberRegisters []byte // 2 bits, like: [0, 3] or [0, 2]
+	// 		numberBits      byte
+	// 		data            [][]byte // like: [[0, 45], [0, 35]]; len = numberRegisters[1]
+	// 	}
+	// }
+	// WriteSingleResponce struct {
+	// 	payload []byte // written bits
+	// }
+	// WriteMultipleResponce struct {
+	// 	payload byte // number of written bits
+	// }
 )
 
-func (rReq *readRequest) getOperationCode() int {
-	return rReq.operationCode
+func (h *MBAPHeader) Unmarshal(payload []byte) {
+	if payload[2] == 0 && payload[3] == 0 {
+		h.Protocol = "modbus"
+	} else {
+		h.Protocol = "unknown"
+		return
+	}
+	h.BodyLength = payload[4] + payload[5]
+	h.UnitID = payload[6]
+	h.FunctionType = payload[7]
 }
 
-func (rRes *readResponce) getOperationCode() int {
-	return rRes.operationCode
+func (p *TCPPacketRequest) UnmarshalHeader(payload []byte) MBAPHeader {
+	p.Header.Unmarshal(payload)
+	p.AddressStart = payload[8:10]
+	return p.Header
 }
 
-func (wSReq *writeSimpleRequest) getOperationCode() int {
-	return wSReq.operationCode
+func (p *TCPPacketResponce) UnmarshalHeader(payload []byte) MBAPHeader {
+	p.Header.Unmarshal(payload)
+	return p.Header
 }
 
-func (wMReq *writeMultipleRequest) getOperationCode() int {
-	return wMReq.operationCode
+func (rReq *ReadRequest) Marshal() (payload []byte) {
+	return
 }
 
-func (wSRes *writeSingleResponce) getOperationCode() int {
-	return wSRes.operationCode
+func (rReq *ReadRequest) Unmarshal(payload []byte) {
+	rReq.numberReadingBits = payload[10:]
 }
 
-func (wMRes *writeMultipleResponce) getOperationCode() int {
-	return wMRes.operationCode
+func (rBiRes *ReadBitResponce) Marshal() (payload []byte) {
+	return
+}
+
+func (rBiRes *ReadBitResponce) Unmarshal(payload []byte) {
+	rBiRes.bits = payload[8:]
+}
+
+func (rByRes *ReadByteResponce) Marshal() (payload []byte) {
+	return
+}
+
+func (rByRes *ReadByteResponce) Unmarshal(payload []byte) {
+	var payloadData [][]byte
+	var workData []byte
+	for currentIndex, currentBit := range payload[11:] {
+		if currentIndex%2 == 0 {
+			workData = []byte{currentBit}
+		} else {
+			workData = append(workData, currentBit)
+			payloadData = append(payloadData, workData)
+		}
+	}
+	rByRes.numberBits = payload[10]
+	rByRes.data = payloadData
 }

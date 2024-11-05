@@ -7,10 +7,12 @@ import (
 
 func main() {
 	log.SetFlags(0)
-	var history []ta.TCPPacket
+	var history map[string]ta.Handshake
 	var err error
-	if history, err = ta.ParsePackets("coils", "write_32"); err != nil {
+	if history, err = ta.ParsePackets("IR", "read_36"); err != nil {
 		log.Fatalf("Error on parsing file: %v\n", err)
 	}
-	log.Printf("Payloads: %v", history)
+	for currentKey, currentValue := range history {
+		log.Printf("№ %v: %v\n", currentKey, currentValue)
+	}
 }
