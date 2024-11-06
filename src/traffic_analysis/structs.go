@@ -37,7 +37,7 @@ type (
 		Data   DataPayload
 	}
 	ReadRequest struct {
-		numberReadingBits []byte // number of reading bits
+		NumberReadingBits []byte // number of reading bits
 	}
 	ReadBitResponce struct { // for coils and DI
 		bits []byte // like: [0, 1]
@@ -47,12 +47,12 @@ type (
 		data       [][]byte // like: [[0, 26], [0, 130]]; len = numberBytes
 	}
 	WriteSimpleRequest struct {
-		payload []byte // like: [0, 6]
+		Payload []byte // like: [0, 6]
 	}
 	WriteMultipleRequest struct {
-		numberRegisters []byte // 2 bits, like: [0, 3] or [0, 2]
-		numberBits      byte
-		data            []byte // like: [[0, 45], [0, 35]]; len = numberRegisters[1]
+		NumberRegisters []byte // 2 bits, like: [0, 3] or [0, 2]
+		NumberBits      byte
+		Data            []byte // like: [[0, 45], [0, 35]]; len = numberRegisters[1]
 	}
 	WriteSimpleResponce struct {
 		addressStart []byte
@@ -65,6 +65,10 @@ type (
 )
 
 func (h *MBAPHeader) Unmarshal(payload []byte) {
+	if len(payload) < 8 {
+		log.Println("Error: insufficient payload length")
+		return
+	}
 	h.TransactionID = payload[:2]
 	if payload[2] == 0 && payload[3] == 0 {
 		h.Protocol = "modbus"
@@ -86,6 +90,10 @@ func (h *MBAPHeader) LogPrint() {
 }
 
 func (pReq *TCPPacketRequest) UnmarshalHeader(payload []byte) {
+	if len(payload) < 10 {
+		log.Println("Error: insufficient payload length")
+		return
+	}
 	pReq.Header.Unmarshal(payload)
 	pReq.AddressStart = payload[8:10]
 }
@@ -138,11 +146,15 @@ func (rReq *ReadRequest) Marshal() (payload []byte) {
 }
 
 func (rReq *ReadRequest) Unmarshal(payload []byte) {
-	rReq.numberReadingBits = payload[10:]
+	if len(payload) < 11 {
+		log.Println("Error: insufficient payload length")
+		return
+	}
+	rReq.NumberReadingBits = payload[10:]
 }
 
 func (rReq *ReadRequest) LogPrint() {
-	log.Printf("   Number reading bits: %v\n", rReq.numberReadingBits)
+	log.Printf("   Number reading bits: %v\n", rReq.NumberReadingBits)
 }
 
 func (rBiRes *ReadBitResponce) Marshal() (payload []byte) {
@@ -184,11 +196,15 @@ func (wSReq *WriteSimpleRequest) Marshal() (payload []byte) {
 }
 
 func (wSReq *WriteSimpleRequest) Unmarshal(payload []byte) {
-	wSReq.payload = payload[10:]
+	if len(payload) < 11 {
+		log.Println("Error: insufficient payload length")
+		return
+	}
+	wSReq.Payload = payload[10:]
 }
 
 func (wSReq *WriteSimpleRequest) LogPrint() {
-	log.Printf("   Writing bits: %v\n", wSReq.payload)
+	log.Printf("   Writing bits: %v\n", wSReq.Payload)
 }
 
 func (wMReq *WriteMultipleRequest) Marshal() (payload []byte) {
@@ -196,15 +212,19 @@ func (wMReq *WriteMultipleRequest) Marshal() (payload []byte) {
 }
 
 func (wMReq *WriteMultipleRequest) Unmarshal(payload []byte) {
-	wMReq.numberRegisters = payload[10:12]
-	wMReq.numberBits = payload[12]
-	wMReq.data = payload[13:]
+	if len(payload) < 14 {
+		log.Println("Error: insufficient payload length")
+		return
+	}
+	wMReq.NumberRegisters = payload[10:12]
+	wMReq.NumberBits = payload[12]
+	wMReq.Data = payload[13:]
 }
 
 func (wMReq *WriteMultipleRequest) LogPrint() {
-	log.Printf("   Number of writting registers: %v\n", wMReq.numberRegisters)
-	log.Printf("   Number of writting bits: %v\n", wMReq.numberBits)
-	log.Printf("   Writting bits: %v\n", wMReq.data)
+	log.Printf("   Number of writting registers: %v\n", wMReq.NumberRegisters)
+	log.Printf("   Number of writting bits: %v\n", wMReq.NumberBits)
+	log.Printf("   Writting bits: %v\n", wMReq.Data)
 }
 
 func (wSRes *WriteSimpleResponce) Marshal() (payload []byte) {
