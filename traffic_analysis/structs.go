@@ -1,16 +1,24 @@
 package trafficanalysis
 
+import (
+	"log"
+	"slices"
+)
+
 type (
 	DataPayload interface {
 		Marshal() []byte
 		Unmarshal([]byte)
+		LogPrint()
 	}
 	TCPPacket interface {
-		UnmarshalHeader([]byte) MBAPHeader
+		UnmarshalHeader([]byte)
+		UnmarshalData([]byte)
+		LogPrint()
 	}
 	Handshake struct {
-		request  TCPPacketRequest
-		responce TCPPacketResponce
+		Request  TCPPacket
+		Responce TCPPacket
 	}
 	MBAPHeader struct {
 		TransactionID []byte // [hight leve, low level]
@@ -18,7 +26,6 @@ type (
 		BodyLength    byte
 		UnitID        byte
 		FunctionType  byte
-		Data          DataPayload
 	}
 	TCPPacketRequest struct {
 		Header       MBAPHeader
@@ -58,6 +65,7 @@ type (
 )
 
 func (h *MBAPHeader) Unmarshal(payload []byte) {
+	h.TransactionID = payload[:2]
 	if payload[2] == 0 && payload[3] == 0 {
 		h.Protocol = "modbus"
 	} else {
@@ -69,15 +77,52 @@ func (h *MBAPHeader) Unmarshal(payload []byte) {
 	h.FunctionType = payload[7]
 }
 
-func (p *TCPPacketRequest) UnmarshalHeader(payload []byte) MBAPHeader {
-	p.Header.Unmarshal(payload)
-	p.AddressStart = payload[8:10]
-	return p.Header
+func (h *MBAPHeader) LogPrint() {
+	log.Printf("   Transaction ID: %v\n", h.TransactionID)
+	log.Printf("   Protocol: %s\n", h.Protocol)
+	log.Printf("   Body length: %v\n", h.BodyLength)
+	log.Printf("   Unit ID: %v\n", h.UnitID)
+	log.Printf("   Function type: %v\n", h.FunctionType)
 }
 
-func (p *TCPPacketResponce) UnmarshalHeader(payload []byte) MBAPHeader {
-	p.Header.Unmarshal(payload)
-	return p.Header
+func (pReq *TCPPacketRequest) UnmarshalHeader(payload []byte) {
+	pReq.Header.Unmarshal(payload)
+	pReq.AddressStart = payload[8:10]
+}
+
+func (pReq *TCPPacketRequest) UnmarshalData(payload []byte) {
+	if slices.Contains([]byte{1, 2, 3, 4}, pReq.Header.FunctionType) {
+		pReq.Data = new(ReadRequest)
+	}
+	pReq.Data.Unmarshal(payload)
+}
+
+func (pReq *TCPPacketRequest) LogPrint() {
+	log.Println("  Header:")
+	pReq.Header.LogPrint()
+	log.Printf("  Address Start: %v", pReq.AddressStart)
+	log.Println("  Data:")
+	pReq.Data.LogPrint()
+}
+
+func (pRes *TCPPacketResponce) UnmarshalHeader(payload []byte) {
+	pRes.Header.Unmarshal(payload)
+}
+
+func (pRes *TCPPacketResponce) UnmarshalData(payload []byte) {
+	if slices.Contains([]byte{1, 2}, pRes.Header.FunctionType) {
+		pRes.Data = new(ReadBitResponce)
+	} else if slices.Contains([]byte{3, 4}, pRes.Header.FunctionType) {
+		pRes.Data = new(ReadByteResponce)
+	}
+	pRes.Data.Unmarshal(payload)
+}
+
+func (pRes *TCPPacketResponce) LogPrint() {
+	log.Println("  Header:")
+	pRes.Header.LogPrint()
+	log.Println("  Data:")
+	pRes.Data.LogPrint()
 }
 
 func (rReq *ReadRequest) Marshal() (payload []byte) {
@@ -88,12 +133,20 @@ func (rReq *ReadRequest) Unmarshal(payload []byte) {
 	rReq.numberReadingBits = payload[10:]
 }
 
+func (rReq *ReadRequest) LogPrint() {
+	log.Printf("   Number reading bits: %v\n", rReq.numberReadingBits)
+}
+
 func (rBiRes *ReadBitResponce) Marshal() (payload []byte) {
 	return
 }
 
 func (rBiRes *ReadBitResponce) Unmarshal(payload []byte) {
 	rBiRes.bits = payload[8:]
+}
+
+func (rBiRes *ReadBitResponce) LogPrint() {
+	log.Printf("   Responce bit: %v\n", rBiRes.bits)
 }
 
 func (rByRes *ReadByteResponce) Marshal() (payload []byte) {
@@ -103,7 +156,7 @@ func (rByRes *ReadByteResponce) Marshal() (payload []byte) {
 func (rByRes *ReadByteResponce) Unmarshal(payload []byte) {
 	var payloadData [][]byte
 	var workData []byte
-	for currentIndex, currentBit := range payload[11:] {
+	for currentIndex, currentBit := range payload[9:] {
 		if currentIndex%2 == 0 {
 			workData = []byte{currentBit}
 		} else {
@@ -111,6 +164,11 @@ func (rByRes *ReadByteResponce) Unmarshal(payload []byte) {
 			payloadData = append(payloadData, workData)
 		}
 	}
-	rByRes.numberBits = payload[10]
+	rByRes.numberBits = payload[8]
 	rByRes.data = payloadData
+}
+
+func (rByRes *ReadByteResponce) LogPrint() {
+	log.Printf("   Number of respoce bits: %v\n", rByRes.numberBits)
+	log.Printf("   Responce bits: %v\n", rByRes.data)
 }

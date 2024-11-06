@@ -12,14 +12,14 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-func parsePacket(payload []byte) (packet TCPPacket) {
-	MBAPHeader := packet.UnmarshalHeader(payload)
-	switch MBAPHeader.FunctionType {
-	case 1:
+func parsePacket(payload []byte, isRequest bool) (packet TCPPacket) {
+	if isRequest {
 		packet = new(TCPPacketRequest)
+	} else {
+		packet = new(TCPPacketResponce)
 	}
-	packet.UnmarshalHeader()
-	packet = pkt
+	packet.UnmarshalHeader(payload)
+	packet.UnmarshalData(payload)
 	return
 }
 
@@ -54,15 +54,11 @@ func ParsePackets(typeObject string, filename string) (history map[string]Handsh
 			log.Println(currentPayload)
 			currentTransactionID := transactionIDToKey(currentPayload[:2])
 			currentHandshake, _ := history[currentTransactionID]
-			// if currentFilter == "dst" {
-			// 	currentRequest := packetParse(currentPayload, true)
-			// 	currentRequest.TransactionID = currentPayload[:2]
-			// 	currentHandshake.request = currentRequest
-			// } else {
-			// 	currentResponce := packetParse(currentPayload, false)
-			// 	currentResponce.TransactionID = currentPayload[:2]
-			// 	currentHandshake.responce = currentResponce
-			// }
+			if currentFilter == "dst" {
+				currentHandshake.Request = parsePacket(currentPayload, true)
+			} else {
+				currentHandshake.Responce = parsePacket(currentPayload, false)
+			}
 			history[currentTransactionID] = currentHandshake
 		}
 		currentHandle.Close()
