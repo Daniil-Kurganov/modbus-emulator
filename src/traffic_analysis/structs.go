@@ -163,7 +163,15 @@ func (rByRes *ReadByteResponce) Marshal() (payload []byte) {
 
 func (rByRes *ReadByteResponce) Unmarshal(payload []byte) {
 	rByRes.numberBits = payload[8]
-	rByRes.data = convertPayloadData(payload[9:])
+	var workData []byte
+	for currentIndex, currentBit := range payload[9:] {
+		if currentIndex%2 == 0 {
+			workData = []byte{currentBit}
+		} else {
+			workData = append(workData, currentBit)
+			rByRes.data = append(rByRes.data, workData)
+		}
+	}
 }
 
 func (rByRes *ReadByteResponce) LogPrint() {
@@ -225,17 +233,4 @@ func (wMRes *WriteMultipleResponce) Unmarshal(payload []byte) {
 func (wMRes *WriteMultipleResponce) LogPrint() {
 	log.Printf("   Address start: %v\n", wMRes.addressStart)
 	log.Printf("   Number written registers: %v\n", wMRes.numberWrittenRegisters)
-}
-
-func convertPayloadData(data []byte) (payloadData [][]byte) {
-	var workData []byte
-	for currentIndex, currentBit := range data {
-		if currentIndex%2 == 0 {
-			workData = []byte{currentBit}
-		} else {
-			workData = append(workData, currentBit)
-			payloadData = append(payloadData, workData)
-		}
-	}
-	return
 }

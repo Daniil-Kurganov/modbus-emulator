@@ -2,7 +2,6 @@ package trafficanalysis_test
 
 import (
 	"fmt"
-	ta "modbus-emulator/traffic_analysis"
 	"modbus-emulator/utils"
 	"testing"
 

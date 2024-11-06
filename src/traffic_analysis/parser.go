@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"modbus-emulator/utils"
+	"modbus-emulator/src/utils"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
