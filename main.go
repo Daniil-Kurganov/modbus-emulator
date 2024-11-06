@@ -9,7 +9,7 @@ func main() {
 	log.SetFlags(0)
 	var history map[string]ta.Handshake
 	var err error
-	if history, err = ta.ParsePackets("HR", "write_32"); err != nil {
+	if history, err = ta.ParsePackets("coils", "read_01"); err != nil {
 		log.Fatalf("Error on parsing file: %v\n", err)
 	}
 	for currentTransaction, currentHandshake := range history {
