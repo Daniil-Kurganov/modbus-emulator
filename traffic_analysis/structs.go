@@ -46,22 +46,22 @@ type (
 		numberBits byte
 		data       [][]byte // like: [[0, 26], [0, 130]]; len = numberBytes
 	}
-	// WriteSimpleRequest struct {
-	// 	payload []byte // like: [0, 6]
-	// }
-	// WriteMultipleRequest struct {
-	// 	payload struct {
-	// 		numberRegisters []byte // 2 bits, like: [0, 3] or [0, 2]
-	// 		numberBits      byte
-	// 		data            [][]byte // like: [[0, 45], [0, 35]]; len = numberRegisters[1]
-	// 	}
-	// }
-	// WriteSingleResponce struct {
-	// 	payload []byte // written bits
-	// }
-	// WriteMultipleResponce struct {
-	// 	payload byte // number of written bits
-	// }
+	WriteSimpleRequest struct {
+		payload []byte // like: [0, 6]
+	}
+	WriteMultipleRequest struct {
+		numberRegisters []byte // 2 bits, like: [0, 3] or [0, 2]
+		numberBits      byte
+		data            []byte // like: [[0, 45], [0, 35]]; len = numberRegisters[1]
+	}
+	WriteSimpleResponce struct {
+		addressStart []byte
+		writtenBits  []byte
+	}
+	WriteMultipleResponce struct {
+		addressStart           []byte
+		numberWrittenRegisters []byte
+	}
 )
 
 func (h *MBAPHeader) Unmarshal(payload []byte) {
@@ -93,6 +93,10 @@ func (pReq *TCPPacketRequest) UnmarshalHeader(payload []byte) {
 func (pReq *TCPPacketRequest) UnmarshalData(payload []byte) {
 	if slices.Contains([]byte{1, 2, 3, 4}, pReq.Header.FunctionType) {
 		pReq.Data = new(ReadRequest)
+	} else if slices.Contains([]byte{5, 6}, pReq.Header.FunctionType) {
+		pReq.Data = new(WriteSimpleRequest)
+	} else if slices.Contains([]byte{15, 16}, pReq.Header.FunctionType) {
+		pReq.Data = new(WriteMultipleRequest)
 	}
 	pReq.Data.Unmarshal(payload)
 }
@@ -114,6 +118,10 @@ func (pRes *TCPPacketResponce) UnmarshalData(payload []byte) {
 		pRes.Data = new(ReadBitResponce)
 	} else if slices.Contains([]byte{3, 4}, pRes.Header.FunctionType) {
 		pRes.Data = new(ReadByteResponce)
+	} else if slices.Contains([]byte{5, 6}, pRes.Header.FunctionType) {
+		pRes.Data = new(WriteSimpleResponce)
+	} else if slices.Contains([]byte{15, 16}, pRes.Header.FunctionType) {
+		pRes.Data = new(WriteMultipleResponce)
 	}
 	pRes.Data.Unmarshal(payload)
 }
@@ -154,9 +162,74 @@ func (rByRes *ReadByteResponce) Marshal() (payload []byte) {
 }
 
 func (rByRes *ReadByteResponce) Unmarshal(payload []byte) {
-	var payloadData [][]byte
+	rByRes.numberBits = payload[8]
+	rByRes.data = convertPayloadData(payload[9:])
+}
+
+func (rByRes *ReadByteResponce) LogPrint() {
+	log.Printf("   Number of respoce bits: %v\n", rByRes.numberBits)
+	log.Printf("   Responce bits: %v\n", rByRes.data)
+}
+
+func (wSReq *WriteSimpleRequest) Marshal() (payload []byte) {
+	return
+}
+
+func (wSReq *WriteSimpleRequest) Unmarshal(payload []byte) {
+	wSReq.payload = payload[10:]
+}
+
+func (wSReq *WriteSimpleRequest) LogPrint() {
+	log.Printf("   Writing bits: %v\n", wSReq.payload)
+}
+
+func (wMReq *WriteMultipleRequest) Marshal() (payload []byte) {
+	return
+}
+
+func (wMReq *WriteMultipleRequest) Unmarshal(payload []byte) {
+	wMReq.numberRegisters = payload[10:12]
+	wMReq.numberBits = payload[12]
+	wMReq.data = payload[13:]
+}
+
+func (wMReq *WriteMultipleRequest) LogPrint() {
+	log.Printf("   Number of writting registers: %v\n", wMReq.numberRegisters)
+	log.Printf("   Number of writting bits: %v\n", wMReq.numberBits)
+	log.Printf("   Writting bits: %v\n", wMReq.data)
+}
+
+func (wSRes *WriteSimpleResponce) Marshal() (payload []byte) {
+	return
+}
+
+func (wSRes *WriteSimpleResponce) Unmarshal(payload []byte) {
+	wSRes.addressStart = payload[8:10]
+	wSRes.writtenBits = payload[10:]
+}
+
+func (wSRes *WriteSimpleResponce) LogPrint() {
+	log.Printf("   Address start: %v\n", wSRes.addressStart)
+	log.Printf("   Written bits: %v\n", wSRes.writtenBits)
+}
+
+func (wMRes *WriteMultipleResponce) Marshal() (payload []byte) {
+	return
+}
+
+func (wMRes *WriteMultipleResponce) Unmarshal(payload []byte) {
+	wMRes.addressStart = payload[8:10]
+	wMRes.numberWrittenRegisters = payload[10:]
+}
+
+func (wMRes *WriteMultipleResponce) LogPrint() {
+	log.Printf("   Address start: %v\n", wMRes.addressStart)
+	log.Printf("   Number written registers: %v\n", wMRes.numberWrittenRegisters)
+}
+
+func convertPayloadData(data []byte) (payloadData [][]byte) {
 	var workData []byte
-	for currentIndex, currentBit := range payload[9:] {
+	for currentIndex, currentBit := range data {
 		if currentIndex%2 == 0 {
 			workData = []byte{currentBit}
 		} else {
@@ -164,11 +237,5 @@ func (rByRes *ReadByteResponce) Unmarshal(payload []byte) {
 			payloadData = append(payloadData, workData)
 		}
 	}
-	rByRes.numberBits = payload[8]
-	rByRes.data = payloadData
-}
-
-func (rByRes *ReadByteResponce) LogPrint() {
-	log.Printf("   Number of respoce bits: %v\n", rByRes.numberBits)
-	log.Printf("   Responce bits: %v\n", rByRes.data)
+	return
 }
