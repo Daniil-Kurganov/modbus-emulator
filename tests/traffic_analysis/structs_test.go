@@ -78,14 +78,14 @@ func TestTCPPacketRequestUnmarshalHeader(t *testing.T) {
 	}
 }
 
-func TestTCPPacketResponceUnmarshalHeader(t *testing.T) {
+func TestTCPPacketResponseUnmarshalHeader(t *testing.T) {
 	testTable := []struct{
 		payload []byte
-		expectedPacket ta.TCPPacketResponce
+		expectedPacket ta.TCPPacketResponse
 	}{
 		{
 			payload: []byte{0, 23, 0, 0, 0, 6, 0, 3, 0, 3, 0, 6},
-			expectedPacket: ta.TCPPacketResponce{
+			expectedPacket: ta.TCPPacketResponse{
 				Header: ta.MBAPHeader{
 					TransactionID: []byte{0, 23},
 					Protocol:      "modbus",
@@ -98,14 +98,14 @@ func TestTCPPacketResponceUnmarshalHeader(t *testing.T) {
 		},
 		{
 			payload: []byte{},
-			expectedPacket: ta.TCPPacketResponce{
+			expectedPacket: ta.TCPPacketResponse{
 				Header: ta.MBAPHeader{},
 				Data: nil,
 			},
 		},
 	}
 	for _, currentTestCase := range testTable {
-		currentRecievedPacket := ta.TCPPacketResponce{}
+		currentRecievedPacket := ta.TCPPacketResponse{}
 		currentRecievedPacket.UnmarshalHeader(currentTestCase.payload)
 		assert.Equalf(t, currentTestCase.expectedPacket, currentRecievedPacket,
 			"Error: expected and recieved packets isn't equal:\n expected: %v;\n recieved: %v", currentTestCase.expectedPacket, currentRecievedPacket)

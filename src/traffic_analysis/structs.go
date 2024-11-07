@@ -18,7 +18,7 @@ type (
 	}
 	Handshake struct {
 		Request  TCPPacket
-		Responce TCPPacket
+		Response TCPPacket
 	}
 	MBAPHeader struct {
 		TransactionID []byte // [hight leve, low level]
@@ -32,17 +32,17 @@ type (
 		AddressStart []byte
 		Data         DataPayload
 	}
-	TCPPacketResponce struct {
+	TCPPacketResponse struct {
 		Header MBAPHeader
 		Data   DataPayload
 	}
 	ReadRequest struct {
 		NumberReadingBits []byte // number of reading bits
 	}
-	ReadBitResponce struct { // for coils and DI
+	ReadBitResponse struct { // for coils and DI
 		bits []byte // like: [0, 1]
 	}
-	ReadByteResponce struct { // for HR and IR
+	ReadByteResponse struct { // for HR and IR
 		numberBits byte
 		data       [][]byte // like: [[0, 26], [0, 130]]; len = numberBytes
 	}
@@ -54,11 +54,11 @@ type (
 		NumberBits      byte
 		Data            []byte // like: [[0, 45], [0, 35]]; len = numberRegisters[1]
 	}
-	WriteSimpleResponce struct {
+	WriteSimpleResponse struct {
 		addressStart []byte
 		writtenBits  []byte
 	}
-	WriteMultipleResponce struct {
+	WriteMultipleResponse struct {
 		addressStart           []byte
 		numberWrittenRegisters []byte
 	}
@@ -117,24 +117,24 @@ func (pReq *TCPPacketRequest) LogPrint() {
 	pReq.Data.LogPrint()
 }
 
-func (pRes *TCPPacketResponce) UnmarshalHeader(payload []byte) {
+func (pRes *TCPPacketResponse) UnmarshalHeader(payload []byte) {
 	pRes.Header.Unmarshal(payload)
 }
 
-func (pRes *TCPPacketResponce) UnmarshalData(payload []byte) {
+func (pRes *TCPPacketResponse) UnmarshalData(payload []byte) {
 	if slices.Contains([]byte{1, 2}, pRes.Header.FunctionType) {
-		pRes.Data = new(ReadBitResponce)
+		pRes.Data = new(ReadBitResponse)
 	} else if slices.Contains([]byte{3, 4}, pRes.Header.FunctionType) {
-		pRes.Data = new(ReadByteResponce)
+		pRes.Data = new(ReadByteResponse)
 	} else if slices.Contains([]byte{5, 6}, pRes.Header.FunctionType) {
-		pRes.Data = new(WriteSimpleResponce)
+		pRes.Data = new(WriteSimpleResponse)
 	} else if slices.Contains([]byte{15, 16}, pRes.Header.FunctionType) {
-		pRes.Data = new(WriteMultipleResponce)
+		pRes.Data = new(WriteMultipleResponse)
 	}
 	pRes.Data.Unmarshal(payload)
 }
 
-func (pRes *TCPPacketResponce) LogPrint() {
+func (pRes *TCPPacketResponse) LogPrint() {
 	log.Println("  Header:")
 	pRes.Header.LogPrint()
 	log.Println("  Data:")
@@ -157,23 +157,23 @@ func (rReq *ReadRequest) LogPrint() {
 	log.Printf("   Number reading bits: %v\n", rReq.NumberReadingBits)
 }
 
-func (rBiRes *ReadBitResponce) Marshal() (payload []byte) {
+func (rBiRes *ReadBitResponse) Marshal() (payload []byte) {
 	return
 }
 
-func (rBiRes *ReadBitResponce) Unmarshal(payload []byte) {
+func (rBiRes *ReadBitResponse) Unmarshal(payload []byte) {
 	rBiRes.bits = payload[8:]
 }
 
-func (rBiRes *ReadBitResponce) LogPrint() {
-	log.Printf("   Responce bit: %v\n", rBiRes.bits)
+func (rBiRes *ReadBitResponse) LogPrint() {
+	log.Printf("   Response bit: %v\n", rBiRes.bits)
 }
 
-func (rByRes *ReadByteResponce) Marshal() (payload []byte) {
+func (rByRes *ReadByteResponse) Marshal() (payload []byte) {
 	return
 }
 
-func (rByRes *ReadByteResponce) Unmarshal(payload []byte) {
+func (rByRes *ReadByteResponse) Unmarshal(payload []byte) {
 	rByRes.numberBits = payload[8]
 	var workData []byte
 	for currentIndex, currentBit := range payload[9:] {
@@ -186,9 +186,9 @@ func (rByRes *ReadByteResponce) Unmarshal(payload []byte) {
 	}
 }
 
-func (rByRes *ReadByteResponce) LogPrint() {
+func (rByRes *ReadByteResponse) LogPrint() {
 	log.Printf("   Number of respoce bits: %v\n", rByRes.numberBits)
-	log.Printf("   Responce bits: %v\n", rByRes.data)
+	log.Printf("   Response bits: %v\n", rByRes.data)
 }
 
 func (wSReq *WriteSimpleRequest) Marshal() (payload []byte) {
@@ -227,30 +227,30 @@ func (wMReq *WriteMultipleRequest) LogPrint() {
 	log.Printf("   Writting bits: %v\n", wMReq.Data)
 }
 
-func (wSRes *WriteSimpleResponce) Marshal() (payload []byte) {
+func (wSRes *WriteSimpleResponse) Marshal() (payload []byte) {
 	return
 }
 
-func (wSRes *WriteSimpleResponce) Unmarshal(payload []byte) {
+func (wSRes *WriteSimpleResponse) Unmarshal(payload []byte) {
 	wSRes.addressStart = payload[8:10]
 	wSRes.writtenBits = payload[10:]
 }
 
-func (wSRes *WriteSimpleResponce) LogPrint() {
+func (wSRes *WriteSimpleResponse) LogPrint() {
 	log.Printf("   Address start: %v\n", wSRes.addressStart)
 	log.Printf("   Written bits: %v\n", wSRes.writtenBits)
 }
 
-func (wMRes *WriteMultipleResponce) Marshal() (payload []byte) {
+func (wMRes *WriteMultipleResponse) Marshal() (payload []byte) {
 	return
 }
 
-func (wMRes *WriteMultipleResponce) Unmarshal(payload []byte) {
+func (wMRes *WriteMultipleResponse) Unmarshal(payload []byte) {
 	wMRes.addressStart = payload[8:10]
 	wMRes.numberWrittenRegisters = payload[10:]
 }
 
-func (wMRes *WriteMultipleResponce) LogPrint() {
+func (wMRes *WriteMultipleResponse) LogPrint() {
 	log.Printf("   Address start: %v\n", wMRes.addressStart)
 	log.Printf("   Number written registers: %v\n", wMRes.numberWrittenRegisters)
 }

@@ -12,11 +12,16 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+type History struct {
+	TransactionID string
+	Handshake     Handshake
+}
+
 func parsePacket(payload []byte, isRequest bool) (packet TCPPacket) {
 	if isRequest {
 		packet = new(TCPPacketRequest)
 	} else {
-		packet = new(TCPPacketResponce)
+		packet = new(TCPPacketResponse)
 	}
 	packet.UnmarshalHeader(payload)
 	packet.UnmarshalData(payload)
@@ -31,9 +36,9 @@ func transactionIDToKey(transcationID []byte) (key string) {
 	return
 }
 
-func ParsePackets(typeObject string, filename string) (history map[string]Handshake, err error) {
+func ParsePackets(typeObject string, filename string) (history []History, err error) {
 	var currentHandle *pcap.Handle
-	history = make(map[string]Handshake)
+	indexDictionary := make(map[string]int)
 	for _, currentFilter := range []string{"dst", "src"} {
 		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, typeObject, filename)); err != nil {
 			err = fmt.Errorf("error on opening file: %s", err)
@@ -52,14 +57,20 @@ func ParsePackets(typeObject string, filename string) (history map[string]Handsh
 				continue
 			}
 			log.Println(currentPayload)
-			currentTransactionID := transactionIDToKey(currentPayload[:2])
-			currentHandshake, _ := history[currentTransactionID]
+			currentHistoryEvent := History{
+				TransactionID: transactionIDToKey(currentPayload[:2]),
+			}
+			currentHandshake := Handshake{}
 			if currentFilter == "dst" {
 				currentHandshake.Request = parsePacket(currentPayload, true)
+				currentHistoryEvent.Handshake = currentHandshake
+				history = append(history, currentHistoryEvent)
+				indexDictionary[currentHistoryEvent.TransactionID] = len(history) - 1
 			} else {
-				currentHandshake.Responce = parsePacket(currentPayload, false)
+				currentHandshake.Response = parsePacket(currentPayload, false)
+				currentHistoryEvent.Handshake = currentHandshake
+				history[indexDictionary[currentHistoryEvent.TransactionID]].Handshake.Response = currentHandshake.Response
 			}
-			history[currentTransactionID] = currentHandshake
 		}
 		currentHandle.Close()
 	}
