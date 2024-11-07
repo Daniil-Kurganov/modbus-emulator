@@ -40,7 +40,8 @@ type (
 		NumberReadingBits []byte // number of reading bits
 	}
 	ReadBitResponse struct { // for coils and DI
-		bits []byte // like: [0, 1]
+		NumberBits byte
+		Bits       byte // like: [0, 1]
 	}
 	ReadByteResponse struct { // for HR and IR
 		numberBits byte
@@ -55,12 +56,12 @@ type (
 		Data            []byte // like: [[0, 45], [0, 35]]; len = numberRegisters[1]
 	}
 	WriteSimpleResponse struct {
-		addressStart []byte
-		writtenBits  []byte
+		AddressStart []byte
+		WrittenBits  []byte
 	}
 	WriteMultipleResponse struct {
-		addressStart           []byte
-		numberWrittenRegisters []byte
+		AddressStart           []byte
+		NumberWrittenRegisters []byte
 	}
 )
 
@@ -162,11 +163,13 @@ func (rBiRes *ReadBitResponse) Marshal() (payload []byte) {
 }
 
 func (rBiRes *ReadBitResponse) Unmarshal(payload []byte) {
-	rBiRes.bits = payload[8:]
+	rBiRes.NumberBits = payload[8]
+	rBiRes.Bits = payload[9]
 }
 
 func (rBiRes *ReadBitResponse) LogPrint() {
-	log.Printf("   Response bit: %v\n", rBiRes.bits)
+	log.Printf("   Count response bit: %v\n", rBiRes.NumberBits)
+	log.Printf("   Response bit: %v\n", rBiRes.Bits)
 }
 
 func (rByRes *ReadByteResponse) Marshal() (payload []byte) {
@@ -232,13 +235,13 @@ func (wSRes *WriteSimpleResponse) Marshal() (payload []byte) {
 }
 
 func (wSRes *WriteSimpleResponse) Unmarshal(payload []byte) {
-	wSRes.addressStart = payload[8:10]
-	wSRes.writtenBits = payload[10:]
+	wSRes.AddressStart = payload[8:10]
+	wSRes.WrittenBits = payload[10:]
 }
 
 func (wSRes *WriteSimpleResponse) LogPrint() {
-	log.Printf("   Address start: %v\n", wSRes.addressStart)
-	log.Printf("   Written bits: %v\n", wSRes.writtenBits)
+	log.Printf("   Address start: %v\n", wSRes.AddressStart)
+	log.Printf("   Written bits: %v\n", wSRes.WrittenBits)
 }
 
 func (wMRes *WriteMultipleResponse) Marshal() (payload []byte) {
@@ -246,11 +249,11 @@ func (wMRes *WriteMultipleResponse) Marshal() (payload []byte) {
 }
 
 func (wMRes *WriteMultipleResponse) Unmarshal(payload []byte) {
-	wMRes.addressStart = payload[8:10]
-	wMRes.numberWrittenRegisters = payload[10:]
+	wMRes.AddressStart = payload[8:10]
+	wMRes.NumberWrittenRegisters = payload[10:]
 }
 
 func (wMRes *WriteMultipleResponse) LogPrint() {
-	log.Printf("   Address start: %v\n", wMRes.addressStart)
-	log.Printf("   Number written registers: %v\n", wMRes.numberWrittenRegisters)
+	log.Printf("   Address start: %v\n", wMRes.AddressStart)
+	log.Printf("   Number written registers: %v\n", wMRes.NumberWrittenRegisters)
 }
