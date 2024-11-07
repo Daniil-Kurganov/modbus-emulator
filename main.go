@@ -9,7 +9,7 @@ func main() {
 	log.SetFlags(0)
 	var history []ta.History
 	var err error
-	if history, err = ta.ParsePackets("test_files", "coils", "write_34"); err != nil {
+	if history, err = ta.ParsePackets("test_files", "DI", "read_41"); err != nil {
 		log.Fatalf("Error on parsing file: %v\n", err)
 	}
 	for _, currentHistoryEvent := range history {

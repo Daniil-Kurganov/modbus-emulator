@@ -189,6 +189,105 @@ func TestParsePackets(t *testing.T) {
 				},
 			},
 		},
+		{
+			typeObject: "DI",
+			filename:   "read_41",
+			expectedHistory: []ta.History{
+				{
+					TransactionID: "0-13",
+					Handshake: ta.Handshake{
+						Request: &ta.TCPPacketRequest{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 13},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  2,
+							},
+							AddressStart: []byte{0, 4},
+							Data: &ta.ReadRequest{
+								NumberReadingBits: []byte{0, 1},
+							},
+						},
+						Response: &ta.TCPPacketResponse{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 13},
+								Protocol:      "modbus",
+								BodyLength:    4,
+								UnitID:        0,
+								FunctionType:  2,
+							},
+							Data: &ta.ReadBitResponse{
+								NumberBits: 1,
+								Bits: 1,
+							},
+						},
+					},
+				},
+				{
+					TransactionID: "0-14",
+					Handshake: ta.Handshake{
+						Request: &ta.TCPPacketRequest{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 14},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  2,
+							},
+							AddressStart: []byte{0, 4},
+							Data: &ta.ReadRequest{
+								NumberReadingBits: []byte{0, 1},
+							},
+						},
+						Response: &ta.TCPPacketResponse{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 14},
+								Protocol:      "modbus",
+								BodyLength:    4,
+								UnitID:        0,
+								FunctionType:  2,
+							},
+							Data: &ta.ReadBitResponse{
+								NumberBits: 1,
+								Bits: 1,
+							},
+						},
+					},
+				},
+				{
+					TransactionID: "0-15",
+					Handshake: ta.Handshake{
+						Request: &ta.TCPPacketRequest{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 15},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  2,
+							},
+							AddressStart: []byte{0, 4},
+							Data: &ta.ReadRequest{
+								NumberReadingBits: []byte{0, 1},
+							},
+						},
+						Response: &ta.TCPPacketResponse{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 15},
+								Protocol:      "modbus",
+								BodyLength:    4,
+								UnitID:        0,
+								FunctionType:  2,
+							},
+							Data: &ta.ReadBitResponse{
+								NumberBits: 1,
+								Bits: 1,
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	var currentRecievedHistory []ta.History
 	var err error
