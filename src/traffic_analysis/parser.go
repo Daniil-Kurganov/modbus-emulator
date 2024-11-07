@@ -36,11 +36,11 @@ func transactionIDToKey(transcationID []byte) (key string) {
 	return
 }
 
-func ParsePackets(typeObject string, filename string) (history []History, err error) {
+func ParsePackets(fileType string, typeObject string, filename string) (history []History, err error) {
 	var currentHandle *pcap.Handle
 	indexDictionary := make(map[string]int)
 	for _, currentFilter := range []string{"dst", "src"} {
-		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, typeObject, filename)); err != nil {
+		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, fileType, typeObject, filename)); err != nil {
 			err = fmt.Errorf("error on opening file: %s", err)
 			return
 		}
