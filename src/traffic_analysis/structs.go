@@ -44,8 +44,8 @@ type (
 		Bits       byte // like: [0, 1]
 	}
 	ReadByteResponse struct { // for HR and IR
-		numberBits byte
-		data       [][]byte // like: [[0, 26], [0, 130]]; len = numberBytes
+		NumberBits byte
+		Data       [][]byte // like: [[0, 26], [0, 130]]; len = numberBytes
 	}
 	WriteSimpleRequest struct {
 		Payload []byte // like: [0, 6]
@@ -177,21 +177,21 @@ func (rByRes *ReadByteResponse) Marshal() (payload []byte) {
 }
 
 func (rByRes *ReadByteResponse) Unmarshal(payload []byte) {
-	rByRes.numberBits = payload[8]
+	rByRes.NumberBits = payload[8]
 	var workData []byte
 	for currentIndex, currentBit := range payload[9:] {
 		if currentIndex%2 == 0 {
 			workData = []byte{currentBit}
 		} else {
 			workData = append(workData, currentBit)
-			rByRes.data = append(rByRes.data, workData)
+			rByRes.Data = append(rByRes.Data, workData)
 		}
 	}
 }
 
 func (rByRes *ReadByteResponse) LogPrint() {
-	log.Printf("   Number of respoce bits: %v\n", rByRes.numberBits)
-	log.Printf("   Response bits: %v\n", rByRes.data)
+	log.Printf("   Number of respoce bits: %v\n", rByRes.NumberBits)
+	log.Printf("   Response bits: %v\n", rByRes.Data)
 }
 
 func (wSReq *WriteSimpleRequest) Marshal() (payload []byte) {

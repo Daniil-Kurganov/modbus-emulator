@@ -219,7 +219,7 @@ func TestParsePackets(t *testing.T) {
 							},
 							Data: &ta.ReadBitResponse{
 								NumberBits: 1,
-								Bits: 1,
+								Bits:       1,
 							},
 						},
 					},
@@ -250,7 +250,7 @@ func TestParsePackets(t *testing.T) {
 							},
 							Data: &ta.ReadBitResponse{
 								NumberBits: 1,
-								Bits: 1,
+								Bits:       1,
 							},
 						},
 					},
@@ -281,7 +281,215 @@ func TestParsePackets(t *testing.T) {
 							},
 							Data: &ta.ReadBitResponse{
 								NumberBits: 1,
-								Bits: 1,
+								Bits:       1,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			typeObject: "HR",
+			filename:   "read_41",
+			expectedHistory: []ta.History{
+				{
+					TransactionID: "0-8",
+					Handshake: ta.Handshake{
+						Request: &ta.TCPPacketRequest{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 8},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  3,
+							},
+							AddressStart: []byte{0, 4},
+							Data: &ta.ReadRequest{
+								NumberReadingBits: []byte{0, 1},
+							},
+						},
+						Response: &ta.TCPPacketResponse{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 8},
+								Protocol:      "modbus",
+								BodyLength:    5,
+								UnitID:        0,
+								FunctionType:  3,
+							},
+							Data: &ta.ReadByteResponse{
+								NumberBits: 2,
+								Data:       [][]byte{{0, 6}},
+							},
+						},
+					},
+				},
+				{
+					TransactionID: "0-9",
+					Handshake: ta.Handshake{
+						Request: &ta.TCPPacketRequest{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 9},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  3,
+							},
+							AddressStart: []byte{0, 4},
+							Data: &ta.ReadRequest{
+								NumberReadingBits: []byte{0, 1},
+							},
+						},
+						Response: &ta.TCPPacketResponse{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 9},
+								Protocol:      "modbus",
+								BodyLength:    5,
+								UnitID:        0,
+								FunctionType:  3,
+							},
+							Data: &ta.ReadByteResponse{
+								NumberBits: 2,
+								Data:       [][]byte{{0, 8}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			typeObject: "HR",
+			filename:   "write_41",
+			expectedHistory: []ta.History{
+				{
+					TransactionID: "0-13",
+					Handshake: ta.Handshake{
+						Request: &ta.TCPPacketRequest{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 13},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  6,
+							},
+							AddressStart: []byte{0, 4},
+							Data: &ta.WriteSimpleRequest{
+								Payload: []byte{0, 0},
+							},
+						},
+						Response: &ta.TCPPacketResponse{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 13},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  6,
+							},
+							Data: &ta.WriteSimpleResponse{
+								AddressStart: []byte{0, 4},
+								WrittenBits:  []byte{0, 0},
+							},
+						},
+					},
+				},
+				{
+					TransactionID: "0-14",
+					Handshake: ta.Handshake{
+						Request: &ta.TCPPacketRequest{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 14},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  6,
+							},
+							AddressStart: []byte{0, 4},
+							Data: &ta.WriteSimpleRequest{
+								Payload: []byte{0, 11},
+							},
+						},
+						Response: &ta.TCPPacketResponse{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 14},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  6,
+							},
+							Data: &ta.WriteSimpleResponse{
+								AddressStart: []byte{0, 4},
+								WrittenBits:  []byte{0, 11},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			typeObject: "HR",
+			filename:   "write_42",
+			expectedHistory: []ta.History{
+				{
+					TransactionID: "0-13",
+					Handshake: ta.Handshake{
+						Request: &ta.TCPPacketRequest{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 13},
+								Protocol:      "modbus",
+								BodyLength:    11,
+								UnitID:        0,
+								FunctionType:  16,
+							},
+							AddressStart: []byte{0, 4},
+							Data: &ta.WriteMultipleRequest{
+								NumberRegisters: []byte{0, 2},
+								NumberBits:      4,
+								Data:            []byte{0, 11, 0, 20},
+							},
+						},
+						Response: &ta.TCPPacketResponse{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 13},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  16,
+							},
+							Data: &ta.WriteMultipleResponse{
+								AddressStart:           []byte{0, 4},
+								NumberWrittenRegisters: []byte{0, 2},
+							},
+						},
+					},
+				},
+				{
+					TransactionID: "0-14",
+					Handshake: ta.Handshake{
+						Request: &ta.TCPPacketRequest{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 14},
+								Protocol:      "modbus",
+								BodyLength:    11,
+								UnitID:        0,
+								FunctionType:  16,
+							},
+							AddressStart: []byte{0, 4},
+							Data: &ta.WriteMultipleRequest{
+								NumberRegisters: []byte{0, 2},
+								NumberBits:      4,
+								Data:            []byte{0, 11, 0, 20},
+							},
+						},
+						Response: &ta.TCPPacketResponse{
+							Header: ta.MBAPHeader{
+								TransactionID: []byte{0, 14},
+								Protocol:      "modbus",
+								BodyLength:    6,
+								UnitID:        0,
+								FunctionType:  16,
+							},
+							Data: &ta.WriteMultipleResponse{
+								AddressStart:           []byte{0, 4},
+								NumberWrittenRegisters: []byte{0, 2},
 							},
 						},
 					},
