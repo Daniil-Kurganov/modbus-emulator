@@ -14,6 +14,7 @@ type (
 	TCPPacket interface {
 		UnmarshalHeader([]byte)
 		UnmarshalData([]byte)
+		GetHeader() MBAPHeader
 		LogPrint()
 	}
 	Handshake struct {
@@ -110,6 +111,10 @@ func (pReq *TCPPacketRequest) UnmarshalData(payload []byte) {
 	pReq.Data.Unmarshal(payload)
 }
 
+func (pReq *TCPPacketRequest) GetHeader() MBAPHeader {
+	return pReq.Header
+}
+
 func (pReq *TCPPacketRequest) LogPrint() {
 	log.Println("  Header:")
 	pReq.Header.LogPrint()
@@ -133,6 +138,10 @@ func (pRes *TCPPacketResponse) UnmarshalData(payload []byte) {
 		pRes.Data = new(WriteMultipleResponse)
 	}
 	pRes.Data.Unmarshal(payload)
+}
+
+func (pRes *TCPPacketResponse) GetHeader() MBAPHeader {
+	return pRes.Header
 }
 
 func (pRes *TCPPacketResponse) LogPrint() {

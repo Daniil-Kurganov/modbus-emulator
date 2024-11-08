@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"modbus-emulator/src/utils"
 
@@ -12,10 +13,13 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-type History struct {
-	TransactionID string
-	Handshake     Handshake
-}
+type (
+	History struct {
+		TransactionID   string
+		Handshake       Handshake
+		TransactionTime time.Time
+	}
+)
 
 func parsePacket(payload []byte, isRequest bool) (packet TCPPacket) {
 	if isRequest {
@@ -70,6 +74,7 @@ func ParsePackets(fileType string, typeObject string, filename string) (history 
 				currentHandshake.Response = parsePacket(currentPayload, false)
 				currentHistoryEvent.Handshake = currentHandshake
 				history[indexDictionary[currentHistoryEvent.TransactionID]].Handshake.Response = currentHandshake.Response
+				history[indexDictionary[currentHistoryEvent.TransactionID]].TransactionTime = currentPacket.Metadata().Timestamp
 			}
 		}
 		currentHandle.Close()

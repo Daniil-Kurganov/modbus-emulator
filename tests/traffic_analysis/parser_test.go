@@ -2,6 +2,7 @@ package trafficanalysis_test
 
 import (
 	"testing"
+	"time"
 
 	ta "modbus-emulator/src/traffic_analysis"
 
@@ -48,6 +49,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 16, 52, 11, 968278907, time.Local),
 				},
 				{
 					TransactionID: "0-2",
@@ -79,6 +81,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 16, 52, 12, 469062685, time.Local),
 				},
 			},
 		},
@@ -116,6 +119,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 16, 58, 6, 734201161, time.Local),
 				},
 				{
 					TransactionID: "0-14",
@@ -147,6 +151,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 16, 58, 7, 234978658, time.Local),
 				},
 			},
 		},
@@ -186,6 +191,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 16, 59, 9, 885417797, time.Local),
 				},
 			},
 		},
@@ -223,6 +229,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 0, 34, 707271279, time.Local),
 				},
 				{
 					TransactionID: "0-14",
@@ -254,6 +261,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 0, 35, 207995000, time.Local),
 				},
 				{
 					TransactionID: "0-15",
@@ -285,6 +293,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 0, 35, 708765041, time.Local),
 				},
 			},
 		},
@@ -322,6 +331,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 2, 9, 648349087, time.Local),
 				},
 				{
 					TransactionID: "0-9",
@@ -353,6 +363,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 2, 10, 149119047, time.Local),
 				},
 			},
 		},
@@ -390,6 +401,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 3, 29, 938303882, time.Local),
 				},
 				{
 					TransactionID: "0-14",
@@ -421,6 +433,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 3, 30, 439083007, time.Local),
 				},
 			},
 		},
@@ -460,6 +473,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 4, 34, 332275682, time.Local),
 				},
 				{
 					TransactionID: "0-14",
@@ -493,6 +507,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 4, 34, 833100830, time.Local),
 				},
 			},
 		},
@@ -530,6 +545,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 5, 37, 350750846, time.Local),
 				},
 				{
 					TransactionID: "0-12",
@@ -561,6 +577,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 5, 37, 851532034, time.Local),
 				},
 				{
 					TransactionID: "0-13",
@@ -592,6 +609,7 @@ func TestParsePackets(t *testing.T) {
 							},
 						},
 					},
+					TransactionTime: time.Date(2024, 11, 7, 17, 5, 38, 352389461, time.Local),
 				},
 			},
 		},
