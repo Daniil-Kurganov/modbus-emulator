@@ -1,31 +1,40 @@
-package main
+package server
 
 import (
 	"log"
 	"time"
 
+	ta "modbus-emulator/src/traffic_analysis"
+
 	"github.com/tbrandon/mbserver"
 )
 
-func main() {
-	log.SetFlags(0)
+var (
+	history []ta.History
+	closeChannel = make(chan bool)
+)
+
+func emulate() () {
+	for i := 0; i < 3; i++ {
+		log.Println("Work")
+		time.Sleep(time.Second)
+	}
+	closeChannel <- true
+}
+
+func Server() {
 	server := mbserver.NewServer()
 	if err := server.ListenTCP("localhost:1502"); err != nil {
 		log.Fatalf("Error on listening TCP: %s\n", err)
 	}
-	defer server.Close()
 	log.Println("Start server on 1502 port")
-	data := []uint16{8, 15, 39, 6}
-	// server.InputRegisters[3] = 130
-	// server.InputRegisters[5] = 101
-	counter := 0
-	for {
-		time.Sleep(2 * time.Second)
-		server.InputRegisters[4] = data[counter]
-		log.Printf("Set 4 IR to: %d", data[counter])
-		counter++
-		if counter >= len(data) {
-			counter = 0
+	go func() {
+		for {
+			log.Println("Wait")
+			time.Sleep(500 * time.Millisecond)
 		}
-	}
+	}()
+	go emulate()
+	a := <-closeChannel
+	log.Println(a)
 }
