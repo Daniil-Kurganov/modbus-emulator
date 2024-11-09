@@ -13,13 +13,6 @@ func main() {
 	// if history, err = ta.ParsePackets("test_files", "HR", "write_42"); err != nil {
 	// 	log.Fatalf("Error on parsing file: %v\n", err)
 	// }
-	// for _, currentHistoryEvent := range history {
-	// 	log.Printf("\n\nTransaction № %v\n", currentHistoryEvent.TransactionID)
-	// 	log.Println("\n Request:")
-	// 	currentHistoryEvent.Handshake.Request.LogPrint()
-	// 	log.Println("\n Response:")
-	// 	currentHistoryEvent.Handshake.Response.LogPrint()
-	// 	log.Printf("\n Transaction time: %v", currentHistoryEvent.TransactionTime)
-	// }
+	// history[1].Print()
 	s.Server()
 }

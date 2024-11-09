@@ -13,13 +13,11 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-type (
-	History struct {
-		TransactionID   string
-		Handshake       Handshake
-		TransactionTime time.Time
-	}
-)
+type History struct {
+	TransactionID   string
+	Handshake       Handshake
+	TransactionTime time.Time
+}
 
 func parsePacket(payload []byte, isRequest bool) (packet TCPPacket) {
 	if isRequest {
@@ -40,11 +38,11 @@ func transactionIDToKey(transcationID []byte) (key string) {
 	return
 }
 
-func ParsePackets(fileType string, typeObject string, filename string) (history []History, err error) {
+func ParsePackets(fileModeType string, typeObject string, filename string) (history []History, err error) {
 	var currentHandle *pcap.Handle
 	indexDictionary := make(map[string]int)
 	for _, currentFilter := range []string{"dst", "src"} {
-		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, fileType, typeObject, filename)); err != nil {
+		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, fileModeType, typeObject, filename)); err != nil {
 			err = fmt.Errorf("error on opening file: %s", err)
 			return
 		}
@@ -60,7 +58,7 @@ func ParsePackets(fileType string, typeObject string, filename string) (history 
 			if len(currentPayload) == 0 {
 				continue
 			}
-			log.Println(currentPayload)
+			// log.Println(currentPayload)
 			currentHistoryEvent := History{
 				TransactionID: transactionIDToKey(currentPayload[:2]),
 			}
@@ -80,4 +78,13 @@ func ParsePackets(fileType string, typeObject string, filename string) (history 
 		currentHandle.Close()
 	}
 	return
+}
+
+func (h *History) Print() {
+	log.Printf("\n\nTransaction № %v\n", h.TransactionID)
+	log.Println("\n Request:")
+	h.Handshake.Request.LogPrint()
+	log.Println("\n Response:")
+	h.Handshake.Response.LogPrint()
+	log.Printf("\n Transaction time: %v", h.TransactionTime)
 }
