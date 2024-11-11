@@ -82,6 +82,19 @@ func emulate(server *mbserver.Server) {
 			}
 			objectType, operation = "HR", "multiple writting"
 			log.Print(server.HoldingRegisters[:10])
+		case 4:
+			currentPayload := currentHandshake.Response.MarshalData().Payload
+			currentFinishAddress := currentRequestData.AddressStart[1] + currentRequestData.CheckField[1]
+			counterIterations := 0
+			for currentAddress := currentRequestData.AddressStart[1]; currentAddress < currentFinishAddress; currentAddress++ {
+				currentReadindBit := uint16(currentPayload[2*counterIterations]) + uint16(currentPayload[2*counterIterations+1])
+				if server.InputRegisters[currentAddress] != currentReadindBit {
+					server.InputRegisters[currentAddress] = currentReadindBit
+				}
+				counterIterations += 1
+			}
+			objectType, operation = "IR", "reading"
+			log.Print(server.InputRegisters[:10])
 		}
 		log.Printf("Current iteration:\n object type: %s\n operation: %s\n delay: %v\n\n", objectType, operation, timeEmulation)
 		time.Sleep(timeEmulation)
@@ -103,7 +116,7 @@ func Server() {
 			time.Sleep(500 * time.Millisecond)
 		}
 	}()
-	if history, err = ta.ParsePackets("workfiles", "HR", "read_36"); err != nil {
+	if history, err = ta.ParsePackets("workfiles", "IR", "read_36"); err != nil {
 		log.Fatalf("Error on parsing dump history: %s", err)
 	}
 	go emulate(server)
