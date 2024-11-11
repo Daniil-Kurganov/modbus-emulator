@@ -24,14 +24,20 @@ func emulate(server *mbserver.Server) {
 		} else {
 			timeEmulation = history[currentIndex+1].TransactionTime.Sub(currentHistoryEvent.TransactionTime)
 		}
+		currentHistoryEvent.Print()
 		currentHandshake := currentHistoryEvent.Handshake
-		if !currentHandshake.Check() {
-			log.Print("Current iteration check proccess was failed")
-			continue
-		}
 		currentRequestData := currentHandshake.Request.MarshalData()
 		var objectType, operation string
 		switch currentHistoryEvent.Handshake.Request.GetHeader().FunctionType {
+		case 1:
+			currentPayload := currentRequestData.Payload[0] + currentRequestData.Payload[1]
+			currentAddress := currentRequestData.AddressStart[1] + currentRequestData.CheckField[1] - 1
+			log.Print(currentAddress, currentPayload)
+			if server.Coils[currentAddress] != currentPayload {
+				server.Coils[currentAddress] = currentPayload
+			}
+			objectType, operation = "coils", "reading"
+			log.Print(server.Coils[:10])
 		case 5:
 			server.Coils[currentRequestData.AddressStart[1]] = currentRequestData.Payload[0] + currentRequestData.Payload[1]
 			objectType, operation = "coils", "simple writting"
@@ -42,6 +48,16 @@ func emulate(server *mbserver.Server) {
 			}
 			objectType, operation = "coils", "multiple writting"
 			log.Print(server.Coils[:10])
+		case 2:
+			if server.DiscreteInputs[currentRequestData.AddressStart[1]] != currentHandshake.Request.MarshalData().Payload[0] {
+				server.DiscreteInputs[currentRequestData.AddressStart[1]] = currentHandshake.Request.MarshalData().Payload[0]
+			}
+			objectType, operation = "DI", "reading"
+			log.Print(server.Coils[:10])
+		// case 3:
+		// 	if server.HoldingRegisters[currentRequestData.AddressStart[1]] != currentHandshake.Request.MarshalData().Payload[0] {
+		// 		server.Coils[currentRequestData.AddressStart[1]] = currentHandshake.Request.MarshalData().Payload[0]
+		// 	}
 		case 6:
 			server.HoldingRegisters[currentRequestData.AddressStart[1]] = uint16(currentRequestData.Payload[0]) + uint16(currentRequestData.Payload[1])
 			objectType, operation = "HR", "simple writting"
@@ -75,7 +91,7 @@ func Server() {
 			time.Sleep(500 * time.Millisecond)
 		}
 	}()
-	if history, err = ta.ParsePackets("workfiles", "HR", "write_32"); err != nil {
+	if history, err = ta.ParsePackets("workfiles", "coils", "read_01"); err != nil {
 		log.Fatalf("Error on parsing dump history: %s", err)
 	}
 	go emulate(server)

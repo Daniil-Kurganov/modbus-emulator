@@ -42,6 +42,7 @@ func ParsePackets(fileModeType string, typeObject string, filename string) (hist
 	var currentHandle *pcap.Handle
 	indexDictionary := make(map[string]int)
 	for _, currentFilter := range []string{"dst", "src"} {
+		// log.Print(currentFilter)
 		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf("%s/%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, fileModeType, typeObject, filename)); err != nil {
 			err = fmt.Errorf("error on opening file: %s", err)
 			return

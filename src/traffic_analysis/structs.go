@@ -2,7 +2,6 @@ package trafficanalysis
 
 import (
 	"log"
-	"reflect"
 	"slices"
 )
 
@@ -49,7 +48,7 @@ type (
 	}
 	ReadByteResponse struct { // for HR and IR
 		NumberBits byte
-		Data       [][]byte // like: [[0, 26], [0, 130]]; len = numberBytes
+		Data       []byte // like: [0, 26, 0, 130]; len = numberBytes
 	}
 	WriteSimpleRequest struct {
 		Payload []byte // like: [0, 6]
@@ -73,10 +72,6 @@ type (
 		Payload      []byte
 	}
 )
-
-func (h *Handshake) Check() bool {
-	return reflect.DeepEqual(h.Request.MarshalData().CheckField, h.Response.MarshalData().CheckField)
-}
 
 func (h *MBAPHeader) Unmarshal(payload []byte) {
 	if len(payload) < 8 {
@@ -177,12 +172,12 @@ func (pRes *TCPPacketResponse) LogPrint() {
 	pRes.Data.LogPrint()
 }
 
-func (rReq *ReadRequest) MarshalPayload() (payload []byte) {
-	return
+func (rReq *ReadRequest) MarshalPayload() []byte {
+	return rReq.NumberReadingBits
 }
 
 func (rReq *ReadRequest) MarshalCheck() []byte {
-	return nil
+	return rReq.MarshalPayload()
 }
 
 func (rReq *ReadRequest) Unmarshal(payload []byte) {
@@ -198,11 +193,11 @@ func (rReq *ReadRequest) LogPrint() {
 }
 
 func (rBiRes *ReadBitResponse) MarshalPayload() (payload []byte) {
-	return
+	return []byte{rBiRes.Bits}
 }
 
 func (rBiRes *ReadBitResponse) MarshalCheck() []byte {
-	return nil
+	return []byte{rBiRes.NumberBits / 2}
 }
 
 func (rBiRes *ReadBitResponse) Unmarshal(payload []byte) {
@@ -215,25 +210,17 @@ func (rBiRes *ReadBitResponse) LogPrint() {
 	log.Printf("   Response bit: %v\n", rBiRes.Bits)
 }
 
-func (rByRes *ReadByteResponse) MarshalPayload() (payload []byte) {
-	return
+func (rByRes *ReadByteResponse) MarshalPayload() []byte {
+	return rByRes.Data
 }
 
 func (rByRes *ReadByteResponse) MarshalCheck() []byte {
-	return nil
+	return []byte{rByRes.NumberBits / 2}
 }
 
 func (rByRes *ReadByteResponse) Unmarshal(payload []byte) {
 	rByRes.NumberBits = payload[8]
-	var workData []byte
-	for currentIndex, currentBit := range payload[9:] {
-		if currentIndex%2 == 0 {
-			workData = []byte{currentBit}
-		} else {
-			workData = append(workData, currentBit)
-			rByRes.Data = append(rByRes.Data, workData)
-		}
-	}
+	rByRes.Data = payload[9:]
 }
 
 func (rByRes *ReadByteResponse) LogPrint() {
