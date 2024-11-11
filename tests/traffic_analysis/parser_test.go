@@ -327,7 +327,7 @@ func TestParsePackets(t *testing.T) {
 							},
 							Data: &ta.ReadByteResponse{
 								NumberBits: 2,
-								Data:       [][]byte{{0, 6}},
+								Data:       []byte{0, 6},
 							},
 						},
 					},
@@ -359,7 +359,7 @@ func TestParsePackets(t *testing.T) {
 							},
 							Data: &ta.ReadByteResponse{
 								NumberBits: 2,
-								Data:       [][]byte{{0, 8}},
+								Data:       []byte{0, 8},
 							},
 						},
 					},
@@ -541,7 +541,7 @@ func TestParsePackets(t *testing.T) {
 							},
 							Data: &ta.ReadByteResponse{
 								NumberBits: 2,
-								Data:       [][]byte{{0, 6}},
+								Data:       []byte{0, 6},
 							},
 						},
 					},
@@ -573,7 +573,7 @@ func TestParsePackets(t *testing.T) {
 							},
 							Data: &ta.ReadByteResponse{
 								NumberBits: 2,
-								Data:       [][]byte{{0, 6}},
+								Data:       []byte{0, 6},
 							},
 						},
 					},
@@ -605,7 +605,7 @@ func TestParsePackets(t *testing.T) {
 							},
 							Data: &ta.ReadByteResponse{
 								NumberBits: 2,
-								Data:       [][]byte{{0, 6}},
+								Data:       []byte{0, 6},
 							},
 						},
 					},
