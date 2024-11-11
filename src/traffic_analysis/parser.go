@@ -50,7 +50,6 @@ func ParsePackets(fileModeType string, typeObject string, filename string) (hist
 			err = fmt.Errorf("error on setting handle filter: %s", err)
 			return
 		}
-		log.Print(currentFilter)
 		currentPacketsSource := gopacket.NewPacketSource(currentHandle, currentHandle.LinkType())
 		for currentPacket := range currentPacketsSource.Packets() {
 			currentTCPLayer := currentPacket.Layer(layers.LayerTypeTCP)
