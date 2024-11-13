@@ -1,4 +1,4 @@
-package server
+package src
 
 import (
 	"fmt"
@@ -12,11 +12,12 @@ import (
 )
 
 var (
+	Server       *mbserver.Server
 	history      []ta.History
 	closeChannel = make(chan bool)
 )
 
-func emulate(server *mbserver.Server) {
+func emulate() {
 	for currentIndex, currentHistoryEvent := range history {
 		var timeEmulation time.Duration
 		if currentIndex == len(history)-1 {
@@ -33,68 +34,68 @@ func emulate(server *mbserver.Server) {
 			currentPayload := currentHandshake.Response.MarshalData().Payload[0]
 			currentAddress := currentRequestData.AddressStart[1] + currentRequestData.CheckField[1] - 1
 			log.Print(currentAddress, currentPayload)
-			if server.Coils[currentAddress] != currentPayload {
-				server.Coils[currentAddress] = currentPayload
+			if Server.Coils[currentAddress] != currentPayload {
+				Server.Coils[currentAddress] = currentPayload
 			}
 			objectType, operation = "coils", "reading"
-			log.Print(server.Coils[:10])
+			log.Print(Server.Coils[:10])
 		case 5:
-			server.Coils[currentRequestData.AddressStart[1]] = currentRequestData.Payload[0] + currentRequestData.Payload[1]
+			Server.Coils[currentRequestData.AddressStart[1]] = currentRequestData.Payload[0] + currentRequestData.Payload[1]
 			objectType, operation = "coils", "simple writting"
-			log.Print(server.Coils[:10])
+			log.Print(Server.Coils[:10])
 		case 15:
 			for currentIndex := int(currentRequestData.AddressStart[1]); currentIndex < int(currentRequestData.CheckField[1])+int(currentRequestData.AddressStart[1]); currentIndex++ {
-				server.Coils[currentIndex] = currentRequestData.Payload[currentIndex-int(currentRequestData.AddressStart[1])]
+				Server.Coils[currentIndex] = currentRequestData.Payload[currentIndex-int(currentRequestData.AddressStart[1])]
 			}
 			objectType, operation = "coils", "multiple writting"
-			log.Print(server.Coils[:10])
+			log.Print(Server.Coils[:10])
 		case 2:
 			currentPayload := currentHandshake.Response.MarshalData().Payload[0]
 			currentAddress := currentRequestData.AddressStart[1] + currentRequestData.CheckField[1] - 1
 			log.Print(currentAddress, currentPayload)
-			if server.DiscreteInputs[currentAddress] != currentPayload {
-				server.DiscreteInputs[currentAddress] = currentPayload
+			if Server.DiscreteInputs[currentAddress] != currentPayload {
+				Server.DiscreteInputs[currentAddress] = currentPayload
 			}
 			objectType, operation = "DI", "reading"
-			log.Print(server.DiscreteInputs[:10])
+			log.Print(Server.DiscreteInputs[:10])
 		case 3:
 			currentPayload := currentHandshake.Response.MarshalData().Payload
 			currentFinishAddress := currentRequestData.AddressStart[1] + currentRequestData.CheckField[1]
 			counterIterations := 0
 			for currentAddress := currentRequestData.AddressStart[1]; currentAddress < currentFinishAddress; currentAddress++ {
 				currentReadindBit := uint16(currentPayload[2*counterIterations]) + uint16(currentPayload[2*counterIterations+1])
-				if server.HoldingRegisters[currentAddress] != currentReadindBit {
-					server.HoldingRegisters[currentAddress] = currentReadindBit
+				if Server.HoldingRegisters[currentAddress] != currentReadindBit {
+					Server.HoldingRegisters[currentAddress] = currentReadindBit
 				}
 				counterIterations += 1
 			}
 			objectType, operation = "HR", "reading"
-			log.Print(server.HoldingRegisters[:10])
+			log.Print(Server.HoldingRegisters[:10])
 		case 6:
-			server.HoldingRegisters[currentRequestData.AddressStart[1]] = uint16(currentRequestData.Payload[0]) + uint16(currentRequestData.Payload[1])
+			Server.HoldingRegisters[currentRequestData.AddressStart[1]] = uint16(currentRequestData.Payload[0]) + uint16(currentRequestData.Payload[1])
 			objectType, operation = "HR", "simple writting"
-			log.Print(server.HoldingRegisters[:10])
+			log.Print(Server.HoldingRegisters[:10])
 		case 16:
 			counterIterations := 0
 			for currentIndex := int(currentRequestData.AddressStart[1]); currentIndex < int(currentRequestData.CheckField[1])+int(currentRequestData.AddressStart[1]); currentIndex++ {
-				server.HoldingRegisters[currentIndex] = uint16(currentRequestData.Payload[2*counterIterations]) + uint16(currentRequestData.Payload[2*counterIterations+1])
+				Server.HoldingRegisters[currentIndex] = uint16(currentRequestData.Payload[2*counterIterations]) + uint16(currentRequestData.Payload[2*counterIterations+1])
 				counterIterations += 1
 			}
 			objectType, operation = "HR", "multiple writting"
-			log.Print(server.HoldingRegisters[:10])
+			log.Print(Server.HoldingRegisters[:10])
 		case 4:
 			currentPayload := currentHandshake.Response.MarshalData().Payload
 			currentFinishAddress := currentRequestData.AddressStart[1] + currentRequestData.CheckField[1]
 			counterIterations := 0
 			for currentAddress := currentRequestData.AddressStart[1]; currentAddress < currentFinishAddress; currentAddress++ {
 				currentReadindBit := uint16(currentPayload[2*counterIterations]) + uint16(currentPayload[2*counterIterations+1])
-				if server.InputRegisters[currentAddress] != currentReadindBit {
-					server.InputRegisters[currentAddress] = currentReadindBit
+				if Server.InputRegisters[currentAddress] != currentReadindBit {
+					Server.InputRegisters[currentAddress] = currentReadindBit
 				}
 				counterIterations += 1
 			}
 			objectType, operation = "IR", "reading"
-			log.Print(server.InputRegisters[:10])
+			log.Print(Server.InputRegisters[:10])
 		}
 		log.Printf("Current iteration:\n object type: %s\n operation: %s\n delay: %v\n\n", objectType, operation, timeEmulation)
 		time.Sleep(timeEmulation)
@@ -103,22 +104,22 @@ func emulate(server *mbserver.Server) {
 	closeChannel <- true
 }
 
-func Server() {
+func ServerInit() {
 	var err error
-	server := mbserver.NewServer()
-	if err = server.ListenTCP(fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort)); err != nil {
+	Server = mbserver.NewServer()
+	if err = Server.ListenTCP(fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort)); err != nil {
 		log.Fatalf("Error on listening TCP: %s\n", err)
 	}
-	defer server.Close()
+	defer Server.Close()
 	log.Printf("Start server on %s port", utils.ServerTCPPort)
 	go func() {
 		for {
 			time.Sleep(500 * time.Millisecond)
 		}
 	}()
-	if history, err = ta.ParsePackets("workfiles", "IR", "read_36"); err != nil {
+	if history, err = ta.ParsePackets(); err != nil {
 		log.Fatalf("Error on parsing dump history: %s", err)
 	}
-	go emulate(server)
+	go emulate()
 	<-closeChannel
 }
