@@ -38,12 +38,11 @@ func transactionIDToKey(transcationID []byte) (key string) {
 	return
 }
 
-func ParsePackets() (history []History, err error) { // fileModeType string, typeObject string, filename string
+func ParsePackets() (history []History, err error) {
 	var currentHandle *pcap.Handle
 	indexDictionary := make(map[string]int)
 	for _, currentFilter := range []string{"dst", "src"} {
-		// log.Print(currentFilter)
-		if currentHandle, err = pcap.OpenOffline(`/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/src/traffic_analysis/pcapng_files/dump.pcapng`); err != nil { // fmt.Sprintf("%s/%s/%s/%s/%s.pcapng", utils.ModulePath, utils.Foldername, fileModeType, typeObject, filename)
+		if currentHandle, err = pcap.OpenOffline(`/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/dump.pcapng`); err != nil {
 			err = fmt.Errorf("error on opening file: %s", err)
 			return
 		}
@@ -58,7 +57,6 @@ func ParsePackets() (history []History, err error) { // fileModeType string, typ
 			if len(currentPayload) == 0 {
 				continue
 			}
-			// log.Println(currentPayload)
 			currentHistoryEvent := History{
 				TransactionID: transactionIDToKey(currentPayload[:2]),
 			}

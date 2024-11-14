@@ -1,8 +1,7 @@
 package main
 
 import (
-	"log"
-	// ta "modbus-emulator/src/traffic_analysis"
+	"log" 
 	"modbus-emulator/src"
 )
 
