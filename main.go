@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log" 
-	"modbus-emulator/src"
+	"log"
+	"modbus-emulator/src/server/tcp"
 )
 
 func main() {
 	log.SetFlags(0)
-	src.ServerInit()
+	tcp.ServerInit()
 }

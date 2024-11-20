@@ -3,7 +3,7 @@ package tests__test
 import (
 	"io/ioutil"
 	"log"
-	"modbus-emulator/src"
+	"modbus-emulator/src/server/tcp"
 	"testing"
 	"time"
 
@@ -101,13 +101,13 @@ func TestServer(t *testing.T) {
 			},
 		},
 	}
-	src.ServerInit()
+	tcp.ServerInit()
 	for _, currentTestCase := range testCases {
 		currentRecievedStates := map[string][]byte{
-			"coils": src.Server.Coils[currentTestCase.browsedRegisters["coils"].start:currentTestCase.browsedRegisters["coils"].end],
-			"DI":    src.Server.Coils[currentTestCase.browsedRegisters["DI"].start:currentTestCase.browsedRegisters["DI"].end],
-			"HR":    src.Server.Coils[currentTestCase.browsedRegisters["HR"].start:currentTestCase.browsedRegisters["HR"].end],
-			"IR":    src.Server.Coils[currentTestCase.browsedRegisters["IR"].start:currentTestCase.browsedRegisters["IR"].end],
+			"coils": tcp.Server.Coils[currentTestCase.browsedRegisters["coils"].start:currentTestCase.browsedRegisters["coils"].end],
+			"DI":    tcp.Server.Coils[currentTestCase.browsedRegisters["DI"].start:currentTestCase.browsedRegisters["DI"].end],
+			"HR":    tcp.Server.Coils[currentTestCase.browsedRegisters["HR"].start:currentTestCase.browsedRegisters["HR"].end],
+			"IR":    tcp.Server.Coils[currentTestCase.browsedRegisters["IR"].start:currentTestCase.browsedRegisters["IR"].end],
 		}
 		assert.Equalf(t, currentTestCase.expectedStates, currentRecievedStates,
 			"Error: recieved and expected states isn't equal:\n expected: %v;\n recieved: %v",

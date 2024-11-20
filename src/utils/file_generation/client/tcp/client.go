@@ -4,18 +4,18 @@ import (
 	"log"
 	"time"
 
-	"github.com/goburrow/modbus"
+	mc "github.com/Daniil-Kurganov/modbus-client"
 )
 
 func main() {
 	var err error
 	log.SetFlags(0)
-	handler := modbus.NewTCPClientHandler("localhost:1502")
+	handler := mc.NewTCPClientHandler("localhost:1502")
 	if err = handler.Connect(); err != nil {
 		log.Fatalf("Error on handler connecting: %s\n", err)
 	}
 	defer handler.Close()
-	client := modbus.NewClient(handler)
+	client := mc.NewClient(handler)
 	var registers []byte
 	if registers, err = client.ReadCoils(0, 1); err != nil {
 		log.Fatalf("Error: %s\n", err)
