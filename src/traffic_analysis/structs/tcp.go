@@ -1,4 +1,4 @@
-package trafficanalysis
+package structs
 
 import (
 	"log"
@@ -18,10 +18,6 @@ type (
 		UnmarshalData([]byte)
 		GetHeader() MBAPHeader
 		LogPrint()
-	}
-	Handshake struct {
-		Request  TCPPacket
-		Response TCPPacket
 	}
 	MBAPHeader struct {
 		TransactionID []byte // [hight leve, low level]

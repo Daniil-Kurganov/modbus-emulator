@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	mc "github.com/Daniil-Kurganov/modbus-client"
+	mc "github.com/goburrow/modbus"
 )
 
 func main() {

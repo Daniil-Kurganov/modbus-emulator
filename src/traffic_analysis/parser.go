@@ -13,12 +13,6 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-type History struct {
-	TransactionID   string
-	Handshake       Handshake
-	TransactionTime time.Time
-}
-
 func parsePacket(payload []byte, isRequest bool) (packet TCPPacket) {
 	if isRequest {
 		packet = new(TCPPacketRequest)
