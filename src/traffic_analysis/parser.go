@@ -19,7 +19,7 @@ func TCPTransactionIDParsing(transcationID []byte) (key string) {
 	return
 }
 
-func Parser() (history []structs.HistoryEvent, err error) {
+func ParseDump() (history []structs.HistoryEvent, err error) {
 	var currentHandle *pcap.Handle
 	indexDictionary := make(map[string]int)
 	for _, currentFilter := range []string{"dst", "src"} {

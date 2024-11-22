@@ -56,6 +56,8 @@ func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
 			hdhk.Response = new(RTUOverTCPRequest123456Response56)
 		} else if slices.Contains([]byte{15, 16}, functionID) {
 			hdhk.Response = new(RTUOverTCPMultipleWriteResponse)
+		} else {
+			hdhk.Response = new(RTUOverTCPErrorResponse)
 		}
 	} else {
 		hdhk.Response = new(TCPResponse)

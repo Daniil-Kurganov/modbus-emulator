@@ -9,8 +9,8 @@ type (
 	HeaderErrorCheck struct {
 		SlaveAddress    uint16
 		FunctionID      uint16
-		ErrorCheckHigth uint16
 		ErrorCheckLow   uint16
+		ErrorCheckHight uint16
 	}
 	RTUOverTCPErrorResponse struct {
 		HeaderError HeaderErrorCheck
@@ -46,14 +46,14 @@ func (h *HeaderErrorCheck) Unmarshal(payload []byte) {
 	h.SlaveAddress = uint16(payload[0])
 	h.FunctionID = uint16(payload[1])
 	h.ErrorCheckLow = uint16(payload[len(payload)-2])
-	h.ErrorCheckHigth = uint16(payload[len(payload)-1])
+	h.ErrorCheckHight = uint16(payload[len(payload)-1])
 }
 
 func (h *HeaderErrorCheck) LogPrint() {
 	log.Printf("   Slave address: %d", h.SlaveAddress)
 	log.Printf("   Function ID: %d", h.FunctionID)
 	log.Printf("   Error check low: %d", h.ErrorCheckLow)
-	log.Printf("   Error check hight: %d", h.ErrorCheckHigth)
+	log.Printf("   Error check hight: %d", h.ErrorCheckHight)
 }
 
 func (eRes *RTUOverTCPErrorResponse) Unmarshal(payload []byte) {
