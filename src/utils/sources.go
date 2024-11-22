@@ -3,9 +3,10 @@ package utils
 import "time"
 
 var (
-	ServerTCPHost = "localhost"
-	ServerTCPPort = "1502"
-	ModulePath    = "/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator"
-	Foldername    = "src/traffic_analysis/pcapng_files"
-	FinishTime    = 3 * time.Second
+	ServerTCPHost     = "localhost"
+	ServerTCPPort     = "1502"
+	FinishTime        = 3 * time.Second
+	Mode              = "rtu_over_tcp"
+	ModulePath        = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator`
+	DumpDirectoryPath = `src/pcapng_files/main_files`
 )
