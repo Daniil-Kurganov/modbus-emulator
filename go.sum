@@ -14,8 +14,6 @@ github.com/simonvetter/modbus v1.6.3 h1:kDzwVfIPczsM4Iz09il/Dij/bqlT4XiJVa0GYaOV
 github.com/simonvetter/modbus v1.6.3/go.mod h1:hh90ZaTaPLcK2REj6/fpTbiV0J6S7GWmd8q+GVRObPw=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/tbrandon/mbserver v0.0.0-20231208015628-36eb59221ac2 h1:2H0HcvMX8JEa4HD32KJNBMwOBmCLs9xYOWVE8ig06Ss=
-github.com/tbrandon/mbserver v0.0.0-20231208015628-36eb59221ac2/go.mod h1:qUzPVlSj2UgxJkVbH0ZwuuiR46U8RBMDT5KLY78Ifpw=
 github.com/vishvananda/netlink v1.1.0/go.mod h1:cTgwzPIzzgDAYoQrMm0EdrjRUBkTqKYppBueQtXaqoE=
 github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df/go.mod h1:JP3t17pCcGlemwknint6hfoeCVQrEMVwxRLRjXpq+BU=
 github.com/vishvananda/netns v0.0.0-20210104183010-2eb08e3e575f/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=

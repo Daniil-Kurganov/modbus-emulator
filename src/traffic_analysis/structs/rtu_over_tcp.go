@@ -61,6 +61,10 @@ func (eRes *RTUOverTCPErrorResponse) Unmarshal(payload []byte) {
 	eRes.ErrorCode = uint16(payload[2])
 }
 
+func (eRes *RTUOverTCPErrorResponse) GetFunctionID() uint16 {
+	return eRes.HeaderError.FunctionID
+}
+
 func (eRes *RTUOverTCPErrorResponse) LogPrint() {
 	eRes.HeaderError.LogPrint()
 	log.Printf("   Error code: %d", eRes.ErrorCode)
@@ -72,6 +76,10 @@ func (req *RTUOverTCPRequest123456Response56) Unmarshal(payload []byte) {
 	req.StartingAddressLow = uint16(payload[3])
 	req.ReadWriteDataHight = uint16(payload[4])
 	req.ReadWriteDataLow = uint16(payload[5])
+}
+
+func (req *RTUOverTCPRequest123456Response56) GetFunctionID() uint16 {
+	return req.HeaderError.FunctionID
 }
 
 func (req *RTUOverTCPRequest123456Response56) LogPrint() {
@@ -95,6 +103,10 @@ func (rRes *RTUOverTCPReadResponse) Unmarshal(payload []byte) {
 	}
 }
 
+func (rRes *RTUOverTCPReadResponse) GetFunctionID() uint16 {
+	return rRes.HeaderError.FunctionID
+}
+
 func (rRes *RTUOverTCPReadResponse) LogPrint() {
 	rRes.HeaderError.LogPrint()
 	log.Printf("   Byte count: %d", rRes.ByteCount)
@@ -108,6 +120,10 @@ func (mWRes *RTUOverTCPMultipleWriteResponse) Unmarshal(payload []byte) {
 	mWRes.RegisterAddressLow = uint16(payload[3])
 	mWRes.QuantityOfRegistersHight = uint16(payload[4])
 	mWRes.QuantityOfRegistersLow = uint16(payload[5])
+}
+
+func (mWRes *RTUOverTCPMultipleWriteResponse) GetFunctionID() uint16 {
+	return mWRes.HeaderError.FunctionID
 }
 
 func (mWRes *RTUOverTCPMultipleWriteResponse) LogPrint() {
@@ -124,6 +140,10 @@ func (mWReq *RTUOverTCPMultipleWriteRequest) Unmarshal(payload []byte) {
 	for currentBitIndex := 7; currentBitIndex < 7+int(mWReq.ByteCount); currentBitIndex++ {
 		mWReq.Data = append(mWReq.Data, uint16(payload[currentBitIndex]))
 	}
+}
+
+func (mWReq *RTUOverTCPMultipleWriteRequest) GetFunctionID() uint16 {
+	return mWReq.Body.HeaderError.FunctionID
 }
 
 func (mWReq *RTUOverTCPMultipleWriteRequest) LogPrint() {

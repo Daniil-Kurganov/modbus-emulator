@@ -99,6 +99,18 @@ func (pReq *TCPRequest) Unmarshal(payload []byte) {
 	pReq.UnmarshalData(payload)
 }
 
+func (pReq *TCPRequest) GetFunctionID() uint16 {
+	return uint16(pReq.Header.FunctionType)
+}
+
+func (pReq *TCPRequest) LogPrint() {
+	log.Println("  Header:")
+	pReq.Header.LogPrint()
+	log.Printf("  Address Start: %v", pReq.AddressStart)
+	log.Println("  Data:")
+	pReq.Data.LogPrint()
+}
+
 func (pReq *TCPRequest) UnmarshalHeader(payload []byte) {
 	if len(payload) < 10 {
 		log.Println("Error: insufficient payload length")
@@ -130,17 +142,20 @@ func (pReq *TCPRequest) GetHeader() MBAPHeader {
 	return pReq.Header
 }
 
-func (pReq *TCPRequest) LogPrint() {
-	log.Println("  Header:")
-	pReq.Header.LogPrint()
-	log.Printf("  Address Start: %v", pReq.AddressStart)
-	log.Println("  Data:")
-	pReq.Data.LogPrint()
-}
-
 func (pRes *TCPResponse) Unmarshal(payload []byte) {
 	pRes.UnmarshalHeader(payload)
 	pRes.UnmarshalData(payload)
+}
+
+func (pRes *TCPResponse) GetFunctionID() uint16 {
+	return uint16(pRes.Header.FunctionType)
+}
+
+func (pRes *TCPResponse) LogPrint() {
+	log.Println("  Header:")
+	pRes.Header.LogPrint()
+	log.Println("  Data:")
+	pRes.Data.LogPrint()
 }
 
 func (pRes *TCPResponse) UnmarshalHeader(payload []byte) {
@@ -169,13 +184,6 @@ func (pRes *TCPResponse) UnmarshalData(payload []byte) {
 
 func (pRes *TCPResponse) GetHeader() MBAPHeader {
 	return pRes.Header
-}
-
-func (pRes *TCPResponse) LogPrint() {
-	log.Println("  Header:")
-	pRes.Header.LogPrint()
-	log.Println("  Data:")
-	pRes.Data.LogPrint()
 }
 
 func (rReq *TCPReadRequest) MarshalPayload() []byte {

@@ -14,7 +14,7 @@ func main() {
 	if history, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error on parsing dump: %s", err)
 	}
-	log.Printf("Mode: %s", utils.Mode)
+	log.Printf("Mode: %s", utils.WorkMode)
 	for _, currentHistoryEvent := range history {
 		currentHistoryEvent.LogPrint()
 	}

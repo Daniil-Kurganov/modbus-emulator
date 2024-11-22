@@ -10,6 +10,7 @@ import (
 type (
 	Packet interface {
 		Unmarshal([]byte)
+		GetFunctionID() uint16
 		LogPrint()
 	}
 
@@ -21,6 +22,9 @@ type (
 	Handshake struct {
 		Request  Packet
 		Response Packet
+	}
+	EmulationData struct {
+		
 	}
 )
 
@@ -34,7 +38,7 @@ func (hE *HistoryEvent) LogPrint() {
 }
 
 func (hdhk *Handshake) RequestUnmarshal(payload []byte) {
-	if utils.Mode == "rtu_over_tcp" {
+	if utils.WorkMode == "rtu_over_tcp" {
 		functionID := payload[1]
 		if slices.Contains([]byte{1, 2, 3, 4, 5, 6}, functionID) {
 			hdhk.Request = new(RTUOverTCPRequest123456Response56)
@@ -48,7 +52,7 @@ func (hdhk *Handshake) RequestUnmarshal(payload []byte) {
 }
 
 func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
-	if utils.Mode == "rtu_over_tcp" {
+	if utils.WorkMode == "rtu_over_tcp" {
 		functionID := payload[1]
 		if slices.Contains([]byte{1, 2, 3, 4}, functionID) {
 			hdhk.Response = new(RTUOverTCPReadResponse)
@@ -63,4 +67,8 @@ func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
 		hdhk.Response = new(TCPResponse)
 	}
 	hdhk.Response.Unmarshal(payload)
+}
+
+func (hdhk *Handshake) TransactionErrorCheck() bool {
+	return slices.Contains([]uint16{1, 2, 3, 4, 5, 6, 15, 16}, hdhk.Response.GetFunctionID())
 }

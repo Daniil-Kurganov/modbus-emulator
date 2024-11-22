@@ -8,7 +8,6 @@ require (
 	github.com/google/gopacket v1.1.20-0.20220810144506-32ee38206866
 	github.com/simonvetter/modbus v1.6.3
 	github.com/stretchr/testify v1.9.0
-	github.com/tbrandon/mbserver v0.0.0-20231208015628-36eb59221ac2
 )
 
 require (

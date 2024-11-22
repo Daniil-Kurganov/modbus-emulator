@@ -368,7 +368,7 @@ func TestParsePackets(t *testing.T) {
 	var currentRecievedHistory []structs.HistoryEvent
 	var err error
 	for _, currentTestCase := range testTable {
-		utils.Mode = currentTestCase.mode
+		utils.WorkMode = currentTestCase.mode
 		if currentRecievedHistory, err = ta.ParseDump(); err != nil {
 			assert.EqualErrorf(t, err, "nil",
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
