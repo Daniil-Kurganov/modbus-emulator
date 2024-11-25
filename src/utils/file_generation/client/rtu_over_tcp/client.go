@@ -22,37 +22,45 @@ func main() {
 		log.Fatalf("Error on openning client connection: %s", err)
 	}
 	defer client.Close()
-	var coil0 bool
-	if coil0, err = client.ReadCoil(0); err != nil {
-		log.Fatalf("Error on getting coils[0]: %s", err)
+	if err = client.WriteCoils(4, []bool{true, false, true, false, true, false, true, false, true, false, true}); err != nil {
+		log.Fatalf("Error on writting coils[4:15] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1}: %s", err)
 	}
-	log.Printf("Read coils (0, 1): %v\n", coil0)
-	time.Sleep(500 * time.Millisecond)
-	var DI1617 []bool
-	if DI1617, err = client.ReadDiscreteInputs(16, 2); err != nil {
-		log.Fatalf("Error: %s\n", err)
+	log.Print("Write coils[4:15] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1}: success")
+	if err = client.WriteRegisters(4, []uint16{1, 23, 5, 3564, 23, 4, 5, 3, 2, 6, 76}); err != nil {
+		log.Fatalf("Error on writting HR[4:15] = {1, 23, 5, 3564, 23, 4, 5, 3, 2, 6, 76}: %s", err)
 	}
-	log.Printf("Read DI (16, 2): %v\n", DI1617)
-	time.Sleep(901 * time.Millisecond)
-	if err = client.WriteRegister(8, 39); err != nil {
-		log.Fatalf("Error: %s\n", err)
-	}
-	log.Print("Write HR[8] = 39: success")
-	time.Sleep(1 * time.Second)
-	var coils59 []bool
-	if coils59, err = client.ReadCoils(5, 5); err != nil {
-		log.Fatalf("Error: %s\n", err)
-	}
-	log.Printf("Read coils[5:10]: %v\n", coils59)
-	time.Sleep(100 * time.Millisecond)
-	if err = client.WriteCoils(4, []bool{true, true, false, true}); err != nil {
-		log.Fatalf("Error: %s\n", err)
-	}
-	log.Print("Write coils[4:8] = {1, 1, 0, 1}: success")
-	time.Sleep(1020 * time.Millisecond)
-	var HR37 []uint16
-	if HR37, err = client.ReadRegisters(3, 4, modbus.HOLDING_REGISTER); err != nil {
-		log.Fatalf("Error: %s\n", err)
-	}
-	log.Printf("Read HR[3:8]: %v\n", HR37)
+	log.Print("Write HR[4:15] = {1, 23, 5, 3564, 23, 4, 5, 3, 2, 6, 76}: success")
+	// var coil0 bool
+	// if coil0, err = client.ReadCoil(0); err != nil {
+	// 	log.Fatalf("Error on getting coils[0]: %s", err)
+	// }
+	// log.Printf("Read coils (0, 1): %v\n", coil0)
+	// time.Sleep(500 * time.Millisecond)
+	// var DI1617 []bool
+	// if DI1617, err = client.ReadDiscreteInputs(16, 2); err != nil {
+	// 	log.Fatalf("Error: %s\n", err)
+	// }
+	// log.Printf("Read DI (16, 2): %v\n", DI1617)
+	// time.Sleep(901 * time.Millisecond)
+	// if err = client.WriteRegister(8, 39); err != nil {
+	// 	log.Fatalf("Error: %s\n", err)
+	// }
+	// log.Print("Write HR[8] = 39: success")
+	// time.Sleep(1 * time.Second)
+	// var coils59 []bool
+	// if coils59, err = client.ReadCoils(5, 5); err != nil {
+	// 	log.Fatalf("Error: %s\n", err)
+	// }
+	// log.Printf("Read coils[5:10]: %v\n", coils59)
+	// time.Sleep(100 * time.Millisecond)
+	// if err = client.WriteCoils(4, []bool{true, true, false, true}); err != nil {
+	// 	log.Fatalf("Error: %s\n", err)
+	// }
+	// log.Print("Write coils[4:8] = {1, 1, 0, 1}: success")
+	// time.Sleep(1020 * time.Millisecond)
+	// var HR37 []uint16
+	// if HR37, err = client.ReadRegisters(3, 4, modbus.HOLDING_REGISTER); err != nil {
+	// 	log.Fatalf("Error: %s\n", err)
+	// }
+	// log.Printf("Read HR[3:8]: %v\n", HR37)
 }

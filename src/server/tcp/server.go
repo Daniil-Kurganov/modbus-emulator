@@ -24,16 +24,16 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 		// currentRequestData := currentHistoryEvent.Handshake.Request.
 		var objectType, operation string
 		if !currentHistoryEvent.Handshake.TransactionErrorCheck() {
-			log.Printf("Current transaction isn't valid", currentHistoryEvent.TransactionID)
+			log.Print("Current transaction isn't valid")
 			continue
 		}
-		switch currentHistoryEvent.Handshake.Response.GetFunctionID() {
-		case 1:
-			objectType, operation = "coils", "reading"
+		// switch currentHistoryEvent.Handshake.Response.GetFunctionID() {
+		// case 1:
+		// 	objectType, operation = "coils", "reading"
 
-		default:
-			// обработка ошибок
-		}
+		// default:
+		// 	// обработка ошибок
+		// }
 		// case 1:
 		// 	currentPayload := currentHandshake.Response.MarshalData().Payload[0]
 		// 	currentAddress := currentRequestData.AddressStart[1] + currentRequestData.CheckField[1] - 1
@@ -114,7 +114,7 @@ func ServerInit() {
 	servePath := fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort)
 	if utils.WorkMode == "rtu_over_tcp" {
 		if err = server.ListenRTUOverTCP(servePath); err != nil {
-			log.Fatalf("Error on listening RTU over TCP: %s")
+			log.Fatalf("Error on listening RTU over TCP: %s", err)
 		}
 	} else {
 		if err = server.ListenTCP(servePath); err != nil {

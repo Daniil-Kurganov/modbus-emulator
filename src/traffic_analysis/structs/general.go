@@ -10,8 +10,17 @@ import (
 type (
 	Packet interface {
 		Unmarshal([]byte)
-		GetFunctionID() uint16
+		MarshalPayload() []uint16
 		LogPrint()
+	}
+	Request interface {
+		Packet
+		MarshalAddress() []uint16
+		MarshalQuantity() []uint16
+	}
+	Response interface {
+		Packet
+		GetFunctionID() uint16
 	}
 
 	HistoryEvent struct {
@@ -20,11 +29,15 @@ type (
 		TransactionTime time.Time
 	}
 	Handshake struct {
-		Request  Packet
-		Response Packet
+		Request  Request
+		Response Response
 	}
 	EmulationData struct {
-		
+		FunctionID      uint16
+		IsReadOperation bool
+		Address         []uint16
+		Quantity        []uint16
+		Payload         []uint16
 	}
 )
 
@@ -67,6 +80,21 @@ func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
 		hdhk.Response = new(TCPResponse)
 	}
 	hdhk.Response.Unmarshal(payload)
+}
+
+func (hdhk *Handshake) Marshal() (data EmulationData) {
+	data.FunctionID = hdhk.Response.GetFunctionID()
+	if slices.Contains([]uint16{5, 6, 15, 16}, data.FunctionID) {
+		data.IsReadOperation = true
+	}
+	data.Address = hdhk.Request.MarshalAddress()
+	data.Quantity = hdhk.Request.MarshalQuantity()
+	if data.IsReadOperation {
+		data.Payload = hdhk.Response.MarshalPayload()
+	} else {
+		data.Payload = hdhk.Request.MarshalPayload()
+	}
+	return
 }
 
 func (hdhk *Handshake) TransactionErrorCheck() bool {
