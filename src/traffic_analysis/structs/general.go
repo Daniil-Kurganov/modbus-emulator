@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"fmt"
 	"log"
 	"modbus-emulator/src/utils"
 	"slices"
@@ -10,7 +11,7 @@ import (
 type (
 	Packet interface {
 		Unmarshal([]byte)
-		MarshalPayload() []uint16
+		MarshalPayload() ([]uint16, error)
 		LogPrint()
 	}
 	Request interface {
@@ -35,8 +36,8 @@ type (
 	EmulationData struct {
 		FunctionID      uint16
 		IsReadOperation bool
-		Address         []uint16
-		Quantity        []uint16
+		Address         uint16
+		Quantity        uint16
 		Payload         []uint16
 	}
 )
@@ -82,17 +83,31 @@ func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
 	hdhk.Response.Unmarshal(payload)
 }
 
-func (hdhk *Handshake) Marshal() (data EmulationData) {
+func (hdhk *Handshake) Marshal() (data EmulationData, err error) {
 	data.FunctionID = hdhk.Response.GetFunctionID()
-	if slices.Contains([]uint16{5, 6, 15, 16}, data.FunctionID) {
-		data.IsReadOperation = true
-	}
-	data.Address = hdhk.Request.MarshalAddress()
-	data.Quantity = hdhk.Request.MarshalQuantity()
+	data.IsReadOperation = !slices.Contains([]uint16{5, 6, 15, 16}, data.FunctionID)
+	address := hdhk.Request.MarshalAddress()
+	data.Address = address[0] + address[1]
+	quantity := hdhk.Request.MarshalQuantity()
+	data.Quantity = quantity[0] + quantity[1]
 	if data.IsReadOperation {
-		data.Payload = hdhk.Response.MarshalPayload()
+		if data.Payload, err = hdhk.Response.MarshalPayload(); err != nil {
+			err = fmt.Errorf("error marshaling current handshake: %s", err)
+			return
+		}
+		if len(data.Payload) != int(data.Quantity) {
+			for {
+				if len(data.Payload) == int(data.Quantity) {
+					break
+				}
+				data.Payload = append(data.Payload, 0)
+			}
+		}
 	} else {
-		data.Payload = hdhk.Request.MarshalPayload()
+		if data.Payload, err = hdhk.Request.MarshalPayload(); err != nil {
+			err = fmt.Errorf("error marshaling current handshake: %s", err)
+			return
+		}
 	}
 	return
 }

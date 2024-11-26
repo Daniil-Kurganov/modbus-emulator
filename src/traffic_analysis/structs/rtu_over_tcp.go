@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"fmt"
 	"log"
 	"slices"
 	"strconv"
@@ -63,8 +64,8 @@ func (eRes *RTUOverTCPErrorResponse) Unmarshal(payload []byte) {
 	eRes.ErrorCode = uint16(payload[2])
 }
 
-func (eRes *RTUOverTCPErrorResponse) MarshalPayload() []uint16 {
-	return []uint16{}
+func (eRes *RTUOverTCPErrorResponse) MarshalPayload() ([]uint16, error) {
+	return []uint16{}, nil
 }
 
 func (eRes *RTUOverTCPErrorResponse) LogPrint() {
@@ -84,11 +85,14 @@ func (req *RTUOverTCPRequest123456Response56) Unmarshal(payload []byte) {
 	req.ReadWriteDataLow = uint16(payload[5])
 }
 
-func (req *RTUOverTCPRequest123456Response56) MarshalPayload() []uint16 {
+func (req *RTUOverTCPRequest123456Response56) MarshalPayload() (payload []uint16, err error) {
 	if slices.Contains([]uint16{5, 6}, req.HeaderError.FunctionID) {
-		return []uint16{req.ReadWriteDataHight, req.ReadWriteDataLow}
+		if payload, err = registersPayloadPreprocessing([]uint16{req.ReadWriteDataHight, req.ReadWriteDataLow}); err != nil {
+			err = fmt.Errorf("error on marshal registers simple write: %s", err)
+			return
+		}
 	}
-	return []uint16{}
+	return
 }
 
 func (req *RTUOverTCPRequest123456Response56) LogPrint() {
@@ -127,8 +131,25 @@ func (rRes *RTUOverTCPReadResponse) Unmarshal(payload []byte) {
 	}
 }
 
-func (rRes *RTUOverTCPReadResponse) MarshalPayload() []uint16 {
-	return []uint16{}
+func (rRes *RTUOverTCPReadResponse) MarshalPayload() (payload []uint16, err error) {
+	if slices.Contains([]uint16{1, 2}, rRes.HeaderError.FunctionID) {
+		for _, currentByte := range rRes.Data {
+			for _, currentBit := range strings.Split(strconv.FormatUint(uint64(currentByte), 2), "") {
+				var currentIntBuffer int
+				if currentIntBuffer, err = strconv.Atoi(currentBit); err != nil {
+					err = fmt.Errorf("error on marshaling binary read data: %s", err)
+					return
+				}
+				payload = append(payload, uint16(currentIntBuffer))
+			}
+		}
+	} else {
+		if payload, err = registersPayloadPreprocessing(rRes.Data); err != nil {
+			err = fmt.Errorf("error on marshaling read data: %s", err)
+			return
+		}
+	}
+	return
 }
 
 func (rRes *RTUOverTCPReadResponse) LogPrint() {
@@ -150,8 +171,8 @@ func (mWRes *RTUOverTCPMultipleWriteResponse) Unmarshal(payload []byte) {
 	mWRes.QuantityOfRegistersLow = uint16(payload[5])
 }
 
-func (mWRes *RTUOverTCPMultipleWriteResponse) MarshalPayload() []uint16 {
-	return []uint16{}
+func (mWRes *RTUOverTCPMultipleWriteResponse) MarshalPayload() ([]uint16, error) {
+	return []uint16{}, nil
 }
 
 func (mWRes *RTUOverTCPMultipleWriteResponse) LogPrint() {
@@ -174,23 +195,33 @@ func (mWReq *RTUOverTCPMultipleWriteRequest) Unmarshal(payload []byte) {
 	}
 }
 
-func (mWReq *RTUOverTCPMultipleWriteRequest) MarshalPayload() []uint16 {
-	var err error
+func (mWReq *RTUOverTCPMultipleWriteRequest) MarshalPayload() (payload []uint16, err error) {
 	if mWReq.Body.HeaderError.FunctionID == 15 {
-		var payload []uint16
+		countPayloadByte := int(mWReq.Body.QuantityOfRegistersHight + mWReq.Body.QuantityOfRegistersLow)
 		for _, currentByte := range mWReq.Data {
-			currentBinaryData := strings.Split(strconv.FormatUint(uint64(currentByte), 2), "")
+			var currentBinaryData []string
+			if countPayloadByte >= 8 {
+				currentBinaryData = strings.Split(fmt.Sprintf("%08b", currentByte), "")
+				countPayloadByte -= len(currentBinaryData)
+			} else {
+				currentBinaryData = strings.Split(strconv.FormatUint(uint64(currentByte), 2), "")
+			}
 			for currentIndex := len(currentBinaryData) - 1; currentIndex > -1; currentIndex-- {
 				var currentIntBuffer int
 				if currentIntBuffer, err = strconv.Atoi(currentBinaryData[currentIndex]); err != nil {
-					log.Fatalf("Error on marshaling payload: %s", err)
+					err = fmt.Errorf("error on marshaling coils write data: %s", err)
+					return
 				}
 				payload = append(payload, uint16(currentIntBuffer))
 			}
 		}
-		return payload
+		return
 	}
-	return []uint16{}
+	if payload, err = registersPayloadPreprocessing(mWReq.Data); err != nil {
+		err = fmt.Errorf("error on marshaling HR write data: %s", err)
+		return
+	}
+	return
 }
 
 func (mWReq *RTUOverTCPMultipleWriteRequest) LogPrint() {
@@ -205,4 +236,17 @@ func (mWReq *RTUOverTCPMultipleWriteRequest) MarshalAddress() []uint16 {
 
 func (mWReq *RTUOverTCPMultipleWriteRequest) MarshalQuantity() []uint16 {
 	return []uint16{mWReq.Body.QuantityOfRegistersHight, mWReq.Body.QuantityOfRegistersLow}
+}
+
+func registersPayloadPreprocessing(data []uint16) (payload []uint16, err error) {
+	for currentIndex := 0; currentIndex < len(data); currentIndex += 2 {
+		var currentByte uint64
+		if currentByte, err = strconv.ParseUint(fmt.Sprintf("%s%s",
+			strconv.FormatUint(uint64(data[currentIndex]), 2), strconv.FormatUint(uint64(data[currentIndex+1]), 2)), 2, 64); err != nil {
+			err = fmt.Errorf("error on marshaling registers data: %s", err)
+			return
+		}
+		payload = append(payload, uint16(currentByte))
+	}
+	return
 }

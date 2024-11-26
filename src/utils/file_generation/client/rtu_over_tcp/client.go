@@ -22,10 +22,18 @@ func main() {
 		log.Fatalf("Error on openning client connection: %s", err)
 	}
 	defer client.Close()
-	if err = client.WriteCoils(4, []bool{true, false, true, false, true, false, true, false, true, false, true}); err != nil {
-		log.Fatalf("Error on writting coils[4:15] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1}: %s", err)
+	if err = client.WriteCoils(4, []bool{true, true, true, false, false, false, true, false, true, false, true}); err != nil {
+		log.Fatalf("Error on writting coils[4:15] = {1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1}: %s", err)
 	}
-	log.Print("Write coils[4:15] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1}: success")
+	log.Print("Write coils[4:15] = {1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1}: success")
+	if err = client.WriteCoils(4, []bool{true, true, true, false, false, false, true, true, true, false, true}); err != nil {
+		log.Fatalf("Error on writting coils[4:15] = {1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1}: %s", err)
+	}
+	log.Print("Write coils[4:15] = {1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1}: success")
+	if err = client.WriteCoils(19, []bool{true, true, false, false, true, true, false, true}); err != nil {
+		log.Fatalf("Error on writting coils[19:27] = {1, 1, 0, 0, 1, 1, 0, 1}: %s", err)
+	}
+	log.Print("Write coils[19:27] = {1, 1, 0, 0, 1, 1, 0, 1}: success")
 	if err = client.WriteRegisters(4, []uint16{1, 23, 5, 3564, 23, 4, 5, 3, 2, 6, 76}); err != nil {
 		log.Fatalf("Error on writting HR[4:15] = {1, 23, 5, 3564, 23, 4, 5, 3, 2, 6, 76}: %s", err)
 	}

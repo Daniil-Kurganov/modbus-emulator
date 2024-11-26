@@ -100,7 +100,7 @@ func (pReq *TCPRequest) Unmarshal(payload []byte) {
 	pReq.UnmarshalData(payload)
 }
 
-func (pReq *TCPRequest) MarshalPayload() (payload []uint16) {
+func (pReq *TCPRequest) MarshalPayload() (payload []uint16, err error) {
 	for _, currentByte := range pReq.Data.MarshalPayload() {
 		payload = append(payload, uint16(currentByte))
 	}
@@ -162,7 +162,7 @@ func (pRes *TCPResponse) Unmarshal(payload []byte) {
 	pRes.UnmarshalData(payload)
 }
 
-func (pRes *TCPResponse) MarshalPayload() (payload []uint16) {
+func (pRes *TCPResponse) MarshalPayload() (payload []uint16, err error) {
 	for _, currentByte := range pRes.Data.MarshalPayload() {
 		payload = append(payload, uint16(currentByte))
 	}
