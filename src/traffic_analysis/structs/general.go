@@ -5,6 +5,8 @@ import (
 	"log"
 	"modbus-emulator/src/utils"
 	"slices"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -114,4 +116,32 @@ func (hdhk *Handshake) Marshal() (data EmulationData, err error) {
 
 func (hdhk *Handshake) TransactionErrorCheck() bool {
 	return slices.Contains([]uint16{1, 2, 3, 4, 5, 6, 15, 16}, hdhk.Response.GetFunctionID())
+}
+
+func InputsPayloadPreprocessing[T uint16 | byte](data []T) (payload []uint16, err error) {
+	for _, currentByte := range data {
+		currentBinaryByte := strings.Split(strconv.FormatUint(uint64(currentByte), 2), "")
+		for currentIndex := len(currentBinaryByte) - 1; currentIndex > -1; currentIndex-- {
+			var currentIntBuffer int
+			if currentIntBuffer, err = strconv.Atoi(currentBinaryByte[currentIndex]); err != nil {
+				err = fmt.Errorf("error on marshaling binary read data: %s", err)
+				return
+			}
+			payload = append(payload, uint16(currentIntBuffer))
+		}
+	}
+	return
+}
+
+func RegistersPayloadPreprocessing[T uint16 | byte](data []T) (payload []uint16, err error) {
+	for currentIndex := 0; currentIndex < len(data); currentIndex += 2 {
+		var currentByte uint64
+		if currentByte, err = strconv.ParseUint(fmt.Sprintf("%s%s",
+			strconv.FormatUint(uint64(data[currentIndex]), 2), strconv.FormatUint(uint64(data[currentIndex+1]), 2)), 2, 64); err != nil {
+			err = fmt.Errorf("error on marshaling registers data: %s", err)
+			return
+		}
+		payload = append(payload, uint16(currentByte))
+	}
+	return
 }

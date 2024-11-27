@@ -13,7 +13,7 @@ func main() {
 	log.SetFlags(0)
 	var err error
 	server := ms.NewServer()
-	if err = server.ListenRTUOverTCP(fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort)); err != nil {
+	if err = server.ListenTCP(fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort)); err != nil {
 		log.Fatalf("Error on listening TCP: %s\n", err)
 	}
 	defer server.Close()

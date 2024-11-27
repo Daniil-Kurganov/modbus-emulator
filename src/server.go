@@ -29,7 +29,6 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 			timeEmulation = history[currentIndex+1].TransactionTime.Sub(currentHistoryEvent.TransactionTime)
 		}
 		currentHistoryEvent.LogPrint()
-		// currentRequestData := currentHistoryEvent.Handshake.Request.
 		var currentObjectType, currentOperation string
 		if !currentHistoryEvent.Handshake.TransactionErrorCheck() {
 			log.Print("Current transaction isn't valid")
@@ -81,28 +80,28 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 			log.Printf(" After: IR[%d:%d] = %d", currentEmulationData.Address, currentRightBorder, server.InputRegisters[currentEmulationData.Address:currentRightBorder])
 		case 5:
 			currentObjectType, currentOperation = "coils", "simple write"
-			log.Printf("\n Before: Coils[%d] = %d", currentEmulationData.Address, server.Coils[currentEmulationData.Address])
+			log.Printf("\n\n Before: Coils[%d] = %d", currentEmulationData.Address, server.Coils[currentEmulationData.Address])
 			server.Coils[currentEmulationData.Address] = byte(currentEmulationData.Payload[0])
 			log.Printf(" After: Coils[%d] = %d", currentEmulationData.Address, server.Coils[currentEmulationData.Address])
 		case 6:
 			currentObjectType, currentOperation = "HR", "simple write"
-			log.Printf("\n Before: HR[%d] = %d", currentEmulationData.Address, server.HoldingRegisters[currentEmulationData.Address])
+			log.Printf("\n\n Before: HR[%d] = %d", currentEmulationData.Address, server.HoldingRegisters[currentEmulationData.Address])
 			server.HoldingRegisters[currentEmulationData.Address] = currentEmulationData.Payload[0]
 			log.Printf(" After: HR[%d] = %d", currentEmulationData.Address, server.HoldingRegisters[currentEmulationData.Address])
 		case 15:
 			currentObjectType, currentOperation = "coils", "multiple write"
-			log.Printf("\n Before: Coils[%d:%d] = %v", currentEmulationData.Address, currentRightBorder, server.Coils[currentEmulationData.Address:currentRightBorder])
+			log.Printf("\n\n Before: Coils[%d:%d] = %v", currentEmulationData.Address, currentRightBorder, server.Coils[currentEmulationData.Address:currentRightBorder])
 			for currentIndex := int(currentEmulationData.Address); currentIndex < int(currentRightBorder); currentIndex++ {
 				server.Coils[currentIndex] = byte(currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)])
 			}
 			log.Printf(" After: Coils[%d:%d] = %v", currentEmulationData.Address, currentRightBorder, server.Coils[currentEmulationData.Address:currentRightBorder])
 		case 16:
 			currentObjectType, currentOperation = "HR", "multiple write"
-			log.Printf("\n Before: HR[%d:%d] = %v", currentEmulationData.Address, currentRightBorder, server.HoldingRegisters[currentEmulationData.Address:currentRightBorder])
+			log.Printf("\n\n Before: HR[%d:%d] = %v", currentEmulationData.Address, currentRightBorder, server.HoldingRegisters[currentEmulationData.Address:currentRightBorder])
 			for currentIndex := int(currentEmulationData.Address); currentIndex < int(currentRightBorder); currentIndex++ {
 				server.HoldingRegisters[currentIndex] = currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)]
 			}
-			log.Printf("\n After: HR[%d:%d] = %v", currentEmulationData.Address, currentRightBorder, server.HoldingRegisters[currentEmulationData.Address:currentRightBorder])
+			log.Printf(" After: HR[%d:%d] = %v", currentEmulationData.Address, currentRightBorder, server.HoldingRegisters[currentEmulationData.Address:currentRightBorder])
 		}
 		log.Printf("\nCurrent iteration:\n object type: %s\n operation: %s\n delay: %v\n\n", currentObjectType, currentOperation, timeEmulation)
 		time.Sleep(timeEmulation)

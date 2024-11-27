@@ -142,21 +142,12 @@ func (rRes *RTUOverTCPReadResponse) Unmarshal(payload []byte) {
 
 func (rRes *RTUOverTCPReadResponse) MarshalPayload() (payload []uint16, err error) {
 	if slices.Contains([]uint16{1, 2}, rRes.HeaderError.FunctionID) {
-		for _, currentByte := range rRes.Data {
-			currentBinaryByte := strings.Split(strconv.FormatUint(uint64(currentByte), 2), "")
-			for currentIndex := len(currentBinaryByte) - 1; currentIndex > -1; currentIndex-- {
-				var currentIntBuffer int
-				if currentIntBuffer, err = strconv.Atoi(currentBinaryByte[currentIndex]); err != nil {
-					err = fmt.Errorf("error on marshaling binary read data: %s", err)
-					return
-				}
-				payload = append(payload, uint16(currentIntBuffer))
-			}
+		if payload, err = InputsPayloadPreprocessing(rRes.Data); err != nil {
+			err = fmt.Errorf("error on marshaling read data: %s", err)
 		}
 	} else {
-		if payload, err = registersPayloadPreprocessing(rRes.Data); err != nil {
+		if payload, err = RegistersPayloadPreprocessing(rRes.Data); err != nil {
 			err = fmt.Errorf("error on marshaling read data: %s", err)
-			return
 		}
 	}
 	return
@@ -235,7 +226,7 @@ func (mWReq *RTUOverTCPMultipleWriteRequest) MarshalPayload() (payload []uint16,
 		}
 		return
 	}
-	if payload, err = registersPayloadPreprocessing(mWReq.Data); err != nil {
+	if payload, err = RegistersPayloadPreprocessing(mWReq.Data); err != nil {
 		err = fmt.Errorf("error on marshaling HR write data: %s", err)
 		return
 	}
@@ -254,17 +245,4 @@ func (mWReq *RTUOverTCPMultipleWriteRequest) MarshalAddress() []uint16 {
 
 func (mWReq *RTUOverTCPMultipleWriteRequest) MarshalQuantity() []uint16 {
 	return []uint16{mWReq.Body.QuantityOfRegistersHight, mWReq.Body.QuantityOfRegistersLow}
-}
-
-func registersPayloadPreprocessing(data []uint16) (payload []uint16, err error) {
-	for currentIndex := 0; currentIndex < len(data); currentIndex += 2 {
-		var currentByte uint64
-		if currentByte, err = strconv.ParseUint(fmt.Sprintf("%s%s",
-			strconv.FormatUint(uint64(data[currentIndex]), 2), strconv.FormatUint(uint64(data[currentIndex+1]), 2)), 2, 64); err != nil {
-			err = fmt.Errorf("error on marshaling registers data: %s", err)
-			return
-		}
-		payload = append(payload, uint16(currentByte))
-	}
-	return
 }
