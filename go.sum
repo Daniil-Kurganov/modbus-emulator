@@ -1,5 +1,9 @@
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241118063802-8b855a463eec h1:iICiWjeOuZ5Qb7kbl74eJ23E7c6s4V/IaQyAPV9PT1M=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241118063802-8b855a463eec/go.mod h1:AuC3BdcStAJxypjQRyk63rV7nO5QrKaggPmdMgIfztA=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241119080103-4b27953f4916 h1:iCGbVjPrEBndlkv1ynB8/PAA9fZqiLy6mVMmnUBTt88=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241119080103-4b27953f4916/go.mod h1:AuC3BdcStAJxypjQRyk63rV7nO5QrKaggPmdMgIfztA=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241127074729-4e3dd496821f h1:dDyhKqOc2/ikn12AcsPeFpjGAPbHWT01Nim7zt383tk=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241127074729-4e3dd496821f/go.mod h1:AuC3BdcStAJxypjQRyk63rV7nO5QrKaggPmdMgIfztA=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/goburrow/modbus v0.1.0 h1:DejRZY73nEM6+bt5JSP6IsFolJ9dVcqxsYbpLbeW/ro=
