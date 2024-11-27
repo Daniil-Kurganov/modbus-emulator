@@ -1,5 +1,9 @@
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241118063802-8b855a463eec h1:iICiWjeOuZ5Qb7kbl74eJ23E7c6s4V/IaQyAPV9PT1M=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241118063802-8b855a463eec/go.mod h1:AuC3BdcStAJxypjQRyk63rV7nO5QrKaggPmdMgIfztA=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241119080103-4b27953f4916 h1:iCGbVjPrEBndlkv1ynB8/PAA9fZqiLy6mVMmnUBTt88=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241119080103-4b27953f4916/go.mod h1:AuC3BdcStAJxypjQRyk63rV7nO5QrKaggPmdMgIfztA=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241127074729-4e3dd496821f h1:dDyhKqOc2/ikn12AcsPeFpjGAPbHWT01Nim7zt383tk=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241127074729-4e3dd496821f/go.mod h1:AuC3BdcStAJxypjQRyk63rV7nO5QrKaggPmdMgIfztA=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/goburrow/modbus v0.1.0 h1:DejRZY73nEM6+bt5JSP6IsFolJ9dVcqxsYbpLbeW/ro=
@@ -14,8 +18,6 @@ github.com/simonvetter/modbus v1.6.3 h1:kDzwVfIPczsM4Iz09il/Dij/bqlT4XiJVa0GYaOV
 github.com/simonvetter/modbus v1.6.3/go.mod h1:hh90ZaTaPLcK2REj6/fpTbiV0J6S7GWmd8q+GVRObPw=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/tbrandon/mbserver v0.0.0-20231208015628-36eb59221ac2 h1:2H0HcvMX8JEa4HD32KJNBMwOBmCLs9xYOWVE8ig06Ss=
-github.com/tbrandon/mbserver v0.0.0-20231208015628-36eb59221ac2/go.mod h1:qUzPVlSj2UgxJkVbH0ZwuuiR46U8RBMDT5KLY78Ifpw=
 github.com/vishvananda/netlink v1.1.0/go.mod h1:cTgwzPIzzgDAYoQrMm0EdrjRUBkTqKYppBueQtXaqoE=
 github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df/go.mod h1:JP3t17pCcGlemwknint6hfoeCVQrEMVwxRLRjXpq+BU=
 github.com/vishvananda/netns v0.0.0-20210104183010-2eb08e3e575f/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=

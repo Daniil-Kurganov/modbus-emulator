@@ -23,7 +23,7 @@ func ParseDump() (history []structs.HistoryEvent, err error) {
 	var currentHandle *pcap.Handle
 	indexDictionary := make(map[string]int)
 	for _, currentFilter := range []string{"dst", "src"} {
-		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, utils.ModulePath, utils.DumpDirectoryPath, utils.Mode)); err != nil {
+		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, utils.ModulePath, utils.DumpDirectoryPath, utils.WorkMode)); err != nil {
 			err = fmt.Errorf("error on opening file: %s", err)
 			return
 		}
@@ -40,7 +40,7 @@ func ParseDump() (history []structs.HistoryEvent, err error) {
 				continue
 			}
 			currentHistoryEvent := new(structs.HistoryEvent)
-			if utils.Mode == "rtu_over_tcp" {
+			if utils.WorkMode == "rtu_over_tcp" {
 				currentHistoryEvent.TransactionID = strconv.Itoa(counterTransaction)
 				counterTransaction += 1
 			} else {

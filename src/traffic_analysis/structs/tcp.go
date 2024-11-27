@@ -1,24 +1,20 @@
 package structs
 
 import (
+	"fmt"
 	"log"
+	"reflect"
 	"slices"
 )
 
 type (
 	DataPayload interface {
-		MarshalPayload() []byte
-		MarshalCheck() []byte
+		GetQuantityRegisters() []uint16
+		MarshalPayload() ([]uint16, error)
 		Unmarshal([]byte)
 		LogPrint()
 	}
-	// TCPPacket interface {
-	// 	UnmarshalHeader([]byte)
-	// 	MarshalData() MarshaledData
-	// 	UnmarshalData([]byte)
-	// 	GetHeader() MBAPHeader
-	// 	LogPrint()
-	// }
+
 	MBAPHeader struct {
 		TransactionID []byte // [hight leve, low level]
 		Protocol      string
@@ -99,6 +95,39 @@ func (pReq *TCPRequest) Unmarshal(payload []byte) {
 	pReq.UnmarshalData(payload)
 }
 
+func (pReq *TCPRequest) MarshalPayload() (payload []uint16, err error) {
+	if payload, err = pReq.Data.MarshalPayload(); err != nil {
+		err = fmt.Errorf("error on marshaling request: %s", err)
+		return
+	}
+	if pReq.Header.FunctionType == 16 {
+		if payload, err = RegistersPayloadPreprocessing(payload); err != nil {
+			err = fmt.Errorf("error on marshaling request: %s", err)
+			return
+		}
+	}
+	return
+}
+
+func (pReq *TCPRequest) LogPrint() {
+	log.Println("  Header:")
+	pReq.Header.LogPrint()
+	log.Printf("  Address Start: %v", pReq.AddressStart)
+	log.Println("  Data:")
+	pReq.Data.LogPrint()
+}
+
+func (pReq *TCPRequest) MarshalAddress() (address []uint16) {
+	for _, currentAddressIndex := range pReq.AddressStart {
+		address = append(address, uint16(currentAddressIndex))
+	}
+	return
+}
+
+func (pReq *TCPRequest) MarshalQuantity() []uint16 {
+	return pReq.Data.GetQuantityRegisters()
+}
+
 func (pReq *TCPRequest) UnmarshalHeader(payload []byte) {
 	if len(payload) < 10 {
 		log.Println("Error: insufficient payload length")
@@ -106,13 +135,6 @@ func (pReq *TCPRequest) UnmarshalHeader(payload []byte) {
 	}
 	pReq.Header.Unmarshal(payload)
 	pReq.AddressStart = payload[8:10]
-}
-
-func (pReq *TCPRequest) MarshalData() (data TCPMarshaledData) {
-	data.AddressStart = pReq.AddressStart
-	data.CheckField = pReq.Data.MarshalCheck()
-	data.Payload = pReq.Data.MarshalPayload()
-	return
 }
 
 func (pReq *TCPRequest) UnmarshalData(payload []byte) {
@@ -130,28 +152,36 @@ func (pReq *TCPRequest) GetHeader() MBAPHeader {
 	return pReq.Header
 }
 
-func (pReq *TCPRequest) LogPrint() {
-	log.Println("  Header:")
-	pReq.Header.LogPrint()
-	log.Printf("  Address Start: %v", pReq.AddressStart)
-	log.Println("  Data:")
-	pReq.Data.LogPrint()
-}
-
 func (pRes *TCPResponse) Unmarshal(payload []byte) {
 	pRes.UnmarshalHeader(payload)
 	pRes.UnmarshalData(payload)
 }
 
-func (pRes *TCPResponse) UnmarshalHeader(payload []byte) {
-	pRes.Header.Unmarshal(payload)
+func (pRes *TCPResponse) MarshalPayload() (payload []uint16, err error) {
+	var workPayload []uint16
+	if workPayload, err = pRes.Data.MarshalPayload(); err != nil {
+		err = fmt.Errorf("error on marshaling response: %s", err)
+		return
+	}
+	for _, currentByte := range workPayload {
+		payload = append(payload, uint16(currentByte))
+	}
+	return
 }
 
-func (pRes *TCPResponse) MarshalData() (data TCPMarshaledData) {
-	data.AddressStart = nil
-	data.CheckField = pRes.Data.MarshalCheck()
-	data.Payload = pRes.Data.MarshalPayload()
-	return
+func (pRes *TCPResponse) LogPrint() {
+	log.Println("  Header:")
+	pRes.Header.LogPrint()
+	log.Println("  Data:")
+	pRes.Data.LogPrint()
+}
+
+func (pRes *TCPResponse) GetFunctionID() uint16 {
+	return uint16(pRes.Header.FunctionType)
+}
+
+func (pRes *TCPResponse) UnmarshalHeader(payload []byte) {
+	pRes.Header.Unmarshal(payload)
 }
 
 func (pRes *TCPResponse) UnmarshalData(payload []byte) {
@@ -171,19 +201,18 @@ func (pRes *TCPResponse) GetHeader() MBAPHeader {
 	return pRes.Header
 }
 
-func (pRes *TCPResponse) LogPrint() {
-	log.Println("  Header:")
-	pRes.Header.LogPrint()
-	log.Println("  Data:")
-	pRes.Data.LogPrint()
+func (rReq *TCPReadRequest) GetQuantityRegisters() (quantity []uint16) {
+	for _, currentQuantityLevel := range rReq.NumberReadingBits {
+		quantity = append(quantity, uint16(currentQuantityLevel))
+	}
+	return
 }
 
-func (rReq *TCPReadRequest) MarshalPayload() []byte {
-	return rReq.NumberReadingBits
-}
-
-func (rReq *TCPReadRequest) MarshalCheck() []byte {
-	return rReq.MarshalPayload()
+func (rReq *TCPReadRequest) MarshalPayload() (payload []uint16, err error) {
+	for _, currentByte := range rReq.NumberReadingBits {
+		payload = append(payload, uint16(currentByte))
+	}
+	return
 }
 
 func (rReq *TCPReadRequest) Unmarshal(payload []byte) {
@@ -198,12 +227,15 @@ func (rReq *TCPReadRequest) LogPrint() {
 	log.Printf("   Number reading bits: %v\n", rReq.NumberReadingBits)
 }
 
-func (rBiRes *TCPReadBitResponse) MarshalPayload() (payload []byte) {
-	return []byte{rBiRes.Bits}
+func (rBiRes *TCPReadBitResponse) GetQuantityRegisters() []uint16 {
+	return []uint16{}
 }
 
-func (rBiRes *TCPReadBitResponse) MarshalCheck() []byte {
-	return []byte{rBiRes.NumberBits / 2}
+func (rBiRes *TCPReadBitResponse) MarshalPayload() (payload []uint16, err error) {
+	if payload, err = InputsPayloadPreprocessing([]byte{rBiRes.Bits}); err != nil {
+		err = fmt.Errorf("error on marshaling read data: %s", err)
+	}
+	return
 }
 
 func (rBiRes *TCPReadBitResponse) Unmarshal(payload []byte) {
@@ -216,12 +248,16 @@ func (rBiRes *TCPReadBitResponse) LogPrint() {
 	log.Printf("   Response bit: %v\n", rBiRes.Bits)
 }
 
-func (rByRes *TCPReadByteResponse) MarshalPayload() []byte {
-	return rByRes.Data
+func (rByRes *TCPReadByteResponse) GetQuantityRegisters() []uint16 {
+	return []uint16{}
 }
 
-func (rByRes *TCPReadByteResponse) MarshalCheck() []byte {
-	return []byte{rByRes.NumberBits / 2}
+func (rByRes *TCPReadByteResponse) MarshalPayload() (payload []uint16, err error) {
+	if payload, err = RegistersPayloadPreprocessing(rByRes.Data); err != nil {
+		err = fmt.Errorf("error on marshaling read register's data: %s", err)
+		return
+	}
+	return
 }
 
 func (rByRes *TCPReadByteResponse) Unmarshal(payload []byte) {
@@ -234,12 +270,21 @@ func (rByRes *TCPReadByteResponse) LogPrint() {
 	log.Printf("   Response bits: %v\n", rByRes.Data)
 }
 
-func (wSReq *TCPWriteSimpleRequest) MarshalPayload() (payload []byte) {
-	return wSReq.Payload
+func (wSReq *TCPWriteSimpleRequest) GetQuantityRegisters() (quantity []uint16) {
+	return []uint16{0, 1}
 }
 
-func (wReq *TCPWriteSimpleRequest) MarshalCheck() []byte {
-	return wReq.MarshalPayload()
+func (wSReq *TCPWriteSimpleRequest) MarshalPayload() (payload []uint16, err error) {
+	if reflect.DeepEqual(wSReq.Payload, []byte{255, 0}) {
+		payload = []uint16{1}
+	} else if reflect.DeepEqual(wSReq.Payload, []byte{0, 0}) {
+		payload = []uint16{0}
+	} else {
+		if payload, err = RegistersPayloadPreprocessing(wSReq.Payload); err != nil {
+			err = fmt.Errorf("error on marshaling read data: %s", err)
+		}
+	}
+	return
 }
 
 func (wSReq *TCPWriteSimpleRequest) Unmarshal(payload []byte) {
@@ -254,12 +299,18 @@ func (wSReq *TCPWriteSimpleRequest) LogPrint() {
 	log.Printf("   Writing bits: %v\n", wSReq.Payload)
 }
 
-func (wMReq *TCPWriteMultipleRequest) MarshalPayload() []byte {
-	return wMReq.Data
+func (wMreq *TCPWriteMultipleRequest) GetQuantityRegisters() (quantity []uint16) {
+	for _, currentQuantityLevel := range wMreq.NumberRegisters {
+		quantity = append(quantity, uint16(currentQuantityLevel))
+	}
+	return
 }
 
-func (wMReq *TCPWriteMultipleRequest) MarshalCheck() []byte {
-	return wMReq.NumberRegisters
+func (wMReq *TCPWriteMultipleRequest) MarshalPayload() (payload []uint16, err error) {
+	for _, currentByte := range wMReq.Data {
+		payload = append(payload, uint16(currentByte))
+	}
+	return
 }
 
 func (wMReq *TCPWriteMultipleRequest) Unmarshal(payload []byte) {
@@ -278,11 +329,15 @@ func (wMReq *TCPWriteMultipleRequest) LogPrint() {
 	log.Printf("   Writting bits: %v\n", wMReq.Data)
 }
 
-func (wSRes *TCPWriteSimpleResponse) MarshalPayload() (payload []byte) {
-	return wSRes.WrittenBits
+func (wSRes *TCPWriteSimpleResponse) GetQuantityRegisters() []uint16 {
+	return []uint16{}
 }
-func (wSRes *TCPWriteSimpleResponse) MarshalCheck() []byte {
-	return wSRes.MarshalPayload()
+
+func (wSRes *TCPWriteSimpleResponse) MarshalPayload() (payload []uint16, err error) {
+	for _, currentByte := range wSRes.WrittenBits {
+		payload = append(payload, uint16(currentByte))
+	}
+	return
 }
 
 func (wSRes *TCPWriteSimpleResponse) Unmarshal(payload []byte) {
@@ -295,12 +350,18 @@ func (wSRes *TCPWriteSimpleResponse) LogPrint() {
 	log.Printf("   Written bits: %v\n", wSRes.WrittenBits)
 }
 
-func (wMRes *TCPWriteMultipleResponse) MarshalPayload() (payload []byte) {
-	return wMRes.NumberWrittenRegisters
+func (wMRes *TCPWriteMultipleResponse) GetQuantityRegisters() (quantity []uint16) {
+	for _, currentQuantityLevel := range wMRes.NumberWrittenRegisters {
+		quantity = append(quantity, uint16(currentQuantityLevel))
+	}
+	return
 }
 
-func (wMRes *TCPWriteMultipleResponse) MarshalCheck() []byte {
-	return wMRes.MarshalPayload()
+func (wMRes *TCPWriteMultipleResponse) MarshalPayload() (payload []uint16, err error) {
+	for _, currentByte := range wMRes.NumberWrittenRegisters {
+		payload = append(payload, uint16(currentByte))
+	}
+	return
 }
 
 func (wMRes *TCPWriteMultipleResponse) Unmarshal(payload []byte) {

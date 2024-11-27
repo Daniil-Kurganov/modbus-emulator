@@ -22,37 +22,53 @@ func main() {
 		log.Fatalf("Error on openning client connection: %s", err)
 	}
 	defer client.Close()
-	var coil0 bool
-	if coil0, err = client.ReadCoil(0); err != nil {
-		log.Fatalf("Error on getting coils[0]: %s", err)
+	var coils, DI []bool
+	var sCoils, sDI bool
+	var mHR, mIR []uint16
+	var sHR, sIR uint16
+	if err = client.WriteCoil(5, true); err != nil {
+		log.Fatalf("Error on writting coils[5] = 1: %s", err)
 	}
-	log.Printf("Read coils (0, 1): %v\n", coil0)
-	time.Sleep(500 * time.Millisecond)
-	var DI1617 []bool
-	if DI1617, err = client.ReadDiscreteInputs(16, 2); err != nil {
-		log.Fatalf("Error: %s\n", err)
+	if err = client.WriteCoils(7, []bool{true, true, false}); err != nil {
+		log.Fatalf("Error on writting coils[7:10] = {1, 1, 0}: %s", err)
 	}
-	log.Printf("Read DI (16, 2): %v\n", DI1617)
-	time.Sleep(901 * time.Millisecond)
-	if err = client.WriteRegister(8, 39); err != nil {
-		log.Fatalf("Error: %s\n", err)
+
+	if coils, err = client.ReadCoils(5, 5); err != nil {
+		log.Fatalf("Error on reading coils[5:10]: %s", err)
 	}
-	log.Print("Write HR[8] = 39: success")
-	time.Sleep(1 * time.Second)
-	var coils59 []bool
-	if coils59, err = client.ReadCoils(5, 5); err != nil {
-		log.Fatalf("Error: %s\n", err)
+	log.Printf("Coils[5:10] = %v", coils)
+	if DI, err = client.ReadDiscreteInputs(9, 11); err != nil {
+		log.Fatalf("Error on reading DI[9:20]: %s", err)
 	}
-	log.Printf("Read coils[5:10]: %v\n", coils59)
-	time.Sleep(100 * time.Millisecond)
-	if err = client.WriteCoils(4, []bool{true, true, false, true}); err != nil {
-		log.Fatalf("Error: %s\n", err)
+	log.Printf("DI[9:20] = %v", DI)
+	if err = client.WriteRegister(160, 84); err != nil {
+		log.Fatalf("Error on write HR[160] = 84")
 	}
-	log.Print("Write coils[4:8] = {1, 1, 0, 1}: success")
-	time.Sleep(1020 * time.Millisecond)
-	var HR37 []uint16
-	if HR37, err = client.ReadRegisters(3, 4, modbus.HOLDING_REGISTER); err != nil {
-		log.Fatalf("Error: %s\n", err)
+	if err = client.WriteRegisters(150, []uint16{1, 18, 48, 53, 64, 57, 59}); err != nil {
+		log.Fatalf("Error on write HR[150:157] = {1, 18, 48, 53, 64, 57, 59}: %s", err)
 	}
-	log.Printf("Read HR[3:8]: %v\n", HR37)
+	if mHR, err = client.ReadRegisters(150, 15, modbus.HOLDING_REGISTER); err != nil {
+		log.Fatalf("Error on read HR[150:165]: %s", err)
+	}
+	log.Printf("HR[150:165] = %v", mHR)
+	if sIR, err = client.ReadRegister(4, modbus.INPUT_REGISTER); err != nil {
+		log.Fatalf("Error on read IR[4]: %s", err)
+	}
+	log.Printf("IR[4] = %d", sIR)
+	if mIR, err = client.ReadRegisters(4, 18, modbus.INPUT_REGISTER); err != nil {
+		log.Fatalf("Error on read IR[4:22]: %s", err)
+	}
+	log.Printf("IR[4:22] = %v", mIR)
+	if sDI, err = client.ReadDiscreteInput(11); err != nil {
+		log.Fatalf("Error on read DI[11]: %s", err)
+	}
+	log.Printf("DI[11] = %t", sDI)
+	if sCoils, err = client.ReadCoil(8); err != nil {
+		log.Fatalf("Error on read coils[8]: %s", err)
+	}
+	log.Printf("coils[8] = %t", sCoils)
+	if sHR, err = client.ReadRegister(153, modbus.HOLDING_REGISTER); err != nil {
+		log.Fatalf("Error on read HR[153]: %s", err)
+	}
+	log.Printf("HR[153] = %d", sHR)
 }
