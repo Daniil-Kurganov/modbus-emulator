@@ -17,9 +17,9 @@ func main() {
 		log.Fatalf("Error on listening TCP: %s\n", err)
 	}
 	defer server.Close()
-	server.Coils[5], server.HoldingRegisters[4], server.InputRegisters[28] = 1, 16, 103
+	server.DiscreteInputs[10], server.DiscreteInputs[13], server.DiscreteInputs[16] = 1, 1, 1
+	server.InputRegisters[4], server.InputRegisters[10], server.InputRegisters[18], server.InputRegisters[21] = 120, 385, 16, 6648
 	for {
-		// log.Print("I'm work!")
 		time.Sleep(500 * time.Millisecond)
 	}
 }

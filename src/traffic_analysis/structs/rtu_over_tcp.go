@@ -86,11 +86,20 @@ func (req *RTUOverTCPRequest123456Response56) Unmarshal(payload []byte) {
 }
 
 func (req *RTUOverTCPRequest123456Response56) MarshalPayload() (payload []uint16, err error) {
-	if slices.Contains([]uint16{5, 6}, req.HeaderError.FunctionID) {
-		if payload, err = registersPayloadPreprocessing([]uint16{req.ReadWriteDataHight, req.ReadWriteDataLow}); err != nil {
-			err = fmt.Errorf("error on marshal registers simple write: %s", err)
+	if req.HeaderError.FunctionID == 5 {
+		if req.ReadWriteDataHight == 255 {
+			payload = append(payload, 1)
+		} else {
+			payload = append(payload, 0)
+		}
+	} else {
+		var currentByte uint64
+		if currentByte, err = strconv.ParseUint(fmt.Sprintf("%s%s",
+			strconv.FormatUint(uint64(req.ReadWriteDataHight), 2), strconv.FormatUint(uint64(req.ReadWriteDataLow), 2)), 2, 64); err != nil {
+			err = fmt.Errorf("error on marshaling registers data: %s", err)
 			return
 		}
+		payload = append(payload, uint16(currentByte))
 	}
 	return
 }
@@ -134,9 +143,10 @@ func (rRes *RTUOverTCPReadResponse) Unmarshal(payload []byte) {
 func (rRes *RTUOverTCPReadResponse) MarshalPayload() (payload []uint16, err error) {
 	if slices.Contains([]uint16{1, 2}, rRes.HeaderError.FunctionID) {
 		for _, currentByte := range rRes.Data {
-			for _, currentBit := range strings.Split(strconv.FormatUint(uint64(currentByte), 2), "") {
+			currentBinaryByte := strings.Split(strconv.FormatUint(uint64(currentByte), 2), "")
+			for currentIndex := len(currentBinaryByte) - 1; currentIndex > -1; currentIndex-- {
 				var currentIntBuffer int
-				if currentIntBuffer, err = strconv.Atoi(currentBit); err != nil {
+				if currentIntBuffer, err = strconv.Atoi(currentBinaryByte[currentIndex]); err != nil {
 					err = fmt.Errorf("error on marshaling binary read data: %s", err)
 					return
 				}
@@ -205,6 +215,14 @@ func (mWReq *RTUOverTCPMultipleWriteRequest) MarshalPayload() (payload []uint16,
 				countPayloadByte -= len(currentBinaryData)
 			} else {
 				currentBinaryData = strings.Split(strconv.FormatUint(uint64(currentByte), 2), "")
+			}
+			if len(currentBinaryData) != countPayloadByte {
+				for {
+					if len(currentBinaryData) == countPayloadByte {
+						break
+					}
+					currentBinaryData = slices.Insert(currentBinaryData, 0, "0")
+				}
 			}
 			for currentIndex := len(currentBinaryData) - 1; currentIndex > -1; currentIndex-- {
 				var currentIntBuffer int

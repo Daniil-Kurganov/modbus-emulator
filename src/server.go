@@ -102,7 +102,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 			for currentIndex := int(currentEmulationData.Address); currentIndex < int(currentRightBorder); currentIndex++ {
 				server.HoldingRegisters[currentIndex] = currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)]
 			}
-			log.Printf("\n Before: HR[%d:%d] = %v", currentEmulationData.Address, currentRightBorder, server.HoldingRegisters[currentEmulationData.Address:currentRightBorder])
+			log.Printf("\n After: HR[%d:%d] = %v", currentEmulationData.Address, currentRightBorder, server.HoldingRegisters[currentEmulationData.Address:currentRightBorder])
 		}
 		log.Printf("\nCurrent iteration:\n object type: %s\n operation: %s\n delay: %v\n\n", currentObjectType, currentOperation, timeEmulation)
 		time.Sleep(timeEmulation)
