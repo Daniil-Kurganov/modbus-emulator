@@ -115,7 +115,7 @@ func (hdhk *Handshake) Marshal() (data EmulationData, err error) {
 }
 
 func (hdhk *Handshake) TransactionErrorCheck() bool {
-	return slices.Contains([]uint16{1, 2, 3, 4, 5, 6, 15, 16}, hdhk.Response.GetFunctionID())
+	return hdhk.Response.GetFunctionID()>>7 == 0b1
 }
 
 func InputsPayloadPreprocessing[T uint16 | byte](data []T) (payload []uint16, err error) {
