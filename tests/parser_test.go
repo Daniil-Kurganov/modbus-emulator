@@ -14,10 +14,12 @@ import (
 func TestParsePackets(t *testing.T) {
 	testTable := []struct {
 		mode            string
+		directoryPath   string
 		expectedHistory []structs.HistoryEvent
 	}{
 		{
-			mode: "tcp",
+			mode:          "tcp",
+			directoryPath: `src/pcapng_files/tests_files`,
 			expectedHistory: []structs.HistoryEvent{
 				{
 					TransactionID: "0-1",
@@ -184,7 +186,8 @@ func TestParsePackets(t *testing.T) {
 			},
 		},
 		{
-			mode: "rtu_over_tcp",
+			mode:          "rtu_over_tcp",
+			directoryPath: `src/pcapng_files/tests_files`,
 			expectedHistory: []structs.HistoryEvent{
 				{
 					TransactionID: "1",
@@ -369,6 +372,7 @@ func TestParsePackets(t *testing.T) {
 	var err error
 	for _, currentTestCase := range testTable {
 		utils.WorkMode = currentTestCase.mode
+		utils.DumpDirectoryPath = currentTestCase.directoryPath
 		if currentRecievedHistory, err = ta.ParseDump(); err != nil {
 			assert.EqualErrorf(t, err, "nil",
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
