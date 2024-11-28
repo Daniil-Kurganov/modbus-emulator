@@ -56,9 +56,15 @@ func (hE *HistoryEvent) LogPrint() {
 func (hdhk *Handshake) RequestUnmarshal(payload []byte) {
 	if utils.WorkMode == "rtu_over_tcp" {
 		functionID := payload[1]
-		if slices.Contains([]byte{1, 2, 3, 4, 5, 6}, functionID) {
+		if slices.Contains([]byte{
+			byte(utils.Functions.CoilsRead),
+			byte(utils.Functions.DIRead),
+			byte(utils.Functions.HRRead),
+			byte(utils.Functions.IRRead),
+			byte(utils.Functions.CoilsSimpleWrite),
+			byte(utils.Functions.HRSimpleWrite)}, functionID) {
 			hdhk.Request = new(RTUOverTCPRequest123456Response56)
-		} else if slices.Contains([]byte{15, 16}, functionID) {
+		} else if slices.Contains([]byte{byte(utils.Functions.CoilsMultipleWrite), byte(utils.Functions.HRMultipleWrite)}, functionID) {
 			hdhk.Request = new(RTUOverTCPMultipleWriteRequest)
 		}
 	} else {
@@ -70,11 +76,15 @@ func (hdhk *Handshake) RequestUnmarshal(payload []byte) {
 func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
 	if utils.WorkMode == "rtu_over_tcp" {
 		functionID := payload[1]
-		if slices.Contains([]byte{1, 2, 3, 4}, functionID) {
+		if slices.Contains([]byte{
+			byte(utils.Functions.CoilsRead),
+			byte(utils.Functions.DIRead),
+			byte(utils.Functions.HRRead),
+			byte(utils.Functions.IRRead)}, functionID) {
 			hdhk.Response = new(RTUOverTCPReadResponse)
-		} else if slices.Contains([]byte{5, 6}, functionID) {
+		} else if slices.Contains([]byte{byte(utils.Functions.CoilsSimpleWrite), byte(utils.Functions.HRSimpleWrite)}, functionID) {
 			hdhk.Response = new(RTUOverTCPRequest123456Response56)
-		} else if slices.Contains([]byte{15, 16}, functionID) {
+		} else if slices.Contains([]byte{byte(utils.Functions.CoilsMultipleWrite), byte(utils.Functions.HRMultipleWrite)}, functionID) {
 			hdhk.Response = new(RTUOverTCPMultipleWriteResponse)
 		} else {
 			hdhk.Response = new(RTUOverTCPErrorResponse)
@@ -87,7 +97,11 @@ func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
 
 func (hdhk *Handshake) Marshal() (data EmulationData, err error) {
 	data.FunctionID = hdhk.Response.GetFunctionID()
-	data.IsReadOperation = !slices.Contains([]uint16{5, 6, 15, 16}, data.FunctionID)
+	data.IsReadOperation = !slices.Contains([]uint16{
+		utils.Functions.CoilsSimpleWrite, 
+		utils.Functions.HRSimpleWrite,
+		utils.Functions.CoilsMultipleWrite,
+		utils.Functions.HRMultipleWrite}, data.FunctionID)
 	address := hdhk.Request.MarshalAddress()
 	data.Address = address[0] + address[1]
 	quantity := hdhk.Request.MarshalQuantity()
