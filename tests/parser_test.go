@@ -22,7 +22,10 @@ func TestParsePackets(t *testing.T) {
 			directoryPath: `src/pcapng_files/tests_files`,
 			expectedHistory: []structs.HistoryEvent{
 				{
-					TransactionID: "0-1",
+					Header: structs.SlaveTransaction{
+						SlaveID:       0,
+						TransactionID: "0-1",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.TCPRequest{
 							Header: structs.MBAPHeader{
@@ -54,7 +57,10 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 11, 12, 53, 20, 974027915, time.Local),
 				},
 				{
-					TransactionID: "0-2",
+					Header: structs.SlaveTransaction{
+						SlaveID:       0,
+						TransactionID: "0-2",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.TCPRequest{
 							Header: structs.MBAPHeader{
@@ -86,7 +92,10 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 11, 12, 53, 21, 474872690, time.Local),
 				},
 				{
-					TransactionID: "0-3",
+					Header: structs.SlaveTransaction{
+						SlaveID:       0,
+						TransactionID: "0-3",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.TCPRequest{
 							Header: structs.MBAPHeader{
@@ -118,7 +127,10 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 11, 12, 53, 22, 377046677, time.Local),
 				},
 				{
-					TransactionID: "0-4",
+					Header: structs.SlaveTransaction{
+						SlaveID:       0,
+						TransactionID: "0-4",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.TCPRequest{
 							Header: structs.MBAPHeader{
@@ -150,7 +162,10 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 11, 12, 53, 23, 378031897, time.Local),
 				},
 				{
-					TransactionID: "0-5",
+					Header: structs.SlaveTransaction{
+						SlaveID:       0,
+						TransactionID: "0-5",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.TCPRequest{
 							Header: structs.MBAPHeader{
@@ -190,7 +205,10 @@ func TestParsePackets(t *testing.T) {
 			directoryPath: `src/pcapng_files/tests_files`,
 			expectedHistory: []structs.HistoryEvent{
 				{
-					TransactionID: "1",
+					Header: structs.SlaveTransaction{
+						SlaveID:       1,
+						TransactionID: "1",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.RTUOverTCPRequest123456Response56{
 							HeaderError: structs.HeaderErrorCheck{
@@ -218,7 +236,10 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 20, 12, 31, 18, 925704421, time.Local),
 				},
 				{
-					TransactionID: "2",
+					Header: structs.SlaveTransaction{
+						SlaveID:       1,
+						TransactionID: "2",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.RTUOverTCPRequest123456Response56{
 							HeaderError: structs.HeaderErrorCheck{
@@ -246,7 +267,10 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 20, 12, 31, 19, 432394852, time.Local),
 				},
 				{
-					TransactionID: "3",
+					Header: structs.SlaveTransaction{
+						SlaveID:       1,
+						TransactionID: "3",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.RTUOverTCPRequest123456Response56{
 							HeaderError: structs.HeaderErrorCheck{
@@ -276,7 +300,10 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 20, 12, 31, 20, 341282997, time.Local),
 				},
 				{
-					TransactionID: "4",
+					Header: structs.SlaveTransaction{
+						SlaveID:       1,
+						TransactionID: "4",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.RTUOverTCPRequest123456Response56{
 							HeaderError: structs.HeaderErrorCheck{
@@ -304,7 +331,10 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 20, 12, 31, 21, 349492607, time.Local),
 				},
 				{
-					TransactionID: "5",
+					Header: structs.SlaveTransaction{
+						SlaveID:       1,
+						TransactionID: "5",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.RTUOverTCPMultipleWriteRequest{
 							Body: structs.RTUOverTCPMultipleWriteResponse{
@@ -338,7 +368,10 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 20, 12, 31, 21, 456314271, time.Local),
 				},
 				{
-					TransactionID: "6",
+					Header: structs.SlaveTransaction{
+						SlaveID:       1,
+						TransactionID: "6",
+					},
 					Handshake: structs.Handshake{
 						Request: &structs.RTUOverTCPRequest123456Response56{
 							HeaderError: structs.HeaderErrorCheck{
