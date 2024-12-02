@@ -1,14 +1,17 @@
 package tests_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"modbus-emulator/src"
 	"modbus-emulator/src/utils"
+	"sync"
 	"testing"
 	"time"
 
 	mc "github.com/goburrow/modbus"
+	"github.com/simonvetter/modbus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,10 +43,11 @@ type (
 	}
 )
 
+var directoryPath = `src/pcapng_files/tests_files`
+
 func TestServerTCPMode(t *testing.T) {
 	var err error
 	log.SetOutput(ioutil.Discard)
-	directoryPath := `src/pcapng_files/tests_files`
 	testCasesTCP := testCase[registersTCP]{
 		workMode: "tcp",
 		transactions: []transactionValues[registersTCP]{
@@ -59,7 +63,7 @@ func TestServerTCPMode(t *testing.T) {
 					coils: []byte{0},
 					DI:    []byte{0},
 					HR:    []byte{0, 0},
-					IR:    []byte{0},
+					IR:    []byte{0, 0},
 				},
 			},
 			{
@@ -74,11 +78,11 @@ func TestServerTCPMode(t *testing.T) {
 					coils: []byte{0},
 					DI:    []byte{0},
 					HR:    []byte{0, 0},
-					IR:    []byte{0},
+					IR:    []byte{0, 0},
 				},
 			},
 			{
-				delay: 1100 * time.Millisecond,
+				delay: 1300 * time.Millisecond,
 				browsedRegisters: map[string]addresses{
 					"coils": {start: 0, quantity: 1},
 					"DI":    {start: 0, quantity: 1},
@@ -89,7 +93,7 @@ func TestServerTCPMode(t *testing.T) {
 					coils: []byte{0},
 					DI:    []byte{0},
 					HR:    []byte{0, 39},
-					IR:    []byte{0},
+					IR:    []byte{0, 0},
 				},
 			},
 			{
@@ -104,7 +108,7 @@ func TestServerTCPMode(t *testing.T) {
 					coils: []byte{5},
 					DI:    []byte{0},
 					HR:    []byte{0, 0},
-					IR:    []byte{0},
+					IR:    []byte{0, 0},
 				},
 			},
 			{
@@ -119,17 +123,23 @@ func TestServerTCPMode(t *testing.T) {
 					coils: []byte{11},
 					DI:    []byte{0},
 					HR:    []byte{0, 0},
-					IR:    []byte{0},
+					IR:    []byte{0, 0},
 				},
 			},
 		},
 	}
 	utils.DumpDirectoryPath = directoryPath
 	utils.WorkMode = testCasesTCP.workMode
-	go src.ServerInit()
-	handler := mc.NewTCPClientHandler("localhost:1502")
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(1)
+	go src.ServerInit(&waitGroup)
+	time.Sleep(500 * time.Millisecond)
+	handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort))
 	if err = handler.Connect(); err != nil {
-		log.Fatalf("Error on handler connecting: %s\n", err)
+		assert.EqualErrorf(t, err, "nil",
+			"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+		)
+		return
 	}
 	defer handler.Close()
 	client := mc.NewClient(handler)
@@ -140,28 +150,189 @@ func TestServerTCPMode(t *testing.T) {
 			assert.EqualErrorf(t, err, "nil",
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
 			)
+			return
 		}
 		if currentRecievedStates.DI, err = client.ReadDiscreteInputs(currentTCPTestCase.browsedRegisters["DI"].start,
 			currentTCPTestCase.browsedRegisters["DI"].quantity); err != nil {
 			assert.EqualErrorf(t, err, "nil",
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
 			)
+			return
 		}
 		if currentRecievedStates.HR, err = client.ReadHoldingRegisters(currentTCPTestCase.browsedRegisters["HR"].start,
 			currentTCPTestCase.browsedRegisters["HR"].quantity); err != nil {
 			assert.EqualErrorf(t, err, "nil",
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
 			)
+			return
 		}
-		if currentRecievedStates.IR, err = client.ReadDiscreteInputs(currentTCPTestCase.browsedRegisters["IR"].start,
+		if currentRecievedStates.IR, err = client.ReadInputRegisters(currentTCPTestCase.browsedRegisters["IR"].start,
 			currentTCPTestCase.browsedRegisters["IR"].quantity); err != nil {
 			assert.EqualErrorf(t, err, "nil",
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
 			)
+			return
 		}
 		assert.Equalf(t, currentTCPTestCase.expectedStates, currentRecievedStates,
 			"Error: recieved and expected states isn't equal:\n expected: %v;\n recieved: %v",
 			currentTCPTestCase.expectedStates, currentRecievedStates)
 		time.Sleep(currentTCPTestCase.delay)
 	}
+	waitGroup.Wait()
+}
+
+func TestServerRTUOverTCPMode(t *testing.T) {
+	var err error
+	log.SetOutput(ioutil.Discard)
+	testCasesRTUOverTCP := testCase[registersRTUOverTCP]{
+		workMode: "rtu_over_tcp",
+		transactions: []transactionValues[registersRTUOverTCP]{
+			{
+				delay: 507 * time.Millisecond,
+				browsedRegisters: map[string]addresses{
+					"coils": {start: 0, quantity: 1},
+					"DI":    {start: 0, quantity: 1},
+					"HR":    {start: 0, quantity: 1},
+					"IR":    {start: 0, quantity: 1},
+				},
+				expectedStates: registersRTUOverTCP{
+					coils: []bool{false},
+					DI:    []bool{false},
+					HR:    []uint16{0},
+					IR:    []uint16{0},
+				},
+			},
+			{
+				delay: 909 * time.Millisecond,
+				browsedRegisters: map[string]addresses{
+					"coils": {start: 0, quantity: 1},
+					"DI":    {start: 0, quantity: 2},
+					"HR":    {start: 0, quantity: 1},
+					"IR":    {start: 0, quantity: 1},
+				},
+				expectedStates: registersRTUOverTCP{
+					coils: []bool{false},
+					DI:    []bool{false, false},
+					HR:    []uint16{0},
+					IR:    []uint16{0},
+				},
+			},
+			{
+				delay: 1100 * time.Millisecond,
+				browsedRegisters: map[string]addresses{
+					"coils": {start: 0, quantity: 1},
+					"DI":    {start: 0, quantity: 1},
+					"HR":    {start: 8, quantity: 1},
+					"IR":    {start: 0, quantity: 1},
+				},
+				expectedStates: registersRTUOverTCP{
+					coils: []bool{false},
+					DI:    []bool{false},
+					HR:    []uint16{39},
+					IR:    []uint16{0},
+				},
+			},
+			{
+				delay: 107 * time.Millisecond,
+				browsedRegisters: map[string]addresses{
+					"coils": {start: 5, quantity: 5},
+					"DI":    {start: 0, quantity: 1},
+					"HR":    {start: 0, quantity: 1},
+					"IR":    {start: 0, quantity: 1},
+				},
+				expectedStates: registersRTUOverTCP{
+					coils: []bool{true, false, true, false, false},
+					DI:    []bool{false},
+					HR:    []uint16{0},
+					IR:    []uint16{0},
+				},
+			},
+			{
+				delay: 1100 * time.Millisecond,
+				browsedRegisters: map[string]addresses{
+					"coils": {start: 4, quantity: 4},
+					"DI":    {start: 0, quantity: 1},
+					"HR":    {start: 0, quantity: 1},
+					"IR":    {start: 0, quantity: 1},
+				},
+				expectedStates: registersRTUOverTCP{
+					coils: []bool{true, true, false, true},
+					DI:    []bool{false},
+					HR:    []uint16{0},
+					IR:    []uint16{0},
+				},
+			},
+			{
+				delay: 3 * time.Second,
+				browsedRegisters: map[string]addresses{
+					"coils": {start: 0, quantity: 1},
+					"DI":    {start: 0, quantity: 1},
+					"HR":    {start: 3, quantity: 4},
+					"IR":    {start: 0, quantity: 1},
+				},
+				expectedStates: registersRTUOverTCP{
+					coils: []bool{false},
+					DI:    []bool{false},
+					HR:    []uint16{0, 16, 0, 0},
+					IR:    []uint16{0},
+				},
+			},
+		},
+	}
+	utils.DumpDirectoryPath = directoryPath
+	utils.WorkMode = testCasesRTUOverTCP.workMode
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(1)
+	go src.ServerInit(&waitGroup)
+	time.Sleep(500 * time.Millisecond)
+	var client *modbus.ModbusClient
+	if client, err = modbus.NewClient(&modbus.ClientConfiguration{
+		URL:     fmt.Sprintf("rtuovertcp://%s:%s", utils.ServerTCPHost, utils.ServerTCPPort),
+		Speed:   19200,
+		Timeout: 1 * time.Second,
+	}); err != nil {
+		assert.EqualErrorf(t, err, "nil",
+			"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+		)
+		return
+	}
+	if err = client.Open(); err != nil {
+		assert.EqualErrorf(t, err, "nil",
+			"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+		)
+		return
+	}
+	defer client.Close()
+	for _, currentRTUOverTCPTestCase := range testCasesRTUOverTCP.transactions {
+		var currentRecievedStates registersRTUOverTCP
+		if currentRecievedStates.coils, err = client.ReadCoils(currentRTUOverTCPTestCase.browsedRegisters["coils"].start,
+			currentRTUOverTCPTestCase.browsedRegisters["coils"].quantity); err != nil {
+			assert.EqualErrorf(t, err, "nil",
+				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+			)
+		}
+		if currentRecievedStates.DI, err = client.ReadDiscreteInputs(currentRTUOverTCPTestCase.browsedRegisters["DI"].start,
+			currentRTUOverTCPTestCase.browsedRegisters["DI"].quantity); err != nil {
+			assert.EqualErrorf(t, err, "nil",
+				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+			)
+		}
+		if currentRecievedStates.HR, err = client.ReadRegisters(currentRTUOverTCPTestCase.browsedRegisters["HR"].start,
+			currentRTUOverTCPTestCase.browsedRegisters["HR"].quantity, modbus.HOLDING_REGISTER); err != nil {
+			assert.EqualErrorf(t, err, "nil",
+				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+			)
+		}
+		if currentRecievedStates.IR, err = client.ReadRegisters(currentRTUOverTCPTestCase.browsedRegisters["IR"].start,
+			currentRTUOverTCPTestCase.browsedRegisters["IR"].quantity, modbus.INPUT_REGISTER); err != nil {
+			assert.EqualErrorf(t, err, "nil",
+				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+			)
+		}
+		assert.Equalf(t, currentRTUOverTCPTestCase.expectedStates, currentRecievedStates,
+			"Error: recieved and expected states isn't equal:\n expected: %v;\n recieved: %v",
+			currentRTUOverTCPTestCase.expectedStates, currentRecievedStates)
+		time.Sleep(currentRTUOverTCPTestCase.delay)
+	}
+	waitGroup.Wait()
 }

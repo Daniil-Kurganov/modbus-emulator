@@ -1,9 +1,7 @@
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241118063802-8b855a463eec h1:iICiWjeOuZ5Qb7kbl74eJ23E7c6s4V/IaQyAPV9PT1M=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241118063802-8b855a463eec/go.mod h1:AuC3BdcStAJxypjQRyk63rV7nO5QrKaggPmdMgIfztA=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241119080103-4b27953f4916 h1:iCGbVjPrEBndlkv1ynB8/PAA9fZqiLy6mVMmnUBTt88=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241119080103-4b27953f4916/go.mod h1:AuC3BdcStAJxypjQRyk63rV7nO5QrKaggPmdMgIfztA=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241127074729-4e3dd496821f h1:dDyhKqOc2/ikn12AcsPeFpjGAPbHWT01Nim7zt383tk=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241127074729-4e3dd496821f/go.mod h1:AuC3BdcStAJxypjQRyk63rV7nO5QrKaggPmdMgIfztA=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241202092140-764e00c12e06 h1:FbEaxV6TM3Op9ZyDGmK1wUHpsQfjlqgOWTqG6rQlygI=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241202092140-764e00c12e06/go.mod h1:itan+JFmYtgEw/IDVgAbJtdDCJjKhYvdKoDqn72aquU=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/goburrow/modbus v0.1.0 h1:DejRZY73nEM6+bt5JSP6IsFolJ9dVcqxsYbpLbeW/ro=
@@ -12,6 +10,8 @@ github.com/goburrow/serial v0.1.0 h1:v2T1SQa/dlUqQiYIT8+Cu7YolfqAi3K96UmhwYyuSrA
 github.com/goburrow/serial v0.1.0/go.mod h1:sAiqG0nRVswsm1C97xsttiYCzSLBmUZ/VSlVLZJ8haA=
 github.com/google/gopacket v1.1.20-0.20220810144506-32ee38206866 h1:NaJi58bCZZh0jjPw78EqDZekPEfhlzYE01C5R+zh1tE=
 github.com/google/gopacket v1.1.20-0.20220810144506-32ee38206866/go.mod h1:riddUzxTSBpJXk3qBHtYr4qOhFhT6k/1c0E3qkQjQpA=
+github.com/libp2p/go-reuseport v0.4.0 h1:nR5KU7hD0WxXCJbmw7r2rhRYruNRl2koHw8fQscQm2s=
+github.com/libp2p/go-reuseport v0.4.0/go.mod h1:ZtI03j/wO5hZVDFo2jKywN6bYKWLOy8Se6DrI2E1cLU=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/simonvetter/modbus v1.6.3 h1:kDzwVfIPczsM4Iz09il/Dij/bqlT4XiJVa0GYaOVA9w=
@@ -32,8 +32,9 @@ golang.org/x/sync v0.0.0-20190423024810-112230192c58/go.mod h1:RxMgew5VJxzue5/jJ
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190606203320-7fc4e5ec1444/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20200217220822-9197077df867 h1:JoRuNIf+rpHl+VhScRQQvzbHed86tKkqwPMV34T8myw=
 golang.org/x/sys v0.0.0-20200217220822-9197077df867/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20220422013727-9388b58f7150 h1:xHms4gcpe1YE7A3yIllJXP16CMAGuqwO2lX1mTyyRRc=
+golang.org/x/sys v0.0.0-20220422013727-9388b58f7150/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/tools v0.0.0-20200130002326-2f3ba24bd6e7/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=

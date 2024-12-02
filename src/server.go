@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"sync"
 	"time"
 
 	ta "modbus-emulator/src/traffic_analysis"
@@ -110,7 +111,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 	closeChannel <- true
 }
 
-func ServerInit() {
+func ServerInit(waitGroup *sync.WaitGroup) {
 	var err error
 	server := mS.NewServer()
 	servePath := fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort)
@@ -123,7 +124,6 @@ func ServerInit() {
 			log.Fatalf("Error on listening TCP: %s", err)
 		}
 	}
-	defer server.Close()
 	log.Printf("Start server on %s, workmode: %s", servePath, utils.WorkMode)
 	go func() {
 		for {
@@ -137,4 +137,6 @@ func ServerInit() {
 	closeChannel := make(chan bool)
 	go emulate(server, history, closeChannel)
 	<-closeChannel
+	server.Close()
+	waitGroup.Done()
 }
