@@ -26,8 +26,12 @@ type (
 		GetFunctionID() uint16
 	}
 
+	SlaveTransaction struct {
+		SlaveID       uint16
+		TransactionID string
+	}
 	HistoryEvent struct {
-		TransactionID   string
+		Header          SlaveTransaction
 		Handshake       Handshake
 		TransactionTime time.Time
 	}
@@ -45,7 +49,8 @@ type (
 )
 
 func (hE *HistoryEvent) LogPrint() {
-	log.Printf("\n\nTransaction № %v\n", hE.TransactionID)
+	log.Printf("\n\nSlave ID: %d\n", hE.Header.SlaveID)
+	log.Printf("\n Transaction № %s", hE.Header.TransactionID)
 	log.Println("\n Request:")
 	hE.Handshake.Request.LogPrint()
 	log.Println("\n Response:")
@@ -98,7 +103,7 @@ func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
 func (hdhk *Handshake) Marshal() (data EmulationData, err error) {
 	data.FunctionID = hdhk.Response.GetFunctionID()
 	data.IsReadOperation = !slices.Contains([]uint16{
-		utils.Functions.CoilsSimpleWrite, 
+		utils.Functions.CoilsSimpleWrite,
 		utils.Functions.HRSimpleWrite,
 		utils.Functions.CoilsMultipleWrite,
 		utils.Functions.HRMultipleWrite}, data.FunctionID)
