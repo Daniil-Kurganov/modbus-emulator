@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"modbus-emulator/src/traffic_analysis/structs"
 	"modbus-emulator/src/utils"
+	"slices"
 	"strconv"
 
 	"github.com/google/gopacket"
@@ -19,7 +20,7 @@ func TCPTransactionIDParsing(transcationID []byte) (key string) {
 	return
 }
 
-func ParseDump() (history []structs.HistoryEvent, err error) {
+func ParseDump() (history []structs.HistoryEvent, slavesId []uint8, err error) {
 	var currentHandle *pcap.Handle
 	indexDictionary := make(map[structs.SlaveTransaction]int)
 	for _, currentFilter := range []string{"dst", "src"} {
@@ -42,15 +43,18 @@ func ParseDump() (history []structs.HistoryEvent, err error) {
 			currentHistoryEvent := new(structs.HistoryEvent)
 			if utils.WorkMode == "rtu_over_tcp" {
 				currentHistoryEvent.Header = structs.SlaveTransaction{
-					SlaveID:       uint16(currentPayload[0]),
+					SlaveID:       uint8(currentPayload[0]),
 					TransactionID: strconv.Itoa(counterTransaction),
 				}
 				counterTransaction += 1
 			} else {
 				currentHistoryEvent.Header = structs.SlaveTransaction{
-					SlaveID:       uint16(currentPayload[6]),
+					SlaveID:       uint8(currentPayload[6]),
 					TransactionID: TCPTransactionIDParsing(currentPayload[:2]),
 				}
+			}
+			if !slices.Contains(slavesId, currentHistoryEvent.Header.SlaveID) {
+				slavesId = append(slavesId, currentHistoryEvent.Header.SlaveID)
 			}
 			if currentFilter == "dst" {
 				currentHistoryEvent.Handshake = structs.Handshake{}

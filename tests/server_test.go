@@ -135,6 +135,7 @@ func TestServerTCPMode(t *testing.T) {
 	go src.ServerInit(&waitGroup)
 	time.Sleep(500 * time.Millisecond)
 	handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort))
+	handler.SlaveId = 1
 	if err = handler.Connect(); err != nil {
 		assert.EqualErrorf(t, err, "nil",
 			"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
@@ -296,6 +297,7 @@ func TestServerRTUOverTCPMode(t *testing.T) {
 		)
 		return
 	}
+	client.SetUnitId(1)
 	if err = client.Open(); err != nil {
 		assert.EqualErrorf(t, err, "nil",
 			"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,

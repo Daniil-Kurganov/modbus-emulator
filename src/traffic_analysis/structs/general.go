@@ -27,7 +27,7 @@ type (
 	}
 
 	SlaveTransaction struct {
-		SlaveID       uint16
+		SlaveID       uint8
 		TransactionID string
 	}
 	HistoryEvent struct {
