@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"modbus-emulator/src/traffic_analysis/structs"
 	"modbus-emulator/src/utils"
+	"slices"
 	"strconv"
 
 	"github.com/google/gopacket"
@@ -19,9 +20,9 @@ func TCPTransactionIDParsing(transcationID []byte) (key string) {
 	return
 }
 
-func ParseDump() (history []structs.HistoryEvent, err error) {
+func ParseDump() (history []structs.HistoryEvent, slavesId []uint8, err error) {
 	var currentHandle *pcap.Handle
-	indexDictionary := make(map[string]int)
+	indexDictionary := make(map[structs.SlaveTransaction]int)
 	for _, currentFilter := range []string{"dst", "src"} {
 		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, utils.ModulePath, utils.DumpDirectoryPath, utils.WorkMode)); err != nil {
 			err = fmt.Errorf("error on opening file: %s", err)
@@ -41,19 +42,28 @@ func ParseDump() (history []structs.HistoryEvent, err error) {
 			}
 			currentHistoryEvent := new(structs.HistoryEvent)
 			if utils.WorkMode == "rtu_over_tcp" {
-				currentHistoryEvent.TransactionID = strconv.Itoa(counterTransaction)
+				currentHistoryEvent.Header = structs.SlaveTransaction{
+					SlaveID:       uint8(currentPayload[0]),
+					TransactionID: strconv.Itoa(counterTransaction),
+				}
 				counterTransaction += 1
 			} else {
-				currentHistoryEvent.TransactionID = TCPTransactionIDParsing(currentPayload[:2])
+				currentHistoryEvent.Header = structs.SlaveTransaction{
+					SlaveID:       uint8(currentPayload[6]),
+					TransactionID: TCPTransactionIDParsing(currentPayload[:2]),
+				}
+			}
+			if !slices.Contains(slavesId, currentHistoryEvent.Header.SlaveID) {
+				slavesId = append(slavesId, currentHistoryEvent.Header.SlaveID)
 			}
 			if currentFilter == "dst" {
 				currentHistoryEvent.Handshake = structs.Handshake{}
 				currentHistoryEvent.Handshake.RequestUnmarshal(currentPayload)
 				history = append(history, *currentHistoryEvent)
-				indexDictionary[currentHistoryEvent.TransactionID] = len(history) - 1
+				indexDictionary[currentHistoryEvent.Header] = len(history) - 1
 			} else {
-				history[indexDictionary[currentHistoryEvent.TransactionID]].Handshake.ResponseUnmarshal(currentPayload)
-				history[indexDictionary[currentHistoryEvent.TransactionID]].TransactionTime = currentPacket.Metadata().Timestamp
+				history[indexDictionary[currentHistoryEvent.Header]].Handshake.ResponseUnmarshal(currentPayload)
+				history[indexDictionary[currentHistoryEvent.Header]].TransactionTime = currentPacket.Metadata().Timestamp
 			}
 		}
 		currentHandle.Close()
