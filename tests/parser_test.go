@@ -13,9 +13,10 @@ import (
 
 func TestParsePackets(t *testing.T) {
 	testTable := []struct {
-		mode            string
-		directoryPath   string
-		expectedHistory []structs.HistoryEvent
+		mode             string
+		directoryPath    string
+		expectedHistory  []structs.HistoryEvent
+		expectedSlavesId []uint8
 	}{
 		{
 			mode:          "tcp",
@@ -199,6 +200,7 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 11, 12, 53, 23, 478357374, time.Local),
 				},
 			},
+			expectedSlavesId: []uint8{0},
 		},
 		{
 			mode:          "rtu_over_tcp",
@@ -399,20 +401,25 @@ func TestParsePackets(t *testing.T) {
 					TransactionTime: time.Date(2024, 11, 20, 12, 31, 22, 485545105, time.Local),
 				},
 			},
+			expectedSlavesId: []uint8{1},
 		},
 	}
 	var currentRecievedHistory []structs.HistoryEvent
+	var currentSlavesId []uint8
 	var err error
 	for _, currentTestCase := range testTable {
 		utils.WorkMode = currentTestCase.mode
 		utils.DumpDirectoryPath = currentTestCase.directoryPath
-		if currentRecievedHistory, err = ta.ParseDump(); err != nil {
+		if currentRecievedHistory, currentSlavesId, err = ta.ParseDump(); err != nil {
 			assert.EqualErrorf(t, err, "nil",
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
 			)
 		}
 		assert.Equalf(t, currentTestCase.expectedHistory, currentRecievedHistory,
 			"Error: recieved and expected histories isn't equal:\n expected: %v;\n recieved: %v",
+			currentTestCase.expectedHistory, currentRecievedHistory)
+		assert.Equalf(t, currentTestCase.expectedSlavesId, currentSlavesId,
+			"Error: recieved and expected slaves Id isn't equal:\n expected: %v;\n recieved: %v",
 			currentTestCase.expectedHistory, currentRecievedHistory)
 	}
 }
