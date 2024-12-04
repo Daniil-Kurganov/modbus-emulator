@@ -174,11 +174,11 @@ func (pRes *TCPResponse) MarshalPayload() (payload []uint16, err error) {
 	return
 }
 
-func (rReq *TCPReadRequest) GetQuantityRegisters() (quantity []uint16) {
-	for _, currentQuantityLevel := range rReq.NumberReadingBits {
-		quantity = append(quantity, uint16(currentQuantityLevel))
-	}
-	return
+func (pRes *TCPResponse) LogPrint() {
+	log.Println("  Header:")
+	pRes.Header.LogPrint()
+	log.Println("  Data:")
+	pRes.Data.LogPrint()
 }
 
 func (pRes *TCPResponse) GetFunctionID() uint16 {
