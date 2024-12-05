@@ -1,5 +1,13 @@
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241203090210-caa2a9f1ffff h1:zPoiHzwJLZRoevXzGgoAcd863km4eF1VEc8sLXesZbw=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241203090210-caa2a9f1ffff/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205124755-07131411cb56 h1:whOOXak6n5lX3oYD1f8mgj+S4eAVUe9tTi//OrPXU4o=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205124755-07131411cb56/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205141011-c5569bbc26aa h1:O9lH6yvRi4aER3oZl8RelMDujEEHCgf0NVHQRcMvdTM=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205141011-c5569bbc26aa/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205141456-2a983592a3bf h1:mYpS24hTNSX8Ck8tsYTUDbyHnJqqC6sJIunDob9yHi0=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205141456-2a983592a3bf/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205142206-9b646afa6b68 h1:j/ZDz2VkL6zr4NrhtjZOSU6oOqzwrVojPZSe14vS+FI=
+github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205142206-9b646afa6b68/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/goburrow/modbus v0.1.0 h1:DejRZY73nEM6+bt5JSP6IsFolJ9dVcqxsYbpLbeW/ro=
@@ -21,6 +29,8 @@ github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df/go.mod h1:JP3t17
 github.com/vishvananda/netns v0.0.0-20210104183010-2eb08e3e575f/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
+golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f h1:XdNn9LlyWAhLVp6P/i8QYBW+hlyhrhei9uErw2B5GJo=
+golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f/go.mod h1:D5SMRVC3C2/4+F/DB1wZsLRnSNimn2Sp/NPsCrsv8ak=
 golang.org/x/lint v0.0.0-20200302205851-738671d3881b/go.mod h1:3xt1FjdF8hUf6vQPIChWIBhFzV8gjjsPE/fR3IyQdNY=
 golang.org/x/mod v0.1.1-0.20191105210325-c90efee705ee/go.mod h1:QqPTAvyqsEbceGzBzNggFXnrqF1CaUcvgkdR5Ot7KZg=
 golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=

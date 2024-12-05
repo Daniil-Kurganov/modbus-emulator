@@ -2,14 +2,13 @@ package utils
 
 import "time"
 
+type ServerSocket struct {
+	HostAddress string
+	PortAddress string
+}
+
 var (
-	ServerTCPHost     = "localhost"
-	ServerTCPPort     = "1502"
-	FinishDelayTime   = 3 * time.Second
-	WorkMode          = "tcp"
-	ModulePath        = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator`
-	DumpDirectoryPath = `src/pcapng_files/main_files`
-	Functions         = struct {
+	Functions = struct {
 		CoilsRead          uint16
 		DIRead             uint16
 		HRRead             uint16
@@ -28,4 +27,17 @@ var (
 		CoilsMultipleWrite: 15,
 		HRMultipleWrite:    16,
 	}
+
+	Ports = map[uint16]ServerSocket{
+		1502: {
+			HostAddress: "127.0.0.1",
+			PortAddress: "1502",
+		},
+	}
+	ServerTCPHost     = "localhost"
+	ServerTCPPort     = "1502"
+	FinishDelayTime   = 3 * time.Second
+	WorkMode          = "tcp"
+	ModulePath        = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator`
+	DumpDirectoryPath = `src/pcapng_files/main_files`
 )

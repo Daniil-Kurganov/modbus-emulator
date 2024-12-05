@@ -151,7 +151,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 	closeChannel <- true
 }
 
-func ServerInit(waitGroup *sync.WaitGroup) {
+func ServerInit(waitGroup *sync.WaitGroup, physicalPort uint16) {
 	var err error
 	server := mS.NewServer()
 	servePath := fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort)
@@ -165,7 +165,7 @@ func ServerInit(waitGroup *sync.WaitGroup) {
 		}
 	}
 	log.Printf("Start server on %s, work mode: %s", servePath, utils.WorkMode)
-	var history []structs.HistoryEvent
+	var history map[uint16][]structs.HistoryEvent
 	var slavesId []uint8
 	if history, slavesId, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error on parsing dump history: %s", err)
@@ -174,8 +174,9 @@ func ServerInit(waitGroup *sync.WaitGroup) {
 		server.InitSlave(currentSlaveId)
 	}
 	closeChannel := make(chan bool)
-	go emulate(server, history, closeChannel)
+	go emulate(server, history[physicalPort], closeChannel)
 	<-closeChannel
+	close(closeChannel)
 	server.Close()
 	waitGroup.Done()
 }

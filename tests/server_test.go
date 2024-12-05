@@ -43,7 +43,10 @@ type (
 	}
 )
 
-var directoryPath = `src/pcapng_files/tests_files`
+var (
+	directoryPath = `src/pcapng_files/tests_files`
+	port          = 1502
+)
 
 func TestServerTCPMode(t *testing.T) {
 	var err error
@@ -132,7 +135,7 @@ func TestServerTCPMode(t *testing.T) {
 	utils.WorkMode = testCasesTCP.workMode
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(1)
-	go src.ServerInit(&waitGroup)
+	go src.ServerInit(&waitGroup, uint16(port))
 	time.Sleep(500 * time.Millisecond)
 	handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort))
 	handler.SlaveId = 0
@@ -284,7 +287,7 @@ func TestServerRTUOverTCPMode(t *testing.T) {
 	utils.WorkMode = testCasesRTUOverTCP.workMode
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(1)
-	go src.ServerInit(&waitGroup)
+	go src.ServerInit(&waitGroup, uint16(port))
 	time.Sleep(500 * time.Millisecond)
 	var client *modbus.ModbusClient
 	if client, err = modbus.NewClient(&modbus.ClientConfiguration{
