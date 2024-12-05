@@ -1,16 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"sync"
 
 	mc "github.com/goburrow/modbus"
 )
 
-func main() {
+func client(wG *sync.WaitGroup, port uint16) {
 	var err error
-	log.SetFlags(0)
 	for _, currentSlaveID := range []byte{1, 2, 3} {
-		handler := mc.NewTCPClientHandler("localhost:1502")
+		handler := mc.NewTCPClientHandler(fmt.Sprintf("localhost:%d", port))
 		if err = handler.Connect(); err != nil {
 			log.Fatalf("Error on handler connecting: %s\n", err)
 		}
@@ -68,4 +69,14 @@ func main() {
 		log.Printf("HR[153] = %v", registers)
 		handler.Close()
 	}
+	wG.Done()
+}
+
+func main() {
+	log.SetFlags(0)
+	var wG sync.WaitGroup
+	wG.Add(2)
+	go client(&wG, 1502)
+	go client(&wG, 1503)
+	wG.Wait()
 }

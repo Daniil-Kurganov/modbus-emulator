@@ -1,18 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/simonvetter/modbus"
 )
 
-func main() {
-	log.SetFlags(0)
+func client(wG *sync.WaitGroup, port uint16) {
 	var err error
 	var client *modbus.ModbusClient
 	if client, err = modbus.NewClient(&modbus.ClientConfiguration{
-		URL:     "rtuovertcp://localhost:1502",
+		URL:     fmt.Sprintf("rtuovertcp://localhost:%d", port),
 		Speed:   19200,
 		Timeout: 1 * time.Second,
 	}); err != nil {
@@ -77,4 +78,14 @@ func main() {
 		}
 		log.Printf("HR[153] = %d", sHR)
 	}
+	wG.Done()
+}
+
+func main() {
+	log.SetFlags(0)
+	var wG sync.WaitGroup
+	wG.Add(2)
+	go client(&wG, 1502)
+	go client(&wG, 1503)
+	wG.Wait()
 }
