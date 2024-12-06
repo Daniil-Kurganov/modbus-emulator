@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"modbus-emulator/conf"
 	"modbus-emulator/src"
-	"modbus-emulator/src/utils"
 	"sync"
 	"testing"
 	"time"
@@ -44,7 +44,7 @@ type (
 )
 
 var (
-	directoryPath = `src/pcapng_files/tests_files`
+	directoryPath = `pcapng_files/tests_files/simple_port`
 	port          = 1502
 )
 
@@ -131,13 +131,13 @@ func TestServerTCPMode(t *testing.T) {
 			},
 		},
 	}
-	utils.DumpDirectoryPath = directoryPath
-	utils.WorkMode = testCasesTCP.workMode
+	conf.DumpDirectoryPath = directoryPath
+	conf.WorkMode = testCasesTCP.workMode
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(1)
 	go src.ServerInit(&waitGroup, uint16(port))
 	time.Sleep(500 * time.Millisecond)
-	handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort))
+	handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%s", conf.ServerTCPHost, conf.ServerTCPPort))
 	handler.SlaveId = 0
 	if err = handler.Connect(); err != nil {
 		assert.EqualErrorf(t, err, "nil",
@@ -283,15 +283,15 @@ func TestServerRTUOverTCPMode(t *testing.T) {
 			},
 		},
 	}
-	utils.DumpDirectoryPath = directoryPath
-	utils.WorkMode = testCasesRTUOverTCP.workMode
+	conf.DumpDirectoryPath = directoryPath
+	conf.WorkMode = testCasesRTUOverTCP.workMode
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(1)
 	go src.ServerInit(&waitGroup, uint16(port))
 	time.Sleep(500 * time.Millisecond)
 	var client *modbus.ModbusClient
 	if client, err = modbus.NewClient(&modbus.ClientConfiguration{
-		URL:     fmt.Sprintf("rtuovertcp://%s:%s", utils.ServerTCPHost, utils.ServerTCPPort),
+		URL:     fmt.Sprintf("rtuovertcp://%s:%s", conf.ServerTCPHost, conf.ServerTCPPort),
 		Speed:   19200,
 		Timeout: 1 * time.Second,
 	}); err != nil {

@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"modbus-emulator/conf"
 	ta "modbus-emulator/src/traffic_analysis"
 	structs "modbus-emulator/src/traffic_analysis/structs"
-	"modbus-emulator/src/utils"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +20,7 @@ func TestParsePackets(t *testing.T) {
 	}{
 		{
 			mode:          "tcp",
-			directoryPath: `src/pcapng_files/tests_files`,
+			directoryPath: `pcapng_files/tests_files/simple_port`,
 			expectedHistory: map[uint16][]structs.HistoryEvent{
 				1502: {
 					{
@@ -206,7 +206,7 @@ func TestParsePackets(t *testing.T) {
 		},
 		{
 			mode:          "rtu_over_tcp",
-			directoryPath: `src/pcapng_files/tests_files`,
+			directoryPath: `pcapng_files/tests_files/simple_port`,
 			expectedHistory: map[uint16][]structs.HistoryEvent{
 				1502: {
 					{
@@ -412,8 +412,8 @@ func TestParsePackets(t *testing.T) {
 	var currentSlavesId []uint8
 	var err error
 	for _, currentTestCase := range testTable {
-		utils.WorkMode = currentTestCase.mode
-		utils.DumpDirectoryPath = currentTestCase.directoryPath
+		conf.WorkMode = currentTestCase.mode
+		conf.DumpDirectoryPath = currentTestCase.directoryPath
 		if currentRecievedHistory, currentSlavesId, err = ta.ParseDump(); err != nil {
 			assert.EqualErrorf(t, err, "nil",
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,

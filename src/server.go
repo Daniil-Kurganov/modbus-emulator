@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"modbus-emulator/conf"
 	ta "modbus-emulator/src/traffic_analysis"
 	"modbus-emulator/src/traffic_analysis/structs"
-	"modbus-emulator/src/utils"
 
 	mS "github.com/Daniil-Kurganov/modbus-server"
 )
@@ -27,7 +27,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 	for currentIndex, currentHistoryEvent := range history {
 		var timeEmulation time.Duration
 		if currentIndex == len(history)-1 {
-			timeEmulation = utils.FinishDelayTime
+			timeEmulation = conf.FinishDelayTime
 		} else {
 			timeEmulation = history[currentIndex+1].TransactionTime.Sub(currentHistoryEvent.TransactionTime)
 		}
@@ -45,7 +45,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 		}
 		currentRightBorder := int(currentEmulationData.Address + currentEmulationData.Quantity)
 		switch currentEmulationData.FunctionID {
-		case utils.Functions.CoilsRead:
+		case conf.Functions.CoilsRead:
 			currentObjectType, currentOperation = "coils", "read"
 			log.Printf("\n\n Before: Coils[%d:%d] = %d",
 				currentEmulationData.Address, currentRightBorder,
@@ -59,7 +59,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 				currentEmulationData.Address,
 				currentRightBorder,
 				server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder])
-		case utils.Functions.DIRead:
+		case conf.Functions.DIRead:
 			currentObjectType, currentOperation = "DI", "read"
 			log.Printf("\n\n Before: DI[%d:%d] = %d",
 				currentEmulationData.Address,
@@ -74,7 +74,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 				currentEmulationData.Address,
 				currentRightBorder,
 				server.Slaves[currentHistoryEvent.Header.SlaveID].DiscreteInputs[currentEmulationData.Address:currentRightBorder])
-		case utils.Functions.HRRead:
+		case conf.Functions.HRRead:
 			currentObjectType, currentOperation = "HR", "read"
 			log.Printf("\n\n Before: HR[%d:%d] = %d",
 				currentEmulationData.Address,
@@ -89,7 +89,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 				currentEmulationData.Address,
 				currentRightBorder,
 				server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder])
-		case utils.Functions.IRRead:
+		case conf.Functions.IRRead:
 			currentObjectType, currentOperation = "IR", "read"
 			log.Printf("\n\n Before: IR[%d:%d] = %d", currentEmulationData.Address, currentRightBorder, server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentEmulationData.Address:currentRightBorder])
 			if !reflect.DeepEqual(server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentEmulationData.Address:currentRightBorder], sliceUint16ToByte(currentEmulationData.Payload)) {
@@ -101,19 +101,19 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 				currentEmulationData.Address,
 				currentRightBorder,
 				server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentEmulationData.Address:currentRightBorder])
-		case utils.Functions.CoilsSimpleWrite:
+		case conf.Functions.CoilsSimpleWrite:
 			currentObjectType, currentOperation = "coils", "simple write"
 			log.Printf("\n\n Before: Coils[%d] = %d",
 				currentEmulationData.Address,
 				server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address])
 			server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address] = byte(currentEmulationData.Payload[0])
 			log.Printf(" After: Coils[%d] = %d", currentEmulationData.Address, server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address])
-		case utils.Functions.HRSimpleWrite:
+		case conf.Functions.HRSimpleWrite:
 			currentObjectType, currentOperation = "HR", "simple write"
 			log.Printf("\n\n Before: HR[%d] = %d", currentEmulationData.Address, server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address])
 			server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address] = currentEmulationData.Payload[0]
 			log.Printf(" After: HR[%d] = %d", currentEmulationData.Address, server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address])
-		case utils.Functions.CoilsMultipleWrite:
+		case conf.Functions.CoilsMultipleWrite:
 			currentObjectType, currentOperation = "coils", "multiple write"
 			log.Printf("\n\n Before: Coils[%d:%d] = %v",
 				currentEmulationData.Address,
@@ -126,7 +126,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 				currentEmulationData.Address,
 				currentRightBorder,
 				server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder])
-		case utils.Functions.HRMultipleWrite:
+		case conf.Functions.HRMultipleWrite:
 			currentObjectType, currentOperation = "HR", "multiple write"
 			log.Printf("\n\n Before: HR[%d:%d] = %v",
 				currentEmulationData.Address,
@@ -154,8 +154,8 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 func ServerInit(waitGroup *sync.WaitGroup, physicalPort uint16) {
 	var err error
 	server := mS.NewServer()
-	servePath := fmt.Sprintf("%s:%s", utils.ServerTCPHost, utils.ServerTCPPort)
-	if utils.WorkMode == "rtu_over_tcp" {
+	servePath := fmt.Sprintf("%s:%s", conf.ServerTCPHost, conf.ServerTCPPort)
+	if conf.WorkMode == "rtu_over_tcp" {
 		if err = server.ListenRTUOverTCP(servePath); err != nil {
 			log.Fatalf("Error on listening RTU over TCP: %s", err)
 		}
@@ -164,7 +164,7 @@ func ServerInit(waitGroup *sync.WaitGroup, physicalPort uint16) {
 			log.Fatalf("Error on listening TCP: %s", err)
 		}
 	}
-	log.Printf("Start server on %s, work mode: %s", servePath, utils.WorkMode)
+	log.Printf("Start server on %s, work mode: %s", servePath, conf.WorkMode)
 	var history map[uint16][]structs.HistoryEvent
 	var slavesId []uint8
 	if history, slavesId, err = ta.ParseDump(); err != nil {

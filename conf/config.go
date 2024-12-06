@@ -1,4 +1,4 @@
-package utils
+package conf
 
 import "time"
 
@@ -39,5 +39,5 @@ var (
 	FinishDelayTime   = 3 * time.Second
 	WorkMode          = "tcp"
 	ModulePath        = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator`
-	DumpDirectoryPath = `src/pcapng_files/main_files`
+	DumpDirectoryPath = `pcapng_files/main_files/simple_port`
 )

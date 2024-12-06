@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
+	"modbus-emulator/conf"
 	"modbus-emulator/src"
-	"modbus-emulator/src/utils"
 	"sync"
 
 	"golang.org/x/exp/maps"
@@ -12,7 +12,7 @@ import (
 func main() {
 	log.SetFlags(0)
 	var waitGroup sync.WaitGroup
-	for _, currentPhysicalPort := range maps.Keys(utils.Ports) {
+	for _, currentPhysicalPort := range maps.Keys(conf.Ports) {
 		log.Print(currentPhysicalPort)
 		waitGroup.Add(1)
 		go src.ServerInit(&waitGroup, currentPhysicalPort)

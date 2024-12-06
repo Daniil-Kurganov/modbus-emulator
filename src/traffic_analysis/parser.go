@@ -3,7 +3,7 @@ package trafficanalysis
 import (
 	"fmt"
 	"modbus-emulator/src/traffic_analysis/structs"
-	"modbus-emulator/src/utils"
+	"modbus-emulator/conf"
 	"slices"
 	"strconv"
 
@@ -24,10 +24,10 @@ func ParseDump() (history map[uint16][]structs.HistoryEvent, slavesId []uint8, e
 	var currentHandle *pcap.Handle
 	indexDictionary := make(map[structs.SlaveTransaction]int)
 	history = make(map[uint16][]structs.HistoryEvent)
-	for currentPhysicalPort, currentServerSocket := range utils.Ports {
+	for currentPhysicalPort, currentServerSocket := range conf.Ports {
 		var currentHistory []structs.HistoryEvent
 		for _, currentFilter := range []string{"dst", "src"} {
-			if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, utils.ModulePath, utils.DumpDirectoryPath, utils.WorkMode)); err != nil {
+			if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, conf.ModulePath, conf.DumpDirectoryPath, conf.WorkMode)); err != nil {
 				err = fmt.Errorf("error on opening file: %s", err)
 				return
 			}
@@ -44,7 +44,7 @@ func ParseDump() (history map[uint16][]structs.HistoryEvent, slavesId []uint8, e
 					continue
 				}
 				currentHistoryEvent := new(structs.HistoryEvent)
-				if utils.WorkMode == "rtu_over_tcp" {
+				if conf.WorkMode == "rtu_over_tcp" {
 					currentHistoryEvent.Header = structs.SlaveTransaction{
 						SlaveID:       uint8(currentPayload[0]),
 						TransactionID: strconv.Itoa(counterTransaction),
