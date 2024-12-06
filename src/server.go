@@ -165,16 +165,15 @@ func ServerInit(waitGroup *sync.WaitGroup, physicalPort uint16) {
 		}
 	}
 	log.Printf("Start server on %s, work mode: %s", servePath, conf.WorkMode)
-	var history map[uint16][]structs.HistoryEvent
-	var slavesId []uint8
-	if history, slavesId, err = ta.ParseDump(); err != nil {
+	var history map[uint16]structs.ServerHistory
+	if history, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error on parsing dump history: %s", err)
 	}
-	for _, currentSlaveId := range slavesId {
+	for _, currentSlaveId := range history[physicalPort].Slaves {
 		server.InitSlave(currentSlaveId)
 	}
 	closeChannel := make(chan bool)
-	go emulate(server, history[physicalPort], closeChannel)
+	go emulate(server, history[physicalPort].Transactions, closeChannel)
 	<-closeChannel
 	close(closeChannel)
 	server.Close()

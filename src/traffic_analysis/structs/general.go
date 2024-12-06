@@ -35,6 +35,10 @@ type (
 		Handshake       Handshake
 		TransactionTime time.Time
 	}
+	ServerHistory struct {
+		Transactions []HistoryEvent
+		Slaves       []uint8
+	}
 	Handshake struct {
 		Request  Request
 		Response Response

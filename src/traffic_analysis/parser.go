@@ -2,8 +2,8 @@ package trafficanalysis
 
 import (
 	"fmt"
-	"modbus-emulator/src/traffic_analysis/structs"
 	"modbus-emulator/conf"
+	"modbus-emulator/src/traffic_analysis/structs"
 	"slices"
 	"strconv"
 
@@ -20,12 +20,13 @@ func TCPTransactionIDParsing(transcationID []byte) (key string) {
 	return
 }
 
-func ParseDump() (history map[uint16][]structs.HistoryEvent, slavesId []uint8, err error) {
+func ParseDump() (history map[uint16]structs.ServerHistory, err error) {
 	var currentHandle *pcap.Handle
 	indexDictionary := make(map[structs.SlaveTransaction]int)
-	history = make(map[uint16][]structs.HistoryEvent)
+	history = make(map[uint16]structs.ServerHistory)
 	for currentPhysicalPort, currentServerSocket := range conf.Ports {
 		var currentHistory []structs.HistoryEvent
+		var currentSlavesId []uint8
 		for _, currentFilter := range []string{"dst", "src"} {
 			if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, conf.ModulePath, conf.DumpDirectoryPath, conf.WorkMode)); err != nil {
 				err = fmt.Errorf("error on opening file: %s", err)
@@ -56,8 +57,8 @@ func ParseDump() (history map[uint16][]structs.HistoryEvent, slavesId []uint8, e
 						TransactionID: TCPTransactionIDParsing(currentPayload[:2]),
 					}
 				}
-				if !slices.Contains(slavesId, currentHistoryEvent.Header.SlaveID) {
-					slavesId = append(slavesId, currentHistoryEvent.Header.SlaveID)
+				if !slices.Contains(currentSlavesId, currentHistoryEvent.Header.SlaveID) {
+					currentSlavesId = append(currentSlavesId, currentHistoryEvent.Header.SlaveID)
 				}
 				if currentFilter == "dst" {
 					currentHistoryEvent.Handshake = structs.Handshake{}
@@ -71,7 +72,10 @@ func ParseDump() (history map[uint16][]structs.HistoryEvent, slavesId []uint8, e
 			}
 			currentHandle.Close()
 		}
-		history[currentPhysicalPort] = currentHistory
+		history[currentPhysicalPort] = structs.ServerHistory{
+			Transactions: currentHistory,
+			Slaves:       currentSlavesId,
+		}
 	}
 	return
 }
