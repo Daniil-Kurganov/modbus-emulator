@@ -16,10 +16,6 @@ func main() {
 	var err error
 	conf.WorkMode = "rtu_over_tcp"
 	conf.DumpDirectoryPath = `pcapng_files/tests_files/multiple_ports`
-	conf.Ports[1503] = conf.ServerSocket{
-		HostAddress: "127.0.0.1",
-		PortAddress: "1503",
-	}
 	if history, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error: %s", err)
 	}

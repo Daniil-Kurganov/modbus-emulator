@@ -33,6 +33,10 @@ var (
 			HostAddress: "127.0.0.1",
 			PortAddress: "1502",
 		},
+		1503: {
+			HostAddress: "127.0.0.1",
+			PortAddress: "1503",
+		},
 	}
 	ServerTCPHost     = "localhost"
 	ServerTCPPort     = "1502"
