@@ -137,7 +137,7 @@ func TestServerTCPMode(t *testing.T) {
 	waitGroup.Add(1)
 	go src.ServerInit(&waitGroup, uint16(port))
 	time.Sleep(500 * time.Millisecond)
-	handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%s", conf.ServerTCPHost, conf.ServerTCPPort))
+	handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%d", conf.ServerTCPHost, uint16(port)))
 	handler.SlaveId = 0
 	if err = handler.Connect(); err != nil {
 		assert.EqualErrorf(t, err, "nil",
@@ -291,7 +291,7 @@ func TestServerRTUOverTCPMode(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 	var client *modbus.ModbusClient
 	if client, err = modbus.NewClient(&modbus.ClientConfiguration{
-		URL:     fmt.Sprintf("rtuovertcp://%s:%s", conf.ServerTCPHost, conf.ServerTCPPort),
+		URL:     fmt.Sprintf("rtuovertcp://%s:%d", conf.ServerTCPHost, uint16(port)),
 		Speed:   19200,
 		Timeout: 1 * time.Second,
 	}); err != nil {

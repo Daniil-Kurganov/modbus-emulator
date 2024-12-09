@@ -154,7 +154,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 func ServerInit(waitGroup *sync.WaitGroup, physicalPort uint16) {
 	var err error
 	server := mS.NewServer()
-	servePath := fmt.Sprintf("%s:%s", conf.ServerTCPHost, conf.ServerTCPPort)
+	servePath := fmt.Sprintf("%s:%d", conf.ServerTCPHost, physicalPort)
 	if conf.WorkMode == "rtu_over_tcp" {
 		if err = server.ListenRTUOverTCP(servePath); err != nil {
 			log.Fatalf("Error on listening RTU over TCP: %s", err)

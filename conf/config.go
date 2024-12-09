@@ -39,9 +39,8 @@ var (
 		},
 	}
 	ServerTCPHost     = "localhost"
-	ServerTCPPort     = "1502"
 	FinishDelayTime   = 3 * time.Second
 	WorkMode          = "tcp"
 	ModulePath        = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator`
-	DumpDirectoryPath = `pcapng_files/main_files/simple_port`
+	DumpDirectoryPath = `pcapng_files/main_files/multiple_ports`
 )
