@@ -1637,6 +1637,1316 @@ func TestParsePackets(t *testing.T) {
 				},
 			},
 		},
+		{
+			mode:          "tcp",
+			directoryPath: `pcapng_files/tests_files/multiple_ports`,
+			ports: map[uint16]conf.ServerSocket{
+				1502: {
+					HostAddress: "127.0.0.1",
+					PortAddress: "1502",
+				},
+				1503: {
+					HostAddress: "127.0.0.1",
+					PortAddress: "1503",
+				},
+			},
+			expectedHistory: map[uint16]structs.ServerHistory{
+				1502: {
+					Transactions: []structs.HistoryEvent{
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-1",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    10,
+										UnitID:        1,
+										FunctionType:  15,
+									},
+									AddressStart: []byte{0, 7},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 3},
+										NumberBits:      3,
+										Data:            []byte{1, 1, 0},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  15,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 7},
+										NumberWrittenRegisters: []byte{0, 3},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 493372239, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-2",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  1,
+									},
+									AddressStart: []byte{0, 5},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 5},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    4,
+										UnitID:        1,
+										FunctionType:  1,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 1,
+										Bits:       4,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 493478544, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-3",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  2,
+									},
+									AddressStart: []byte{0, 9},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 11},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    5,
+										UnitID:        1,
+										FunctionType:  2,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 2,
+										Bits:       146,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 493601380, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-4",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    21,
+										UnitID:        1,
+										FunctionType:  16,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 7},
+										NumberBits:      14,
+										Data:            []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  16,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 150},
+										NumberWrittenRegisters: []byte{0, 7},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 493684938, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-5",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  3,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 15},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    33,
+										UnitID:        1,
+										FunctionType:  3,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 30,
+										Data:       []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 493773451, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-6",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  4,
+									},
+									AddressStart: []byte{0, 4},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 18},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    39,
+										UnitID:        1,
+										FunctionType:  4,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 36,
+										Data:       []byte{0, 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 129, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 25, 248},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 493891013, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-1",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    10,
+										UnitID:        2,
+										FunctionType:  15,
+									},
+									AddressStart: []byte{0, 7},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 3},
+										NumberBits:      3,
+										Data:            []byte{1, 1, 0},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  15,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 7},
+										NumberWrittenRegisters: []byte{0, 3},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 494213430, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-2",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  1,
+									},
+									AddressStart: []byte{0, 5},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 5},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    4,
+										UnitID:        2,
+										FunctionType:  1,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 1,
+										Bits:       4,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 494315312, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-3",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  2,
+									},
+									AddressStart: []byte{0, 9},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 11},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    5,
+										UnitID:        2,
+										FunctionType:  2,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 2,
+										Bits:       0,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 494387555, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-4",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    21,
+										UnitID:        2,
+										FunctionType:  16,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 7},
+										NumberBits:      14,
+										Data:            []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  16,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 150},
+										NumberWrittenRegisters: []byte{0, 7},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 494470536, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-5",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  3,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 15},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    33,
+										UnitID:        2,
+										FunctionType:  3,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 30,
+										Data:       []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 494546296, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-6",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  4,
+									},
+									AddressStart: []byte{0, 4},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 18},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    39,
+										UnitID:        2,
+										FunctionType:  4,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 36,
+										Data:       []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 494617661, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-1",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    10,
+										UnitID:        3,
+										FunctionType:  15,
+									},
+									AddressStart: []byte{0, 7},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 3},
+										NumberBits:      3,
+										Data:            []byte{1, 1, 0},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  15,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 7},
+										NumberWrittenRegisters: []byte{0, 3},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 494933890, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-2",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  1,
+									},
+									AddressStart: []byte{0, 5},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 5},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    4,
+										UnitID:        3,
+										FunctionType:  1,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 1,
+										Bits:       4,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 495003356, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-3",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  2,
+									},
+									AddressStart: []byte{0, 9},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 11},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    5,
+										UnitID:        3,
+										FunctionType:  2,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 2,
+										Bits:       0,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 495068058, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-4",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    21,
+										UnitID:        3,
+										FunctionType:  16,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 7},
+										NumberBits:      14,
+										Data:            []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  16,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 150},
+										NumberWrittenRegisters: []byte{0, 7},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 495145227, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-5",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  3,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 15},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    33,
+										UnitID:        3,
+										FunctionType:  3,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 30,
+										Data:       []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 495220890, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-6",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  4,
+									},
+									AddressStart: []byte{0, 4},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 18},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    39,
+										UnitID:        3,
+										FunctionType:  4,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 36,
+										Data:       []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 495311180, time.Local),
+						},
+					},
+					Slaves: []uint8{1, 2, 3},
+				},
+				1503: {
+					Transactions: []structs.HistoryEvent{
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-1",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    10,
+										UnitID:        1,
+										FunctionType:  15,
+									},
+									AddressStart: []byte{0, 7},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 3},
+										NumberBits:      3,
+										Data:            []byte{1, 1, 0},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  15,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 7},
+										NumberWrittenRegisters: []byte{0, 3},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 493482382, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-2",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  1,
+									},
+									AddressStart: []byte{0, 5},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 5},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    4,
+										UnitID:        1,
+										FunctionType:  1,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 1,
+										Bits:       4,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 493582751, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-3",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  2,
+									},
+									AddressStart: []byte{0, 9},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 11},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    5,
+										UnitID:        1,
+										FunctionType:  2,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 2,
+										Bits:       146,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 493674285, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-4",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    21,
+										UnitID:        1,
+										FunctionType:  16,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 7},
+										NumberBits:      14,
+										Data:            []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  16,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 150},
+										NumberWrittenRegisters: []byte{0, 7},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 493762991, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-5",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  3,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 15},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    33,
+										UnitID:        1,
+										FunctionType:  3,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 30,
+										Data:       []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 493854239, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       1,
+								TransactionID: "0-6",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        1,
+										FunctionType:  4,
+									},
+									AddressStart: []byte{0, 4},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 18},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    39,
+										UnitID:        1,
+										FunctionType:  4,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 36,
+										Data:       []byte{0, 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 129, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 25, 248},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 493933699, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-1",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    10,
+										UnitID:        2,
+										FunctionType:  15,
+									},
+									AddressStart: []byte{0, 7},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 3},
+										NumberBits:      3,
+										Data:            []byte{1, 1, 0},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  15,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 7},
+										NumberWrittenRegisters: []byte{0, 3},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 494203449, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-2",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  1,
+									},
+									AddressStart: []byte{0, 5},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 5},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    4,
+										UnitID:        2,
+										FunctionType:  1,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 1,
+										Bits:       4,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 494285109, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-3",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  2,
+									},
+									AddressStart: []byte{0, 9},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 11},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    5,
+										UnitID:        2,
+										FunctionType:  2,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 2,
+										Bits:       0,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 494359143, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-4",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    21,
+										UnitID:        2,
+										FunctionType:  16,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 7},
+										NumberBits:      14,
+										Data:            []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  16,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 150},
+										NumberWrittenRegisters: []byte{0, 7},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 494426128, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-5",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  3,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 15},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    33,
+										UnitID:        2,
+										FunctionType:  3,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 30,
+										Data:       []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 494504852, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       2,
+								TransactionID: "0-6",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        2,
+										FunctionType:  4,
+									},
+									AddressStart: []byte{0, 4},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 18},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    39,
+										UnitID:        2,
+										FunctionType:  4,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 36,
+										Data:       []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 494599249, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-1",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    10,
+										UnitID:        3,
+										FunctionType:  15,
+									},
+									AddressStart: []byte{0, 7},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 3},
+										NumberBits:      3,
+										Data:            []byte{1, 1, 0},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 1},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  15,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 7},
+										NumberWrittenRegisters: []byte{0, 3},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 494801609, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-2",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  1,
+									},
+									AddressStart: []byte{0, 5},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 5},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 2},
+										Protocol:      "modbus",
+										BodyLength:    4,
+										UnitID:        3,
+										FunctionType:  1,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 1,
+										Bits:       4,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 6, 10, 01, 21, 494901640, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-3",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  2,
+									},
+									AddressStart: []byte{0, 9},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 11},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 3},
+										Protocol:      "modbus",
+										BodyLength:    5,
+										UnitID:        3,
+										FunctionType:  2,
+									},
+									Data: &structs.TCPReadBitResponse{
+										NumberBits: 2,
+										Bits:       0,
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 494977332, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-4",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    21,
+										UnitID:        3,
+										FunctionType:  16,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPWriteMultipleRequest{
+										NumberRegisters: []byte{0, 7},
+										NumberBits:      14,
+										Data:            []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 4},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  16,
+									},
+									Data: &structs.TCPWriteMultipleResponse{
+										AddressStart:           []byte{0, 150},
+										NumberWrittenRegisters: []byte{0, 7},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 495055886, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-5",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  3,
+									},
+									AddressStart: []byte{0, 150},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 15},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 5},
+										Protocol:      "modbus",
+										BodyLength:    33,
+										UnitID:        3,
+										FunctionType:  3,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 30,
+										Data:       []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 495142910, time.Local),
+						},
+						{
+							Header: structs.SlaveTransaction{
+								SlaveID:       3,
+								TransactionID: "0-6",
+							},
+							Handshake: structs.Handshake{
+								Request: &structs.TCPRequest{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    6,
+										UnitID:        3,
+										FunctionType:  4,
+									},
+									AddressStart: []byte{0, 4},
+									Data: &structs.TCPReadRequest{
+										NumberReadingBits: []byte{0, 18},
+									},
+								},
+								Response: &structs.TCPResponse{
+									Header: structs.MBAPHeader{
+										TransactionID: []byte{0, 6},
+										Protocol:      "modbus",
+										BodyLength:    39,
+										UnitID:        3,
+										FunctionType:  4,
+									},
+									Data: &structs.TCPReadByteResponse{
+										NumberBits: 36,
+										Data:       []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									},
+								},
+							},
+							TransactionTime: time.Date(2024, 12, 06, 10, 1, 21, 495242243, time.Local),
+						},
+					},
+					Slaves: []uint8{1, 2, 3},
+				},
+			},
+		},
 	}
 	var currentRecievedHistory map[uint16]structs.ServerHistory
 	var err error
