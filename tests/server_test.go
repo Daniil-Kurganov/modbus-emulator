@@ -524,3 +524,173 @@ func TestServerRTUOverTCPMupliplePorts(t *testing.T) {
 	}
 	waitGroup.Wait()
 }
+
+func TestServerTCPMupliplePorts(t *testing.T) {
+	var err error
+	// log.SetOutput(ioutil.Discard)
+	testCases := map[uint16]testCase[registersTCP]{
+		1502: {
+			transactions: map[uint8][]transactionValues[registersTCP]{
+				1: {
+					{
+						browsedRegisters: map[string]addresses{
+							"coils": {start: 6, quantity: 3},
+							"DI":    {start: 10, quantity: 7},
+							"HR":    {start: 150, quantity: 7},
+							"IR":    {start: 4, quantity: 18},
+						},
+						expectedStates: registersTCP{
+							coils: []byte{2},
+							DI:    []byte{73},
+							HR:    []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+							IR:    []byte{0, 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 129, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 25, 248},
+						},
+					},
+				},
+				2: {
+					{
+						browsedRegisters: map[string]addresses{
+							"coils": {start: 6, quantity: 3},
+							"DI":    {start: 1, quantity: 1},
+							"HR":    {start: 150, quantity: 7},
+							"IR":    {start: 0, quantity: 1},
+						},
+						expectedStates: registersTCP{
+							coils: []byte{2},
+							DI:    []byte{0},
+							HR:    []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+							IR:    []byte{0, 0},
+						},
+					},
+				},
+				3: {
+					{
+						browsedRegisters: map[string]addresses{
+							"coils": {start: 6, quantity: 3},
+							"DI":    {start: 1, quantity: 1},
+							"HR":    {start: 150, quantity: 7},
+							"IR":    {start: 0, quantity: 1},
+						},
+						expectedStates: registersTCP{
+							coils: []byte{2},
+							DI:    []byte{0},
+							HR:    []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+							IR:    []byte{0, 0},
+						},
+					},
+				},
+			},
+		},
+		1503: {
+			transactions: map[uint8][]transactionValues[registersTCP]{
+				1: {
+					{
+						browsedRegisters: map[string]addresses{
+							"coils": {start: 6, quantity: 3},
+							"DI":    {start: 10, quantity: 7},
+							"HR":    {start: 150, quantity: 7},
+							"IR":    {start: 4, quantity: 18},
+						},
+						expectedStates: registersTCP{
+							coils: []byte{2},
+							DI:    []byte{73},
+							HR:    []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+							IR:    []byte{0, 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 129, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 25, 248},
+						},
+					},
+				},
+				2: {
+					{
+						browsedRegisters: map[string]addresses{
+							"coils": {start: 6, quantity: 3},
+							"DI":    {start: 1, quantity: 1},
+							"HR":    {start: 150, quantity: 7},
+							"IR":    {start: 0, quantity: 1},
+						},
+						expectedStates: registersTCP{
+							coils: []byte{2},
+							DI:    []byte{0},
+							HR:    []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+							IR:    []byte{0, 0},
+						},
+					},
+				},
+				3: {
+					{
+						browsedRegisters: map[string]addresses{
+							"coils": {start: 6, quantity: 3},
+							"DI":    {start: 1, quantity: 1},
+							"HR":    {start: 150, quantity: 7},
+							"IR":    {start: 0, quantity: 1},
+						},
+						expectedStates: registersTCP{
+							coils: []byte{2},
+							DI:    []byte{0},
+							HR:    []byte{0, 1, 0, 18, 0, 48, 0, 53, 0, 64, 0, 57, 0, 59},
+							IR:    []byte{0, 0},
+						},
+					},
+				},
+			},
+		},
+	}
+	conf.DumpDirectoryPath = `pcapng_files/tests_files/multiple_ports`
+	conf.WorkMode = "tcp"
+	conf.FinishDelayTime = 5 * time.Second
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(len(testCases))
+	for currentPort, currentTestCase := range testCases {
+		go src.ServerInit(&waitGroup, currentPort)
+		time.Sleep(500 * time.Millisecond)
+		handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%d", conf.ServerTCPHost, currentPort))
+		for currentSlaveId, currentTranscationValues := range currentTestCase.transactions {
+			handler.SlaveId = currentSlaveId
+			if err = handler.Connect(); err != nil {
+				assert.EqualErrorf(t, err, "nil",
+					"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+				)
+				t.FailNow()
+			}
+			client := mc.NewClient(handler)
+			if currentSlaveId == 1 {
+				time.Sleep(1600 * time.Millisecond)
+			}
+			var currentRecievedStates registersTCP
+			if currentRecievedStates.coils, err = client.ReadCoils(currentTranscationValues[0].browsedRegisters["coils"].start,
+				currentTranscationValues[0].browsedRegisters["coils"].quantity); err != nil {
+				assert.EqualErrorf(t, err, "nil",
+					"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+				)
+				t.FailNow()
+			}
+			if currentRecievedStates.DI, err = client.ReadDiscreteInputs(currentTranscationValues[0].browsedRegisters["DI"].start,
+				currentTranscationValues[0].browsedRegisters["DI"].quantity); err != nil {
+				assert.EqualErrorf(t, err, "nil",
+					"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+				)
+				t.FailNow()
+			}
+			if currentRecievedStates.HR, err = client.ReadHoldingRegisters(currentTranscationValues[0].browsedRegisters["HR"].start,
+				currentTranscationValues[0].browsedRegisters["HR"].quantity); err != nil {
+				assert.EqualErrorf(t, err, "nil",
+					"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+				)
+				t.FailNow()
+			}
+			if currentRecievedStates.IR, err = client.ReadInputRegisters(currentTranscationValues[0].browsedRegisters["IR"].start,
+				currentTranscationValues[0].browsedRegisters["IR"].quantity); err != nil {
+				assert.EqualErrorf(t, err, "nil",
+					"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+				)
+				t.FailNow()
+			}
+			if !assert.Equalf(t, currentTranscationValues[0].expectedStates, currentRecievedStates,
+				"Error: recieved and expected states isn't equal:\n expected: %v;\n recieved: %v",
+				currentTranscationValues[0].expectedStates, currentRecievedStates) {
+				t.FailNow()
+			}
+			handler.Close()
+		}
+	}
+	waitGroup.Wait()
+}

@@ -14,7 +14,7 @@ func main() {
 	log.SetFlags(0)
 	var history map[uint16]structs.ServerHistory
 	var err error
-	conf.WorkMode = "rtu_over_tcp"
+	conf.WorkMode = "tcp"
 	conf.DumpDirectoryPath = `pcapng_files/tests_files/multiple_ports`
 	if history, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error: %s", err)
