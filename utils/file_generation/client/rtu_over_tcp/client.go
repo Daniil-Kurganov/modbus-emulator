@@ -26,7 +26,7 @@ func client(wG *sync.WaitGroup, port uint16) {
 	var coils, DI []bool
 	// var sCoils, sDI bool
 	var mHR, mIR []uint16
-	// var sHR, sIR uint16
+	// var sHR, sIR uint16``
 	for _, currentUnitID := range []uint8{1, 2, 3} {
 		if err = client.SetUnitId(currentUnitID); err != nil {
 			log.Fatalf("Error on setting uint ID")

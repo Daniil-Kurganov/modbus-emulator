@@ -155,14 +155,17 @@ func ServerInit(waitGroup *sync.WaitGroup, physicalPort uint16) {
 	var err error
 	server := mS.NewServer()
 	servePath := fmt.Sprintf("%s:%d", conf.ServerTCPHost, physicalPort)
-	if conf.WorkMode == "rtu_over_tcp" {
+	switch conf.WorkMode {
+	case "rtu_over_tcp":
 		if err = server.ListenRTUOverTCP(servePath); err != nil {
 			log.Fatalf("Error on listening RTU over TCP: %s", err)
 		}
-	} else {
+	case "tcp":
 		if err = server.ListenTCP(servePath); err != nil {
 			log.Fatalf("Error on listening TCP: %s", err)
 		}
+	default:
+		log.Fatalf("Error: invalid servers's work mode: %s", conf.WorkMode)
 	}
 	log.Printf("Start server on %s, work mode: %s", servePath, conf.WorkMode)
 	var history map[uint16]structs.ServerHistory
