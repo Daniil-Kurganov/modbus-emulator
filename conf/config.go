@@ -30,17 +30,17 @@ var (
 
 	Ports = map[uint16]ServerSocket{
 		1502: {
-			HostAddress: "127.0.0.1",
-			PortAddress: "1502",
+			HostAddress: "192.168.1.29",
+			PortAddress: "502",
 		},
 		1503: {
-			HostAddress: "127.0.0.1",
-			PortAddress: "1503",
+			HostAddress: "192.168.1.31",
+			PortAddress: "502",
 		},
 	}
 	ServerTCPHost     = "localhost"
 	FinishDelayTime   = 3 * time.Second
-	WorkMode          = "tcp"
+	WorkMode          = "rtu_over_tcp"
 	ModulePath        = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator`
-	DumpDirectoryPath = `pcapng_files/main_files/multiple_ports`
+	DumpDirectoryPath = `pcapng_files/main_files`
 )

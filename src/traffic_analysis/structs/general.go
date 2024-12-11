@@ -5,6 +5,7 @@ import (
 	"log"
 	"modbus-emulator/conf"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -139,6 +140,19 @@ func (hdhk *Handshake) Marshal() (data EmulationData, err error) {
 
 func (hdhk *Handshake) TransactionErrorCheck() bool {
 	return hdhk.Response.GetFunctionID()>>7 == 0b1
+}
+
+func (sH *ServerHistory) SelfClean() {
+	deleteIndices := []int{}
+	for currentIndex, currentHistoryEvent := range sH.Transactions {
+		if currentHistoryEvent.Handshake.Request == nil || currentHistoryEvent.Handshake.Response == nil {
+			deleteIndices = append(deleteIndices, currentIndex)
+		}
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(deleteIndices)))
+	for _, currentDeleteIndex := range deleteIndices {
+		sH.Transactions = append(sH.Transactions[:currentDeleteIndex], sH.Transactions[currentDeleteIndex+1:]...)
+	}
 }
 
 func InputsPayloadPreprocessing[T uint16 | byte](data []T) (payload []uint16, err error) {

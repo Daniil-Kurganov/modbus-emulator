@@ -22,35 +22,67 @@ func TCPTransactionIDParsing(transcationID []byte) (key string) {
 
 func ParseDump() (history map[uint16]structs.ServerHistory, err error) {
 	var currentHandle *pcap.Handle
-	indexDictionary := make(map[structs.SlaveTransaction]int)
 	history = make(map[uint16]structs.ServerHistory)
 	for currentPhysicalPort, currentServerSocket := range conf.Ports {
-		var currentHistory []structs.HistoryEvent
-		var currentSlavesId []uint8
-		for _, currentFilter := range []string{"dst", "src"} {
-			if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, conf.ModulePath, conf.DumpDirectoryPath, conf.WorkMode)); err != nil {
+		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, conf.ModulePath, conf.DumpDirectoryPath, conf.WorkMode)); err != nil {
+			if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcap`, conf.ModulePath, conf.DumpDirectoryPath, conf.WorkMode)); err != nil {
 				err = fmt.Errorf("error on opening file: %s", err)
 				return
 			}
-			if err = currentHandle.SetBPFFilter(fmt.Sprintf("tcp %s port %s", currentFilter, currentServerSocket.PortAddress)); err != nil {
-				err = fmt.Errorf("error on setting handle filter: %s", err)
-				return
+
+		}
+		if err = currentHandle.SetBPFFilter(fmt.Sprintf("host %s and tcp port %s",
+			currentServerSocket.HostAddress, currentServerSocket.PortAddress)); err != nil {
+			err = fmt.Errorf("error on setting handle filter: %s", err)
+			return
+		}
+		currentPacketsSource := gopacket.NewPacketSource(currentHandle, currentHandle.LinkType())
+		var currentHistory []structs.HistoryEvent
+		var currentSlavesId []uint8
+		var rtuOverTCPTransactionDictionary map[uint8]int
+		if conf.WorkMode == "rtu_over_tcp" {
+			rtuOverTCPTransactionDictionary = make(map[uint8]int)
+		}
+		for currentPacket := range currentPacketsSource.Packets() {
+			currentTCPLayer := currentPacket.Layer(layers.LayerTypeTCP)
+			currentPayload := currentTCPLayer.LayerPayload()
+			if len(currentPayload) == 0 {
+				continue
 			}
-			currentPacketsSource := gopacket.NewPacketSource(currentHandle, currentHandle.LinkType())
-			counterTransaction := 1
-			for currentPacket := range currentPacketsSource.Packets() {
-				currentTCPLayer := currentPacket.Layer(layers.LayerTypeTCP)
-				currentPayload := currentTCPLayer.LayerPayload()
-				if len(currentPayload) == 0 {
+			currentPacketIsRequest := currentPacket.TransportLayer().TransportFlow().Dst().String() == currentServerSocket.PortAddress
+			if !currentPacketIsRequest {
+				if len(currentHistory) == 0 {
+					continue
+				}
+				if currentHistory[len(currentHistory)-1].Handshake.Response != nil {
+					if conf.WorkMode == "rtu_over_tcp" {
+						rtuOverTCPTransactionDictionary[currentHistory[len(currentHistory)-1].Header.SlaveID] -= 1
+					}
+					currentHistory = currentHistory[:len(currentHistory)-1]
+					continue
+				}
+				currentHistory[len(currentHistory)-1].Handshake.ResponseUnmarshal(currentPayload)
+				currentHistory[len(currentHistory)-1].TransactionTime = currentPacket.Metadata().Timestamp
+			} else {
+				if len(currentHistory) != 0 && currentHistory[len(currentHistory)-1].Handshake.Response == nil {
+					if conf.WorkMode == "rtu_over_tcp" {
+						rtuOverTCPTransactionDictionary[currentHistory[len(currentHistory)-1].Header.SlaveID] -= 1
+					}
+					currentHistory = currentHistory[:len(currentHistory)-1]
 					continue
 				}
 				currentHistoryEvent := new(structs.HistoryEvent)
 				if conf.WorkMode == "rtu_over_tcp" {
-					currentHistoryEvent.Header = structs.SlaveTransaction{
-						SlaveID:       uint8(currentPayload[0]),
-						TransactionID: strconv.Itoa(counterTransaction),
+					currentSlaveId := uint8(currentPayload[0])
+					if _, ok := rtuOverTCPTransactionDictionary[currentSlaveId]; !ok {
+						rtuOverTCPTransactionDictionary[currentSlaveId] = 1
+					} else {
+						rtuOverTCPTransactionDictionary[currentSlaveId] += 1
 					}
-					counterTransaction += 1
+					currentHistoryEvent.Header = structs.SlaveTransaction{
+						SlaveID:       currentSlaveId,
+						TransactionID: strconv.Itoa(rtuOverTCPTransactionDictionary[currentSlaveId]),
+					}
 				} else {
 					currentHistoryEvent.Header = structs.SlaveTransaction{
 						SlaveID:       uint8(currentPayload[6]),
@@ -60,22 +92,17 @@ func ParseDump() (history map[uint16]structs.ServerHistory, err error) {
 				if !slices.Contains(currentSlavesId, currentHistoryEvent.Header.SlaveID) {
 					currentSlavesId = append(currentSlavesId, currentHistoryEvent.Header.SlaveID)
 				}
-				if currentFilter == "dst" {
-					currentHistoryEvent.Handshake = structs.Handshake{}
-					currentHistoryEvent.Handshake.RequestUnmarshal(currentPayload)
-					currentHistory = append(currentHistory, *currentHistoryEvent)
-					indexDictionary[currentHistoryEvent.Header] = len(currentHistory) - 1
-				} else {
-					currentHistory[indexDictionary[currentHistoryEvent.Header]].Handshake.ResponseUnmarshal(currentPayload)
-					currentHistory[indexDictionary[currentHistoryEvent.Header]].TransactionTime = currentPacket.Metadata().Timestamp
-				}
+				currentHistoryEvent.Handshake.RequestUnmarshal(currentPayload)
+				currentHistory = append(currentHistory, *currentHistoryEvent)
 			}
-			currentHandle.Close()
 		}
-		history[currentPhysicalPort] = structs.ServerHistory{
+		currentHandle.Close()
+		currentPortHistory := structs.ServerHistory{
 			Transactions: currentHistory,
 			Slaves:       currentSlavesId,
 		}
+		currentPortHistory.SelfClean()
+		history[currentPhysicalPort] = currentPortHistory
 	}
 	return
 }

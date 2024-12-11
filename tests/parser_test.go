@@ -640,7 +640,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "7",
+								TransactionID: "1",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPMultipleWriteRequest{
@@ -677,7 +677,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "8",
+								TransactionID: "2",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -708,7 +708,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "9",
+								TransactionID: "3",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -739,7 +739,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "10",
+								TransactionID: "4",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPMultipleWriteRequest{
@@ -776,7 +776,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "11",
+								TransactionID: "5",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -807,7 +807,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "12",
+								TransactionID: "6",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -838,7 +838,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "13",
+								TransactionID: "1",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPMultipleWriteRequest{
@@ -875,7 +875,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "14",
+								TransactionID: "2",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -906,7 +906,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "15",
+								TransactionID: "3",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -937,7 +937,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "16",
+								TransactionID: "4",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPMultipleWriteRequest{
@@ -974,7 +974,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "17",
+								TransactionID: "5",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -1005,7 +1005,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "18",
+								TransactionID: "6",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -1239,7 +1239,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "7",
+								TransactionID: "1",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPMultipleWriteRequest{
@@ -1276,7 +1276,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "8",
+								TransactionID: "2",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -1307,7 +1307,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "9",
+								TransactionID: "3",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -1338,7 +1338,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "10",
+								TransactionID: "4",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPMultipleWriteRequest{
@@ -1375,7 +1375,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "11",
+								TransactionID: "5",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -1406,7 +1406,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       2,
-								TransactionID: "12",
+								TransactionID: "6",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -1437,7 +1437,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "13",
+								TransactionID: "1",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPMultipleWriteRequest{
@@ -1474,7 +1474,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "14",
+								TransactionID: "2",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -1505,7 +1505,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "15",
+								TransactionID: "3",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -1536,7 +1536,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "16",
+								TransactionID: "4",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPMultipleWriteRequest{
@@ -1573,7 +1573,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "17",
+								TransactionID: "5",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
@@ -1604,7 +1604,7 @@ func TestParsePackets(t *testing.T) {
 						{
 							Header: structs.SlaveTransaction{
 								SlaveID:       3,
-								TransactionID: "18",
+								TransactionID: "6",
 							},
 							Handshake: structs.Handshake{
 								Request: &structs.RTUOverTCPRequest123456Response56{
