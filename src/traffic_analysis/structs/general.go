@@ -112,11 +112,11 @@ func (hdhk *Handshake) Marshal() (data EmulationData, err error) {
 		conf.Functions.HRSimpleWrite,
 		conf.Functions.CoilsMultipleWrite,
 		conf.Functions.HRMultipleWrite}, data.FunctionID)
-	if data.Address, err = bytesToDecimal(hdhk.Request.MarshalAddress()); err != nil {
+	if data.Address, err = BytesToDecimal(hdhk.Request.MarshalAddress()); err != nil {
 		err = fmt.Errorf("error on marshaliing emulation data address: %s", err)
 		return
 	}
-	if data.Quantity, err = bytesToDecimal(hdhk.Request.MarshalQuantity()); err != nil {
+	if data.Quantity, err = BytesToDecimal(hdhk.Request.MarshalQuantity()); err != nil {
 		err = fmt.Errorf("error on marshaliing emulation data quantity: %s", err)
 		return
 	}
@@ -176,9 +176,8 @@ func InputsPayloadPreprocessing[T uint16 | byte](data []T) (payload []uint16, er
 
 func RegistersPayloadPreprocessing[T uint16 | byte](data []T) (payload []uint16, err error) {
 	for currentIndex := 0; currentIndex < len(data); currentIndex += 2 {
-		var currentByte uint64
-		if currentByte, err = strconv.ParseUint(fmt.Sprintf("%s%s",
-			strconv.FormatUint(uint64(data[currentIndex]), 2), strconv.FormatUint(uint64(data[currentIndex+1]), 2)), 2, 64); err != nil {
+		var currentByte uint16
+		if currentByte, err = BytesToDecimal(data[currentIndex : currentIndex+2]); err != nil {
 			err = fmt.Errorf("error on marshaling registers data: %s", err)
 			return
 		}
@@ -187,7 +186,7 @@ func RegistersPayloadPreprocessing[T uint16 | byte](data []T) (payload []uint16,
 	return
 }
 
-func bytesToDecimal(bytes []uint16) (result uint16, err error) {
+func BytesToDecimal[T uint16 | byte](bytes []T) (result uint16, err error) {
 	var hexBuffer string
 	for _, curretnByte := range bytes {
 		hexBuffer = fmt.Sprintf("%s%s", hexBuffer, strconv.FormatUint(uint64(curretnByte), 16))

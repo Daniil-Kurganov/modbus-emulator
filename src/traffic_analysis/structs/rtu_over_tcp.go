@@ -94,13 +94,12 @@ func (req *RTUOverTCPRequest123456Response56) MarshalPayload() (payload []uint16
 			payload = append(payload, 0)
 		}
 	} else {
-		var currentByte uint64
-		if currentByte, err = strconv.ParseUint(fmt.Sprintf("%s%s",
-			strconv.FormatUint(uint64(req.ReadWriteDataHight), 2), strconv.FormatUint(uint64(req.ReadWriteDataLow), 2)), 2, 64); err != nil {
-			err = fmt.Errorf("error on marshaling registers data: %s", err)
+		var resultBuffer uint16
+		if resultBuffer, err = BytesToDecimal([]uint16{req.ReadWriteDataHight, req.ReadWriteDataLow}); err != nil {
+			err = fmt.Errorf("error on marshaling payload: %s", err)
 			return
 		}
-		payload = append(payload, uint16(currentByte))
+		payload = append(payload, resultBuffer)
 	}
 	return
 }

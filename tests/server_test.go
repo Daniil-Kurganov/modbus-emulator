@@ -685,7 +685,7 @@ func TestServerTCPMupliplePorts(t *testing.T) {
 				t.FailNow()
 			}
 			if !assert.Equalf(t, currentTranscationValues[0].expectedStates, currentRecievedStates,
-				"Error: recieved and expected states isn't equal:\n expected: %v;\n recieved: %v",
+				"Error: recieved and expected states isn't equal:\n expected: %+v;\n recieved: %+v",
 				currentTranscationValues[0].expectedStates, currentRecievedStates) {
 				t.FailNow()
 			}

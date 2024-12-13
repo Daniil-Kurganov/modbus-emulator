@@ -2960,7 +2960,7 @@ func TestParsePackets(t *testing.T) {
 			)
 		}
 		assert.Equalf(t, currentTestCase.expectedHistory, currentRecievedHistory,
-			"Error: recieved and expected histories isn't equal:\n expected: %v;\n recieved: %v",
+			"Error: recieved and expected histories isn't equal:\n expected: %+v;\n recieved: %+v",
 			currentTestCase.expectedHistory, currentRecievedHistory)
 	}
 }

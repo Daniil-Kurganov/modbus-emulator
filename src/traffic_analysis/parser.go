@@ -78,7 +78,7 @@ func ParseDump() (history map[uint16]structs.ServerHistory, err error) {
 					continue
 				}
 				currentHistoryEvent := new(structs.HistoryEvent)
-				if conf.WorkMode == " rtu_over_tcp" {
+				if conf.WorkMode == "rtu_over_tcp" {
 					currentSlaveId := uint8(currentPayload[0])
 					if _, ok := rtuOverTCPTransactionDictionary[currentSlaveId]; !ok {
 						rtuOverTCPTransactionDictionary[currentSlaveId] = 1

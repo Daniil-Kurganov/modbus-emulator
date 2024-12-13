@@ -1,0 +1,987 @@
+Ports: [1502 1503]
+Slaves for current port: [1 2 3]
+Current port: 1502
+
+
+Slave ID: 1
+
+ Transaction № 1
+
+ Request:
+   Slave address: 1
+   Function ID: 15
+   Error check low: 122
+   Error check hight: 150
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+   Byte count: 1
+   Data: [3]
+
+ Response:
+   Slave address: 1
+   Function ID: 15
+   Error check low: 164
+   Error check hight: 11
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+
+ Transaction time: 2024-12-06 09:58:24.451189674 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 1
+
+ Transaction № 2
+
+ Request:
+   Slave address: 1
+   Function ID: 1
+   Error check low: 236
+   Error check hight: 8
+   Start address hight: 0
+   Start address low: 5
+   Quantity of registers hight: 0
+   Quantity of registers low: 5
+
+ Response:
+   Slave address: 1
+   Function ID: 1
+   Error check low: 81
+   Error check hight: 141
+   Byte count: 1
+   Data: [12]
+
+ Transaction time: 2024-12-06 09:58:24.461782916 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 1
+
+ Transaction № 3
+
+ Request:
+   Slave address: 1
+   Function ID: 2
+   Error check low: 233
+   Error check hight: 207
+   Start address hight: 0
+   Start address low: 9
+   Quantity of registers hight: 0
+   Quantity of registers low: 11
+
+ Response:
+   Slave address: 1
+   Function ID: 2
+   Error check low: 212
+   Error check hight: 216
+   Byte count: 2
+   Data: [146 0]
+
+ Transaction time: 2024-12-06 09:58:24.471331375 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 1
+
+ Transaction № 4
+
+ Request:
+   Slave address: 1
+   Function ID: 16
+   Error check low: 52
+   Error check hight: 33
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+   Byte count: 14
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59]
+
+ Response:
+   Slave address: 1
+   Function ID: 16
+   Error check low: 97
+   Error check hight: 231
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+
+ Transaction time: 2024-12-06 09:58:24.481011269 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 1
+
+ Transaction № 5
+
+ Request:
+   Slave address: 1
+   Function ID: 3
+   Error check low: 229
+   Error check hight: 226
+   Start address hight: 0
+   Start address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 15
+
+ Response:
+   Slave address: 1
+   Function ID: 3
+   Error check low: 243
+   Error check hight: 180
+   Byte count: 30
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+
+ Transaction time: 2024-12-06 09:58:24.498718091 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 1
+
+ Transaction № 6
+
+ Request:
+   Slave address: 1
+   Function ID: 4
+   Error check low: 49
+   Error check hight: 198
+   Start address hight: 0
+   Start address low: 4
+   Quantity of registers hight: 0
+   Quantity of registers low: 18
+
+ Response:
+   Slave address: 1
+   Function ID: 4
+   Error check low: 49
+   Error check hight: 236
+   Byte count: 36
+   Data: [0 120 0 0 0 0 0 0 0 0 0 0 1 129 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 16 0 0 0 0 25 248]
+
+ Transaction time: 2024-12-06 09:58:24.508274173 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 2
+
+ Transaction № 1
+
+ Request:
+   Slave address: 2
+   Function ID: 15
+   Error check low: 58
+   Error check hight: 131
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+   Byte count: 1
+   Data: [3]
+
+ Response:
+   Slave address: 2
+   Function ID: 15
+   Error check low: 164
+   Error check hight: 56
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+
+ Transaction time: 2024-12-06 09:58:24.517965863 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 2
+
+ Transaction № 2
+
+ Request:
+   Slave address: 2
+   Function ID: 1
+   Error check low: 236
+   Error check hight: 59
+   Start address hight: 0
+   Start address low: 5
+   Quantity of registers hight: 0
+   Quantity of registers low: 5
+
+ Response:
+   Slave address: 2
+   Function ID: 1
+   Error check low: 81
+   Error check hight: 201
+   Byte count: 1
+   Data: [12]
+
+ Transaction time: 2024-12-06 09:58:24.528515109 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 2
+
+ Transaction № 3
+
+ Request:
+   Slave address: 2
+   Function ID: 2
+   Error check low: 233
+   Error check hight: 252
+   Start address hight: 0
+   Start address low: 9
+   Quantity of registers hight: 0
+   Quantity of registers low: 11
+
+ Response:
+   Slave address: 2
+   Function ID: 2
+   Error check low: 253
+   Error check hight: 184
+   Byte count: 2
+   Data: [0 0]
+
+ Transaction time: 2024-12-06 09:58:24.538020401 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 2
+
+ Transaction № 4
+
+ Request:
+   Slave address: 2
+   Function ID: 16
+   Error check low: 7
+   Error check hight: 18
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+   Byte count: 14
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59]
+
+ Response:
+   Slave address: 2
+   Function ID: 16
+   Error check low: 97
+   Error check hight: 212
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+
+ Transaction time: 2024-12-06 09:58:24.547629103 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 2
+
+ Transaction № 5
+
+ Request:
+   Slave address: 2
+   Function ID: 3
+   Error check low: 229
+   Error check hight: 209
+   Start address hight: 0
+   Start address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 15
+
+ Response:
+   Slave address: 2
+   Function ID: 3
+   Error check low: 71
+   Error check hight: 180
+   Byte count: 30
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+
+ Transaction time: 2024-12-06 09:58:24.565165744 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 2
+
+ Transaction № 6
+
+ Request:
+   Slave address: 2
+   Function ID: 4
+   Error check low: 49
+   Error check hight: 245
+   Start address hight: 0
+   Start address low: 4
+   Quantity of registers hight: 0
+   Quantity of registers low: 18
+
+ Response:
+   Slave address: 2
+   Function ID: 4
+   Error check low: 145
+   Error check hight: 233
+   Byte count: 36
+   Data: [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+
+ Transaction time: 2024-12-06 09:58:24.574719199 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 3
+
+ Transaction № 1
+
+ Request:
+   Slave address: 3
+   Function ID: 15
+   Error check low: 251
+   Error check hight: 79
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+   Byte count: 1
+   Data: [3]
+
+ Response:
+   Slave address: 3
+   Function ID: 15
+   Error check low: 165
+   Error check hight: 233
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+
+ Transaction time: 2024-12-06 09:58:24.584270297 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 3
+
+ Transaction № 2
+
+ Request:
+   Slave address: 3
+   Function ID: 1
+   Error check low: 237
+   Error check hight: 234
+   Start address hight: 0
+   Start address low: 5
+   Quantity of registers hight: 0
+   Quantity of registers low: 5
+
+ Response:
+   Slave address: 3
+   Function ID: 1
+   Error check low: 80
+   Error check hight: 53
+   Byte count: 1
+   Data: [12]
+
+ Transaction time: 2024-12-06 09:58:24.594859677 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 3
+
+ Transaction № 3
+
+ Request:
+   Slave address: 3
+   Function ID: 2
+   Error check low: 232
+   Error check hight: 45
+   Start address hight: 0
+   Start address low: 9
+   Quantity of registers hight: 0
+   Quantity of registers low: 11
+
+ Response:
+   Slave address: 3
+   Function ID: 2
+   Error check low: 192
+   Error check hight: 120
+   Byte count: 2
+   Data: [0 0]
+
+ Transaction time: 2024-12-06 09:58:24.604409306 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 3
+
+ Transaction № 4
+
+ Request:
+   Slave address: 3
+   Function ID: 16
+   Error check low: 23
+   Error check hight: 195
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+   Byte count: 14
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59]
+
+ Response:
+   Slave address: 3
+   Function ID: 16
+   Error check low: 96
+   Error check hight: 5
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+
+ Transaction time: 2024-12-06 09:58:24.613889633 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 3
+
+ Transaction № 5
+
+ Request:
+   Slave address: 3
+   Function ID: 3
+   Error check low: 228
+   Error check hight: 0
+   Start address hight: 0
+   Start address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 15
+
+ Response:
+   Slave address: 3
+   Function ID: 3
+   Error check low: 42
+   Error check hight: 116
+   Byte count: 30
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+
+ Transaction time: 2024-12-06 09:58:24.631491015 +0300 MSK
+Current port: 1502
+
+
+Slave ID: 3
+
+ Transaction № 6
+
+ Request:
+   Slave address: 3
+   Function ID: 4
+   Error check low: 48
+   Error check hight: 36
+   Start address hight: 0
+   Start address low: 4
+   Quantity of registers hight: 0
+   Quantity of registers low: 18
+
+ Response:
+   Slave address: 3
+   Function ID: 4
+   Error check low: 153
+   Error check hight: 69
+   Byte count: 36
+   Data: [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+
+ Transaction time: 2024-12-06 09:58:24.641006079 +0300 MSK
+Slaves for current port: [1 2 3]
+Current port: 1503
+
+
+Slave ID: 1
+
+ Transaction № 1
+
+ Request:
+   Slave address: 1
+   Function ID: 15
+   Error check low: 122
+   Error check hight: 150
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+   Byte count: 1
+   Data: [3]
+
+ Response:
+   Slave address: 1
+   Function ID: 15
+   Error check low: 164
+   Error check hight: 11
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+
+ Transaction time: 2024-12-06 09:58:24.451153346 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 1
+
+ Transaction № 2
+
+ Request:
+   Slave address: 1
+   Function ID: 1
+   Error check low: 236
+   Error check hight: 8
+   Start address hight: 0
+   Start address low: 5
+   Quantity of registers hight: 0
+   Quantity of registers low: 5
+
+ Response:
+   Slave address: 1
+   Function ID: 1
+   Error check low: 81
+   Error check hight: 141
+   Byte count: 1
+   Data: [12]
+
+ Transaction time: 2024-12-06 09:58:24.461764762 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 1
+
+ Transaction № 3
+
+ Request:
+   Slave address: 1
+   Function ID: 2
+   Error check low: 233
+   Error check hight: 207
+   Start address hight: 0
+   Start address low: 9
+   Quantity of registers hight: 0
+   Quantity of registers low: 11
+
+ Response:
+   Slave address: 1
+   Function ID: 2
+   Error check low: 212
+   Error check hight: 216
+   Byte count: 2
+   Data: [146 0]
+
+ Transaction time: 2024-12-06 09:58:24.471342633 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 1
+
+ Transaction № 4
+
+ Request:
+   Slave address: 1
+   Function ID: 16
+   Error check low: 52
+   Error check hight: 33
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+   Byte count: 14
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59]
+
+ Response:
+   Slave address: 1
+   Function ID: 16
+   Error check low: 97
+   Error check hight: 231
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+
+ Transaction time: 2024-12-06 09:58:24.48112341 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 1
+
+ Transaction № 5
+
+ Request:
+   Slave address: 1
+   Function ID: 3
+   Error check low: 229
+   Error check hight: 226
+   Start address hight: 0
+   Start address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 15
+
+ Response:
+   Slave address: 1
+   Function ID: 3
+   Error check low: 243
+   Error check hight: 180
+   Byte count: 30
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+
+ Transaction time: 2024-12-06 09:58:24.498709665 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 1
+
+ Transaction № 6
+
+ Request:
+   Slave address: 1
+   Function ID: 4
+   Error check low: 49
+   Error check hight: 198
+   Start address hight: 0
+   Start address low: 4
+   Quantity of registers hight: 0
+   Quantity of registers low: 18
+
+ Response:
+   Slave address: 1
+   Function ID: 4
+   Error check low: 49
+   Error check hight: 236
+   Byte count: 36
+   Data: [0 120 0 0 0 0 0 0 0 0 0 0 1 129 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 16 0 0 0 0 25 248]
+
+ Transaction time: 2024-12-06 09:58:24.508274805 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 2
+
+ Transaction № 1
+
+ Request:
+   Slave address: 2
+   Function ID: 15
+   Error check low: 58
+   Error check hight: 131
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+   Byte count: 1
+   Data: [3]
+
+ Response:
+   Slave address: 2
+   Function ID: 15
+   Error check low: 164
+   Error check hight: 56
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+
+ Transaction time: 2024-12-06 09:58:24.518013379 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 2
+
+ Transaction № 2
+
+ Request:
+   Slave address: 2
+   Function ID: 1
+   Error check low: 236
+   Error check hight: 59
+   Start address hight: 0
+   Start address low: 5
+   Quantity of registers hight: 0
+   Quantity of registers low: 5
+
+ Response:
+   Slave address: 2
+   Function ID: 1
+   Error check low: 81
+   Error check hight: 201
+   Byte count: 1
+   Data: [12]
+
+ Transaction time: 2024-12-06 09:58:24.52848529 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 2
+
+ Transaction № 3
+
+ Request:
+   Slave address: 2
+   Function ID: 2
+   Error check low: 233
+   Error check hight: 252
+   Start address hight: 0
+   Start address low: 9
+   Quantity of registers hight: 0
+   Quantity of registers low: 11
+
+ Response:
+   Slave address: 2
+   Function ID: 2
+   Error check low: 253
+   Error check hight: 184
+   Byte count: 2
+   Data: [0 0]
+
+ Transaction time: 2024-12-06 09:58:24.537991649 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 2
+
+ Transaction № 4
+
+ Request:
+   Slave address: 2
+   Function ID: 16
+   Error check low: 7
+   Error check hight: 18
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+   Byte count: 14
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59]
+
+ Response:
+   Slave address: 2
+   Function ID: 16
+   Error check low: 97
+   Error check hight: 212
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+
+ Transaction time: 2024-12-06 09:58:24.547639948 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 2
+
+ Transaction № 5
+
+ Request:
+   Slave address: 2
+   Function ID: 3
+   Error check low: 229
+   Error check hight: 209
+   Start address hight: 0
+   Start address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 15
+
+ Response:
+   Slave address: 2
+   Function ID: 3
+   Error check low: 71
+   Error check hight: 180
+   Byte count: 30
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+
+ Transaction time: 2024-12-06 09:58:24.565120052 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 2
+
+ Transaction № 6
+
+ Request:
+   Slave address: 2
+   Function ID: 4
+   Error check low: 49
+   Error check hight: 245
+   Start address hight: 0
+   Start address low: 4
+   Quantity of registers hight: 0
+   Quantity of registers low: 18
+
+ Response:
+   Slave address: 2
+   Function ID: 4
+   Error check low: 145
+   Error check hight: 233
+   Byte count: 36
+   Data: [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+
+ Transaction time: 2024-12-06 09:58:24.574742165 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 3
+
+ Transaction № 1
+
+ Request:
+   Slave address: 3
+   Function ID: 15
+   Error check low: 251
+   Error check hight: 79
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+   Byte count: 1
+   Data: [3]
+
+ Response:
+   Slave address: 3
+   Function ID: 15
+   Error check low: 165
+   Error check hight: 233
+   Register address hight: 0
+   Register address low: 7
+   Quantity of registers hight: 0
+   Quantity of registers low: 3
+
+ Transaction time: 2024-12-06 09:58:24.58432011 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 3
+
+ Transaction № 2
+
+ Request:
+   Slave address: 3
+   Function ID: 1
+   Error check low: 237
+   Error check hight: 234
+   Start address hight: 0
+   Start address low: 5
+   Quantity of registers hight: 0
+   Quantity of registers low: 5
+
+ Response:
+   Slave address: 3
+   Function ID: 1
+   Error check low: 80
+   Error check hight: 53
+   Byte count: 1
+   Data: [12]
+
+ Transaction time: 2024-12-06 09:58:24.594861107 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 3
+
+ Transaction № 3
+
+ Request:
+   Slave address: 3
+   Function ID: 2
+   Error check low: 232
+   Error check hight: 45
+   Start address hight: 0
+   Start address low: 9
+   Quantity of registers hight: 0
+   Quantity of registers low: 11
+
+ Response:
+   Slave address: 3
+   Function ID: 2
+   Error check low: 192
+   Error check hight: 120
+   Byte count: 2
+   Data: [0 0]
+
+ Transaction time: 2024-12-06 09:58:24.60441684 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 3
+
+ Transaction № 4
+
+ Request:
+   Slave address: 3
+   Function ID: 16
+   Error check low: 23
+   Error check hight: 195
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+   Byte count: 14
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59]
+
+ Response:
+   Slave address: 3
+   Function ID: 16
+   Error check low: 96
+   Error check hight: 5
+   Register address hight: 0
+   Register address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 7
+
+ Transaction time: 2024-12-06 09:58:24.613916674 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 3
+
+ Transaction № 5
+
+ Request:
+   Slave address: 3
+   Function ID: 3
+   Error check low: 228
+   Error check hight: 0
+   Start address hight: 0
+   Start address low: 150
+   Quantity of registers hight: 0
+   Quantity of registers low: 15
+
+ Response:
+   Slave address: 3
+   Function ID: 3
+   Error check low: 42
+   Error check hight: 116
+   Byte count: 30
+   Data: [0 1 0 18 0 48 0 53 0 64 0 57 0 59 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+
+ Transaction time: 2024-12-06 09:58:24.631440949 +0300 MSK
+Current port: 1503
+
+
+Slave ID: 3
+
+ Transaction № 6
+
+ Request:
+   Slave address: 3
+   Function ID: 4
+   Error check low: 48
+   Error check hight: 36
+   Start address hight: 0
+   Start address low: 4
+   Quantity of registers hight: 0
+   Quantity of registers low: 18
+
+ Response:
+   Slave address: 3
+   Function ID: 4
+   Error check low: 153
+   Error check hight: 69
+   Byte count: 36
+   Data: [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+
+ Transaction time: 2024-12-06 09:58:24.641064525 +0300 MSK
