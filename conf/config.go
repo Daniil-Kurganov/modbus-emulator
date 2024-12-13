@@ -38,7 +38,7 @@ var (
 			PortAddress: "502",
 		},
 	}
-	ServerTCPHost     = "localhost"
+	ServerTCPHost     = "127.0.0.1"
 	FinishDelayTime   = 3 * time.Second
 	WorkMode          = "rtu_over_tcp"
 	ModulePath        = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator`

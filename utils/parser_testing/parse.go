@@ -2,9 +2,9 @@ package main
 
 import (
 	"log"
+	"os"
 	"time"
 
-	// "modbus-emulator/conf"
 	ta "modbus-emulator/src/traffic_analysis"
 	"modbus-emulator/src/traffic_analysis/structs"
 
@@ -13,8 +13,15 @@ import (
 
 func main() {
 	log.SetFlags(0)
-	var history map[uint16]structs.ServerHistory
 	var err error
+	var logFile *os.File
+	logFile, err = os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer logFile.Close()
+	log.SetOutput(logFile)
+	var history map[uint16]structs.ServerHistory
 	// conf.WorkMode = "rtu_over_tcp"
 	// conf.DumpDirectoryPath = `pcapng_files/tests_files/multiple_ports`
 	// conf.Ports = map[uint16]conf.ServerSocket{
@@ -39,6 +46,5 @@ func main() {
 			currentHistoryEvent.LogPrint()
 		}
 		time.Sleep(3 * time.Second)
-		return
 	}
 }

@@ -46,15 +46,19 @@ func ParseDump() (history map[uint16]structs.ServerHistory, err error) {
 		for currentPacket := range currentPacketsSource.Packets() {
 			currentTCPLayer := currentPacket.Layer(layers.LayerTypeTCP)
 			currentPayload := currentTCPLayer.LayerPayload()
-			if len(currentPayload) == 0 {
+			// log.Printf("%+v", currentPacket.Layer(layers.LayerTypeIPv4))
+			if len(currentPayload) == 0 { //|| !strings.Contains(fmt.Sprintf("%+v", currentTCPLayer), "PSH:true") {
 				continue
 			}
+			// log.Print("\n\ncurrent packet: ", currentPayload)
 			currentPacketIsRequest := currentPacket.TransportLayer().TransportFlow().Dst().String() == currentServerSocket.PortAddress
 			if !currentPacketIsRequest {
 				if len(currentHistory) == 0 {
+					// log.Print(currentServerSocket, currentPayload, " res + len ", currentHistory[len(currentHistory)-1].Handshake.Request, currentHistory[len(currentHistory)-1].Handshake.Response)
 					continue
 				}
 				if currentHistory[len(currentHistory)-1].Handshake.Response != nil {
+					// log.Print(currentServerSocket, currentPayload, " res + double ", currentHistory[len(currentHistory)-1].Handshake.Request, currentHistory[len(currentHistory)-1].Handshake.Response)
 					if conf.WorkMode == "rtu_over_tcp" {
 						rtuOverTCPTransactionDictionary[currentHistory[len(currentHistory)-1].Header.SlaveID] -= 1
 					}
@@ -63,16 +67,18 @@ func ParseDump() (history map[uint16]structs.ServerHistory, err error) {
 				}
 				currentHistory[len(currentHistory)-1].Handshake.ResponseUnmarshal(currentPayload)
 				currentHistory[len(currentHistory)-1].TransactionTime = currentPacket.Metadata().Timestamp
+				// log.Print(currentServerSocket, currentPayload, " res")
 			} else {
 				if len(currentHistory) != 0 && currentHistory[len(currentHistory)-1].Handshake.Response == nil {
-					if conf.WorkMode == "rtu_over_tcp" {
+					if conf.WorkMode == " rtu_over_tcp" {
 						rtuOverTCPTransactionDictionary[currentHistory[len(currentHistory)-1].Header.SlaveID] -= 1
 					}
+					// log.Print(currentServerSocket, currentPayload, " req + double ", currentHistory[len(currentHistory)-1].Handshake.Request, currentHistory[len(currentHistory)-1].Handshake.Response)
 					currentHistory = currentHistory[:len(currentHistory)-1]
 					continue
 				}
 				currentHistoryEvent := new(structs.HistoryEvent)
-				if conf.WorkMode == "rtu_over_tcp" {
+				if conf.WorkMode == " rtu_over_tcp" {
 					currentSlaveId := uint8(currentPayload[0])
 					if _, ok := rtuOverTCPTransactionDictionary[currentSlaveId]; !ok {
 						rtuOverTCPTransactionDictionary[currentSlaveId] = 1
@@ -94,6 +100,7 @@ func ParseDump() (history map[uint16]structs.ServerHistory, err error) {
 				}
 				currentHistoryEvent.Handshake.RequestUnmarshal(currentPayload)
 				currentHistory = append(currentHistory, *currentHistoryEvent)
+				// log.Print(currentServerSocket, currentPayload, " req")
 			}
 		}
 		currentHandle.Close()
