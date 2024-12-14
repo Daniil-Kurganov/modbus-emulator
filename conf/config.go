@@ -1,10 +1,17 @@
 package conf
 
-import "time"
+import (
+	"fmt"
+	"log"
+	"time"
 
-type ServerSocket struct {
+	"github.com/BurntSushi/toml"
+)
+
+type ServerSocketData struct {
 	HostAddress string
 	PortAddress string
+	WorkMode    string
 }
 
 var (
@@ -28,19 +35,18 @@ var (
 		HRMultipleWrite:    16,
 	}
 
-	Ports = map[uint16]ServerSocket{
-		1502: {
-			HostAddress: "192.168.1.29",
-			PortAddress: "502",
-		},
-		1503: {
-			HostAddress: "192.168.1.31",
-			PortAddress: "502",
-		},
-	}
-	ServerTCPHost     = "127.0.0.1"
+	Ports             map[string]ServerSocketData
+	ServerTCPHost     = "0.0.0.0"
 	FinishDelayTime   = 3 * time.Second
-	WorkMode          = "rtu_over_tcp"
 	ModulePath        = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator`
 	DumpDirectoryPath = `pcapng_files/main_files`
+	DumpFileName      = "main"
 )
+
+func init() {
+	log.SetFlags(0)
+	Ports = make(map[string]ServerSocketData)
+	if _, err := toml.DecodeFile(fmt.Sprintf("%s/config.toml", ModulePath), &Ports); err != nil {
+		log.Fatalf("Error on unmarshaling configuration: %s", err)
+	}
+}

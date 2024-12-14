@@ -47,7 +47,7 @@ func TestServerTCPMode(t *testing.T) {
 	var err error
 	log.SetOutput(ioutil.Discard)
 	directoryPath := `pcapng_files/tests_files/simple_port`
-	port := 1502
+	port := "1502"
 	testCasesTCP := testCase[registersTCP]{
 		workMode: "tcp",
 		transactions: map[uint8][]transactionValues[registersTCP]{
@@ -131,12 +131,19 @@ func TestServerTCPMode(t *testing.T) {
 		},
 	}
 	conf.DumpDirectoryPath = directoryPath
-	conf.WorkMode = testCasesTCP.workMode
+	conf.Ports = map[string]conf.ServerSocketData{
+		"1502": {
+			HostAddress: "localhost",
+			PortAddress: "1502",
+			WorkMode:    testCasesTCP.workMode,
+		},
+	}
+	conf.DumpFileName = testCasesTCP.workMode
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(1)
-	go src.ServerInit(&waitGroup, uint16(port))
+	go src.ServerInit(&waitGroup, port)
 	time.Sleep(500 * time.Millisecond)
-	handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%d", conf.ServerTCPHost, uint16(port)))
+	handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%s", conf.ServerTCPHost, port))
 	handler.SlaveId = 0
 	if err = handler.Connect(); err != nil {
 		assert.EqualErrorf(t, err, "nil",
@@ -188,7 +195,7 @@ func TestServerRTUOverTCPMode(t *testing.T) {
 	var err error
 	log.SetOutput(ioutil.Discard)
 	directoryPath := `pcapng_files/tests_files/simple_port`
-	port := 1502
+	port := "1502"
 	testCasesRTUOverTCP := testCase[registersRTUOverTCP]{
 		workMode: "rtu_over_tcp",
 		transactions: map[uint8][]transactionValues[registersRTUOverTCP]{
@@ -287,14 +294,21 @@ func TestServerRTUOverTCPMode(t *testing.T) {
 		},
 	}
 	conf.DumpDirectoryPath = directoryPath
-	conf.WorkMode = testCasesRTUOverTCP.workMode
+	conf.Ports = map[string]conf.ServerSocketData{
+		"1502": {
+			HostAddress: "localhost",
+			PortAddress: "1502",
+			WorkMode:    testCasesRTUOverTCP.workMode,
+		},
+	}
+	conf.DumpFileName = testCasesRTUOverTCP.workMode
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(1)
-	go src.ServerInit(&waitGroup, uint16(port))
+	go src.ServerInit(&waitGroup, port)
 	time.Sleep(500 * time.Millisecond)
 	var client *modbus.ModbusClient
 	if client, err = modbus.NewClient(&modbus.ClientConfiguration{
-		URL:     fmt.Sprintf("rtuovertcp://%s:%d", conf.ServerTCPHost, uint16(port)),
+		URL:     fmt.Sprintf("rtuovertcp://%s:%s", conf.ServerTCPHost, port),
 		Speed:   19200,
 		Timeout: 1 * time.Second,
 	}); err != nil {
@@ -348,8 +362,8 @@ func TestServerRTUOverTCPMode(t *testing.T) {
 func TestServerRTUOverTCPMupliplePorts(t *testing.T) {
 	var err error
 	log.SetOutput(ioutil.Discard)
-	testCases := map[uint16]testCase[registersRTUOverTCP]{
-		1502: {
+	testCases := map[string]testCase[registersRTUOverTCP]{
+		"1502": {
 			transactions: map[uint8][]transactionValues[registersRTUOverTCP]{
 				1: {
 					{
@@ -401,7 +415,7 @@ func TestServerRTUOverTCPMupliplePorts(t *testing.T) {
 				},
 			},
 		},
-		1503: {
+		"1503": {
 			transactions: map[uint8][]transactionValues[registersRTUOverTCP]{
 				1: {
 					{
@@ -455,8 +469,19 @@ func TestServerRTUOverTCPMupliplePorts(t *testing.T) {
 		},
 	}
 	conf.DumpDirectoryPath = `pcapng_files/tests_files/multiple_ports`
-	conf.WorkMode = "rtu_over_tcp"
-	conf.FinishDelayTime = 5 * time.Second
+	conf.Ports = map[string]conf.ServerSocketData{
+		"1502": {
+			HostAddress: "localhost",
+			PortAddress: "1502",
+			WorkMode:    "rtu_over_tcp",
+		},
+		"1503": {
+			HostAddress: "localhost",
+			PortAddress: "1502",
+			WorkMode:    "rtu_over_tcp",
+		},
+	}
+	conf.DumpFileName = "rtu_over_tcp"
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(len(testCases))
 	for currentPort, currentTestCase := range testCases {
@@ -464,7 +489,7 @@ func TestServerRTUOverTCPMupliplePorts(t *testing.T) {
 		time.Sleep(500 * time.Millisecond)
 		var client *modbus.ModbusClient
 		if client, err = modbus.NewClient(&modbus.ClientConfiguration{
-			URL:     fmt.Sprintf("rtuovertcp://%s:%d", conf.ServerTCPHost, currentPort),
+			URL:     fmt.Sprintf("rtuovertcp://%s:%s", conf.ServerTCPHost, currentPort),
 			Speed:   19200,
 			Timeout: 1 * time.Second,
 		}); err != nil {
@@ -527,9 +552,9 @@ func TestServerRTUOverTCPMupliplePorts(t *testing.T) {
 
 func TestServerTCPMupliplePorts(t *testing.T) {
 	var err error
-	// log.SetOutput(ioutil.Discard)
-	testCases := map[uint16]testCase[registersTCP]{
-		1502: {
+	log.SetOutput(ioutil.Discard)
+	testCases := map[string]testCase[registersTCP]{
+		"1502": {
 			transactions: map[uint8][]transactionValues[registersTCP]{
 				1: {
 					{
@@ -581,7 +606,7 @@ func TestServerTCPMupliplePorts(t *testing.T) {
 				},
 			},
 		},
-		1503: {
+		"1503": {
 			transactions: map[uint8][]transactionValues[registersTCP]{
 				1: {
 					{
@@ -635,14 +660,26 @@ func TestServerTCPMupliplePorts(t *testing.T) {
 		},
 	}
 	conf.DumpDirectoryPath = `pcapng_files/tests_files/multiple_ports`
-	conf.WorkMode = "tcp"
+	conf.DumpFileName = "tcp"
+	conf.Ports = map[string]conf.ServerSocketData{
+		"1502": {
+			HostAddress: "localhost",
+			PortAddress: "1502",
+			WorkMode:    "tcp",
+		},
+		"1503": {
+			HostAddress: "localhost",
+			PortAddress: "1502",
+			WorkMode:    "tcp",
+		},
+	}
 	conf.FinishDelayTime = 5 * time.Second
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(len(testCases))
 	for currentPort, currentTestCase := range testCases {
 		go src.ServerInit(&waitGroup, currentPort)
 		time.Sleep(500 * time.Millisecond)
-		handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%d", conf.ServerTCPHost, currentPort))
+		handler := mc.NewTCPClientHandler(fmt.Sprintf("%s:%s", conf.ServerTCPHost, currentPort))
 		for currentSlaveId, currentTranscationValues := range currentTestCase.transactions {
 			handler.SlaveId = currentSlaveId
 			if err = handler.Connect(); err != nil {

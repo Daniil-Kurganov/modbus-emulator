@@ -1,0 +1,9 @@
+[1502]
+    HostAddress = "192.168.1.29"
+    PortAddress = "502"
+    WorkMode    = "rtu_over_tcp"
+
+[1503]
+    HostAddress = "192.168.1.31"
+    PortAddress = "502"
+    WorkMode    = "rtu_over_tcp"

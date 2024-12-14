@@ -151,11 +151,11 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 	closeChannel <- true
 }
 
-func ServerInit(waitGroup *sync.WaitGroup, physicalPort uint16) {
+func ServerInit(waitGroup *sync.WaitGroup, physicalPort string) {
 	var err error
 	server := mS.NewServer()
-	servePath := fmt.Sprintf("%s:%d", conf.ServerTCPHost, physicalPort)
-	switch conf.WorkMode {
+	servePath := fmt.Sprintf("%s:%s", conf.ServerTCPHost, physicalPort)
+	switch conf.Ports[physicalPort].WorkMode {
 	case "rtu_over_tcp":
 		if err = server.ListenRTUOverTCP(servePath); err != nil {
 			log.Fatalf("Error on listening RTU over TCP: %s", err)
@@ -165,10 +165,10 @@ func ServerInit(waitGroup *sync.WaitGroup, physicalPort uint16) {
 			log.Fatalf("Error on listening TCP: %s", err)
 		}
 	default:
-		log.Fatalf("Error: invalid servers's work mode: %s", conf.WorkMode)
+		log.Fatalf("Error: invalid servers's work mode: %s", conf.Ports[physicalPort].WorkMode)
 	}
-	log.Printf("Start server on %s, work mode: %s", servePath, conf.WorkMode)
-	var history map[uint16]structs.ServerHistory
+	log.Printf("Start server on %s, work mode: %s", servePath, conf.Ports[physicalPort].WorkMode)
+	var history map[string]structs.ServerHistory
 	if history, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error on parsing dump history: %s", err)
 	}

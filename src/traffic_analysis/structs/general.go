@@ -63,8 +63,8 @@ func (hE *HistoryEvent) LogPrint() {
 	log.Printf("\n Transaction time: %v", hE.TransactionTime)
 }
 
-func (hdhk *Handshake) RequestUnmarshal(payload []byte) {
-	if conf.WorkMode == "rtu_over_tcp" {
+func (hdhk *Handshake) RequestUnmarshal(workMode string, payload []byte) {
+	if workMode == "rtu_over_tcp" {
 		functionID := payload[1]
 		if slices.Contains([]byte{
 			byte(conf.Functions.CoilsRead),
@@ -83,8 +83,8 @@ func (hdhk *Handshake) RequestUnmarshal(payload []byte) {
 	hdhk.Request.Unmarshal(payload)
 }
 
-func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
-	if conf.WorkMode == "rtu_over_tcp" {
+func (hdhk *Handshake) ResponseUnmarshal(workMode string, payload []byte) {
+	if workMode == "rtu_over_tcp" {
 		functionID := payload[1]
 		if slices.Contains([]byte{
 			byte(conf.Functions.CoilsRead),

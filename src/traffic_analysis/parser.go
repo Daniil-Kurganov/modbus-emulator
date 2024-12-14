@@ -20,19 +20,19 @@ func TCPTransactionIDParsing(transcationID []byte) (key string) {
 	return
 }
 
-func ParseDump() (history map[uint16]structs.ServerHistory, err error) {
+func ParseDump() (history map[string]structs.ServerHistory, err error) {
 	var currentHandle *pcap.Handle
-	history = make(map[uint16]structs.ServerHistory)
-	for currentPhysicalPort, currentServerSocket := range conf.Ports {
-		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, conf.ModulePath, conf.DumpDirectoryPath, conf.WorkMode)); err != nil {
-			if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcap`, conf.ModulePath, conf.DumpDirectoryPath, conf.WorkMode)); err != nil {
+	history = make(map[string]structs.ServerHistory)
+	for currentPhysicalPort, currentServerSocketData := range conf.Ports {
+		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, conf.ModulePath, conf.DumpDirectoryPath, conf.DumpFileName)); err != nil {
+			if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcap`, conf.ModulePath, conf.DumpDirectoryPath, conf.DumpFileName)); err != nil {
 				err = fmt.Errorf("error on opening file: %s", err)
 				return
 			}
 
 		}
 		if err = currentHandle.SetBPFFilter(fmt.Sprintf("host %s and tcp port %s",
-			currentServerSocket.HostAddress, currentServerSocket.PortAddress)); err != nil {
+			currentServerSocketData.HostAddress, currentServerSocketData.PortAddress)); err != nil {
 			err = fmt.Errorf("error on setting handle filter: %s", err)
 			return
 		}
@@ -40,45 +40,39 @@ func ParseDump() (history map[uint16]structs.ServerHistory, err error) {
 		var currentHistory []structs.HistoryEvent
 		var currentSlavesId []uint8
 		var rtuOverTCPTransactionDictionary map[uint8]int
-		if conf.WorkMode == "rtu_over_tcp" {
+		if currentServerSocketData.WorkMode == "rtu_over_tcp" {
 			rtuOverTCPTransactionDictionary = make(map[uint8]int)
 		}
 		for currentPacket := range currentPacketsSource.Packets() {
 			currentTCPLayer := currentPacket.Layer(layers.LayerTypeTCP)
 			currentPayload := currentTCPLayer.LayerPayload()
-			// log.Printf("%+v", currentPacket.Layer(layers.LayerTypeIPv4))
-			if len(currentPayload) == 0 { //|| !strings.Contains(fmt.Sprintf("%+v", currentTCPLayer), "PSH:true") {
+			if len(currentPayload) == 0 {
 				continue
 			}
-			// log.Print("\n\ncurrent packet: ", currentPayload)
-			currentPacketIsRequest := currentPacket.TransportLayer().TransportFlow().Dst().String() == currentServerSocket.PortAddress
+			currentPacketIsRequest := currentPacket.TransportLayer().TransportFlow().Dst().String() == currentServerSocketData.PortAddress
 			if !currentPacketIsRequest {
 				if len(currentHistory) == 0 {
-					// log.Print(currentServerSocket, currentPayload, " res + len ", currentHistory[len(currentHistory)-1].Handshake.Request, currentHistory[len(currentHistory)-1].Handshake.Response)
 					continue
 				}
 				if currentHistory[len(currentHistory)-1].Handshake.Response != nil {
-					// log.Print(currentServerSocket, currentPayload, " res + double ", currentHistory[len(currentHistory)-1].Handshake.Request, currentHistory[len(currentHistory)-1].Handshake.Response)
-					if conf.WorkMode == "rtu_over_tcp" {
+					if currentServerSocketData.WorkMode == "rtu_over_tcp" {
 						rtuOverTCPTransactionDictionary[currentHistory[len(currentHistory)-1].Header.SlaveID] -= 1
 					}
 					currentHistory = currentHistory[:len(currentHistory)-1]
 					continue
 				}
-				currentHistory[len(currentHistory)-1].Handshake.ResponseUnmarshal(currentPayload)
+				currentHistory[len(currentHistory)-1].Handshake.ResponseUnmarshal(currentServerSocketData.WorkMode, currentPayload)
 				currentHistory[len(currentHistory)-1].TransactionTime = currentPacket.Metadata().Timestamp
-				// log.Print(currentServerSocket, currentPayload, " res")
 			} else {
 				if len(currentHistory) != 0 && currentHistory[len(currentHistory)-1].Handshake.Response == nil {
-					if conf.WorkMode == " rtu_over_tcp" {
+					if currentServerSocketData.WorkMode == " rtu_over_tcp" {
 						rtuOverTCPTransactionDictionary[currentHistory[len(currentHistory)-1].Header.SlaveID] -= 1
 					}
-					// log.Print(currentServerSocket, currentPayload, " req + double ", currentHistory[len(currentHistory)-1].Handshake.Request, currentHistory[len(currentHistory)-1].Handshake.Response)
 					currentHistory = currentHistory[:len(currentHistory)-1]
 					continue
 				}
 				currentHistoryEvent := new(structs.HistoryEvent)
-				if conf.WorkMode == "rtu_over_tcp" {
+				if currentServerSocketData.WorkMode == "rtu_over_tcp" {
 					currentSlaveId := uint8(currentPayload[0])
 					if _, ok := rtuOverTCPTransactionDictionary[currentSlaveId]; !ok {
 						rtuOverTCPTransactionDictionary[currentSlaveId] = 1
@@ -98,9 +92,8 @@ func ParseDump() (history map[uint16]structs.ServerHistory, err error) {
 				if !slices.Contains(currentSlavesId, currentHistoryEvent.Header.SlaveID) {
 					currentSlavesId = append(currentSlavesId, currentHistoryEvent.Header.SlaveID)
 				}
-				currentHistoryEvent.Handshake.RequestUnmarshal(currentPayload)
+				currentHistoryEvent.Handshake.RequestUnmarshal(currentServerSocketData.WorkMode, currentPayload)
 				currentHistory = append(currentHistory, *currentHistoryEvent)
-				// log.Print(currentServerSocket, currentPayload, " req")
 			}
 		}
 		currentHandle.Close()

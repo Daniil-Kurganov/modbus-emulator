@@ -1,3 +1,5 @@
+github.com/BurntSushi/toml v1.4.0 h1:kuoIxZQy2WRRk1pttg9asf+WVv6tWQuBNVmK8+nqPr0=
+github.com/BurntSushi/toml v1.4.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241203090210-caa2a9f1ffff h1:zPoiHzwJLZRoevXzGgoAcd863km4eF1VEc8sLXesZbw=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241203090210-caa2a9f1ffff/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205124755-07131411cb56 h1:whOOXak6n5lX3oYD1f8mgj+S4eAVUe9tTi//OrPXU4o=

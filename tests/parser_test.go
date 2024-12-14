@@ -13,22 +13,21 @@ import (
 
 func TestParsePackets(t *testing.T) {
 	testTable := []struct {
-		mode            string
 		directoryPath   string
-		ports           map[uint16]conf.ServerSocket
-		expectedHistory map[uint16]structs.ServerHistory
+		ports           map[string]conf.ServerSocketData
+		expectedHistory map[string]structs.ServerHistory
 	}{
 		{
-			mode:          "tcp",
 			directoryPath: `pcapng_files/tests_files/simple_port`,
-			ports: map[uint16]conf.ServerSocket{
-				1502: {
+			ports: map[string]conf.ServerSocketData{
+				"1502": {
 					HostAddress: "127.0.0.1",
 					PortAddress: "1502",
+					WorkMode:    "tcp",
 				},
 			},
-			expectedHistory: map[uint16]structs.ServerHistory{
-				1502: {
+			expectedHistory: map[string]structs.ServerHistory{
+				"1502": {
 					Transactions: []structs.HistoryEvent{
 						{
 							Header: structs.SlaveTransaction{
@@ -213,16 +212,16 @@ func TestParsePackets(t *testing.T) {
 			},
 		},
 		{
-			mode:          "rtu_over_tcp",
 			directoryPath: `pcapng_files/tests_files/simple_port`,
-			ports: map[uint16]conf.ServerSocket{
-				1502: {
+			ports: map[string]conf.ServerSocketData{
+				"1502": {
 					HostAddress: "127.0.0.1",
 					PortAddress: "1502",
+					WorkMode:    "rtu_over_tcp",
 				},
 			},
-			expectedHistory: map[uint16]structs.ServerHistory{
-				1502: {
+			expectedHistory: map[string]structs.ServerHistory{
+				"1502": {
 					Transactions: []structs.HistoryEvent{
 						{
 							Header: structs.SlaveTransaction{
@@ -424,20 +423,21 @@ func TestParsePackets(t *testing.T) {
 			},
 		},
 		{
-			mode:          "rtu_over_tcp",
 			directoryPath: `pcapng_files/tests_files/multiple_ports`,
-			ports: map[uint16]conf.ServerSocket{
-				1502: {
+			ports: map[string]conf.ServerSocketData{
+				"1502": {
 					HostAddress: "127.0.0.1",
 					PortAddress: "1502",
+					WorkMode:    "rtu_over_tcp",
 				},
-				1503: {
+				"1503": {
 					HostAddress: "127.0.0.1",
 					PortAddress: "1503",
+					WorkMode:    "rtu_over_tcp",
 				},
 			},
-			expectedHistory: map[uint16]structs.ServerHistory{
-				1502: {
+			expectedHistory: map[string]structs.ServerHistory{
+				"1502": {
 					Transactions: []structs.HistoryEvent{
 						{
 							Header: structs.SlaveTransaction{
@@ -1036,7 +1036,7 @@ func TestParsePackets(t *testing.T) {
 					},
 					Slaves: []uint8{1, 2, 3},
 				},
-				1503: {
+				"1503": {
 					Transactions: []structs.HistoryEvent{
 						{
 							Header: structs.SlaveTransaction{
@@ -1638,20 +1638,21 @@ func TestParsePackets(t *testing.T) {
 			},
 		},
 		{
-			mode:          "tcp",
 			directoryPath: `pcapng_files/tests_files/multiple_ports`,
-			ports: map[uint16]conf.ServerSocket{
-				1502: {
+			ports: map[string]conf.ServerSocketData{
+				"1502": {
 					HostAddress: "127.0.0.1",
 					PortAddress: "1502",
+					WorkMode:    "tcp",
 				},
-				1503: {
+				"1503": {
 					HostAddress: "127.0.0.1",
 					PortAddress: "1503",
+					WorkMode:    "tcp",
 				},
 			},
-			expectedHistory: map[uint16]structs.ServerHistory{
-				1502: {
+			expectedHistory: map[string]structs.ServerHistory{
+				"1502": {
 					Transactions: []structs.HistoryEvent{
 						{
 							Header: structs.SlaveTransaction{
@@ -2298,7 +2299,7 @@ func TestParsePackets(t *testing.T) {
 					},
 					Slaves: []uint8{1, 2, 3},
 				},
-				1503: {
+				"1503": {
 					Transactions: []structs.HistoryEvent{
 						{
 							Header: structs.SlaveTransaction{
@@ -2948,12 +2949,12 @@ func TestParsePackets(t *testing.T) {
 			},
 		},
 	}
-	var currentRecievedHistory map[uint16]structs.ServerHistory
+	var currentRecievedHistory map[string]structs.ServerHistory
 	var err error
 	for _, currentTestCase := range testTable {
-		conf.WorkMode = currentTestCase.mode
 		conf.DumpDirectoryPath = currentTestCase.directoryPath
 		conf.Ports = currentTestCase.ports
+		conf.DumpFileName = currentTestCase.ports["1502"].WorkMode
 		if currentRecievedHistory, err = ta.ParseDump(); err != nil {
 			assert.EqualErrorf(t, err, "nil",
 				"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
