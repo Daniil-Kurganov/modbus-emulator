@@ -1,13 +1,5 @@
 github.com/BurntSushi/toml v1.4.0 h1:kuoIxZQy2WRRk1pttg9asf+WVv6tWQuBNVmK8+nqPr0=
 github.com/BurntSushi/toml v1.4.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241203090210-caa2a9f1ffff h1:zPoiHzwJLZRoevXzGgoAcd863km4eF1VEc8sLXesZbw=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241203090210-caa2a9f1ffff/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205124755-07131411cb56 h1:whOOXak6n5lX3oYD1f8mgj+S4eAVUe9tTi//OrPXU4o=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205124755-07131411cb56/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205141011-c5569bbc26aa h1:O9lH6yvRi4aER3oZl8RelMDujEEHCgf0NVHQRcMvdTM=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205141011-c5569bbc26aa/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205141456-2a983592a3bf h1:mYpS24hTNSX8Ck8tsYTUDbyHnJqqC6sJIunDob9yHi0=
-github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205141456-2a983592a3bf/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205142206-9b646afa6b68 h1:j/ZDz2VkL6zr4NrhtjZOSU6oOqzwrVojPZSe14vS+FI=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205142206-9b646afa6b68/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
