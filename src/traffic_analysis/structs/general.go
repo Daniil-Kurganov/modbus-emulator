@@ -56,8 +56,6 @@ type (
 func (hE *HistoryEvent) LogPrint() {
 	log.Printf("\n\nSlave ID: %d\n", hE.Header.SlaveID)
 	log.Printf("\n Transaction № %s", hE.Header.TransactionID)
-	log.Printf("\n\nSlave ID: %d\n", hE.Header.SlaveID)
-	log.Printf("\n Transaction № %s", hE.Header.TransactionID)
 	log.Println("\n Request:")
 	hE.Handshake.Request.LogPrint()
 	log.Println("\n Response:")

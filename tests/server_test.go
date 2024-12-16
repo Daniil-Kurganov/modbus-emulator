@@ -477,7 +477,7 @@ func TestServerRTUOverTCPMupliplePorts(t *testing.T) {
 		},
 		"1503": {
 			HostAddress: "localhost",
-			PortAddress: "1502",
+			PortAddress: "1503",
 			WorkMode:    "rtu_over_tcp",
 		},
 	}

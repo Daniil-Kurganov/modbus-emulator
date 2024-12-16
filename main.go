@@ -11,29 +11,6 @@ import (
 
 func main() {
 	log.SetFlags(0)
-	// var err error
-	// var logFile *os.File
-	// logFile, err = os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	// if err != nil {
-	// 	log.Fatalf("error opening file: %v", err)
-	// }
-	// defer logFile.Close()
-	// multiWriter := io.MultiWriter(os.Stdout, logFile)
-	// log.SetOutput(multiWriter)
-	// conf.DumpDirectoryPath = `pcapng_files/main_files/multiple_ports`
-	// conf.DumpFileName = "rtu_over_tcp"
-	// conf.Ports = map[string]conf.ServerSocketData{
-	// 	"1502": {
-	// 		HostAddress: "127.0.0.1",
-	// 		PortAddress: "1502",
-	// 		WorkMode:    "rtu_over_tcp",
-	// 	},
-	// 	"1503": {
-	// 		HostAddress: "127.0.0.1",
-	// 		PortAddress: "1503",
-	// 		WorkMode:    "rtu_over_tcp",
-	// 	},
-	// }
 	var waitGroup sync.WaitGroup
 	for _, currentPhysicalPort := range maps.Keys(conf.Ports) {
 		log.Print(currentPhysicalPort)
