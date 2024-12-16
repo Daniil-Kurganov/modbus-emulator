@@ -3,8 +3,9 @@ package structs
 import (
 	"fmt"
 	"log"
-	"modbus-emulator/src/utils"
+	"modbus-emulator/conf"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -35,6 +36,10 @@ type (
 		Handshake       Handshake
 		TransactionTime time.Time
 	}
+	ServerHistory struct {
+		Transactions []HistoryEvent
+		Slaves       []uint8
+	}
 	Handshake struct {
 		Request  Request
 		Response Response
@@ -51,6 +56,8 @@ type (
 func (hE *HistoryEvent) LogPrint() {
 	log.Printf("\n\nSlave ID: %d\n", hE.Header.SlaveID)
 	log.Printf("\n Transaction № %s", hE.Header.TransactionID)
+	log.Printf("\n\nSlave ID: %d\n", hE.Header.SlaveID)
+	log.Printf("\n Transaction № %s", hE.Header.TransactionID)
 	log.Println("\n Request:")
 	hE.Handshake.Request.LogPrint()
 	log.Println("\n Response:")
@@ -58,18 +65,18 @@ func (hE *HistoryEvent) LogPrint() {
 	log.Printf("\n Transaction time: %v", hE.TransactionTime)
 }
 
-func (hdhk *Handshake) RequestUnmarshal(payload []byte) {
-	if utils.WorkMode == "rtu_over_tcp" {
+func (hdhk *Handshake) RequestUnmarshal(workMode string, payload []byte) {
+	if workMode == "rtu_over_tcp" {
 		functionID := payload[1]
 		if slices.Contains([]byte{
-			byte(utils.Functions.CoilsRead),
-			byte(utils.Functions.DIRead),
-			byte(utils.Functions.HRRead),
-			byte(utils.Functions.IRRead),
-			byte(utils.Functions.CoilsSimpleWrite),
-			byte(utils.Functions.HRSimpleWrite)}, functionID) {
+			byte(conf.Functions.CoilsRead),
+			byte(conf.Functions.DIRead),
+			byte(conf.Functions.HRRead),
+			byte(conf.Functions.IRRead),
+			byte(conf.Functions.CoilsSimpleWrite),
+			byte(conf.Functions.HRSimpleWrite)}, functionID) {
 			hdhk.Request = new(RTUOverTCPRequest123456Response56)
-		} else if slices.Contains([]byte{byte(utils.Functions.CoilsMultipleWrite), byte(utils.Functions.HRMultipleWrite)}, functionID) {
+		} else if slices.Contains([]byte{byte(conf.Functions.CoilsMultipleWrite), byte(conf.Functions.HRMultipleWrite)}, functionID) {
 			hdhk.Request = new(RTUOverTCPMultipleWriteRequest)
 		}
 	} else {
@@ -78,18 +85,18 @@ func (hdhk *Handshake) RequestUnmarshal(payload []byte) {
 	hdhk.Request.Unmarshal(payload)
 }
 
-func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
-	if utils.WorkMode == "rtu_over_tcp" {
+func (hdhk *Handshake) ResponseUnmarshal(workMode string, payload []byte) {
+	if workMode == "rtu_over_tcp" {
 		functionID := payload[1]
 		if slices.Contains([]byte{
-			byte(utils.Functions.CoilsRead),
-			byte(utils.Functions.DIRead),
-			byte(utils.Functions.HRRead),
-			byte(utils.Functions.IRRead)}, functionID) {
+			byte(conf.Functions.CoilsRead),
+			byte(conf.Functions.DIRead),
+			byte(conf.Functions.HRRead),
+			byte(conf.Functions.IRRead)}, functionID) {
 			hdhk.Response = new(RTUOverTCPReadResponse)
-		} else if slices.Contains([]byte{byte(utils.Functions.CoilsSimpleWrite), byte(utils.Functions.HRSimpleWrite)}, functionID) {
+		} else if slices.Contains([]byte{byte(conf.Functions.CoilsSimpleWrite), byte(conf.Functions.HRSimpleWrite)}, functionID) {
 			hdhk.Response = new(RTUOverTCPRequest123456Response56)
-		} else if slices.Contains([]byte{byte(utils.Functions.CoilsMultipleWrite), byte(utils.Functions.HRMultipleWrite)}, functionID) {
+		} else if slices.Contains([]byte{byte(conf.Functions.CoilsMultipleWrite), byte(conf.Functions.HRMultipleWrite)}, functionID) {
 			hdhk.Response = new(RTUOverTCPMultipleWriteResponse)
 		} else {
 			hdhk.Response = new(RTUOverTCPErrorResponse)
@@ -103,14 +110,18 @@ func (hdhk *Handshake) ResponseUnmarshal(payload []byte) {
 func (hdhk *Handshake) Marshal() (data EmulationData, err error) {
 	data.FunctionID = hdhk.Response.GetFunctionID()
 	data.IsReadOperation = !slices.Contains([]uint16{
-		utils.Functions.CoilsSimpleWrite,
-		utils.Functions.HRSimpleWrite,
-		utils.Functions.CoilsMultipleWrite,
-		utils.Functions.HRMultipleWrite}, data.FunctionID)
-	address := hdhk.Request.MarshalAddress()
-	data.Address = address[0] + address[1]
-	quantity := hdhk.Request.MarshalQuantity()
-	data.Quantity = quantity[0] + quantity[1]
+		conf.Functions.CoilsSimpleWrite,
+		conf.Functions.HRSimpleWrite,
+		conf.Functions.CoilsMultipleWrite,
+		conf.Functions.HRMultipleWrite}, data.FunctionID)
+	if data.Address, err = BytesToDecimal(hdhk.Request.MarshalAddress()); err != nil {
+		err = fmt.Errorf("error on marshaliing emulation data address: %s", err)
+		return
+	}
+	if data.Quantity, err = BytesToDecimal(hdhk.Request.MarshalQuantity()); err != nil {
+		err = fmt.Errorf("error on marshaliing emulation data quantity: %s", err)
+		return
+	}
 	if data.IsReadOperation {
 		if data.Payload, err = hdhk.Response.MarshalPayload(); err != nil {
 			err = fmt.Errorf("error marshaling current handshake: %s", err)
@@ -137,6 +148,19 @@ func (hdhk *Handshake) TransactionErrorCheck() bool {
 	return hdhk.Response.GetFunctionID()>>7 == 0b1
 }
 
+func (sH *ServerHistory) SelfClean() {
+	deleteIndices := []int{}
+	for currentIndex, currentHistoryEvent := range sH.Transactions {
+		if currentHistoryEvent.Handshake.Request == nil || currentHistoryEvent.Handshake.Response == nil {
+			deleteIndices = append(deleteIndices, currentIndex)
+		}
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(deleteIndices)))
+	for _, currentDeleteIndex := range deleteIndices {
+		sH.Transactions = append(sH.Transactions[:currentDeleteIndex], sH.Transactions[currentDeleteIndex+1:]...)
+	}
+}
+
 func InputsPayloadPreprocessing[T uint16 | byte](data []T) (payload []uint16, err error) {
 	for _, currentByte := range data {
 		currentBinaryByte := strings.Split(strconv.FormatUint(uint64(currentByte), 2), "")
@@ -154,13 +178,26 @@ func InputsPayloadPreprocessing[T uint16 | byte](data []T) (payload []uint16, er
 
 func RegistersPayloadPreprocessing[T uint16 | byte](data []T) (payload []uint16, err error) {
 	for currentIndex := 0; currentIndex < len(data); currentIndex += 2 {
-		var currentByte uint64
-		if currentByte, err = strconv.ParseUint(fmt.Sprintf("%s%s",
-			strconv.FormatUint(uint64(data[currentIndex]), 2), strconv.FormatUint(uint64(data[currentIndex+1]), 2)), 2, 64); err != nil {
+		var currentByte uint16
+		if currentByte, err = BytesToDecimal(data[currentIndex : currentIndex+2]); err != nil {
 			err = fmt.Errorf("error on marshaling registers data: %s", err)
 			return
 		}
 		payload = append(payload, uint16(currentByte))
 	}
+	return
+}
+
+func BytesToDecimal[T uint16 | byte](bytes []T) (result uint16, err error) {
+	var hexBuffer string
+	for _, curretnByte := range bytes {
+		hexBuffer = fmt.Sprintf("%s%s", hexBuffer, strconv.FormatUint(uint64(curretnByte), 16))
+	}
+	var resultBuffer uint64
+	if resultBuffer, err = strconv.ParseUint(hexBuffer, 16, 64); err != nil {
+		err = fmt.Errorf("error on parsing bytes: %s", err)
+		return
+	}
+	result = uint16(resultBuffer)
 	return
 }

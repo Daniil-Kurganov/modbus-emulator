@@ -3,7 +3,7 @@ package structs
 import (
 	"fmt"
 	"log"
-	"modbus-emulator/src/utils"
+	"modbus-emulator/conf"
 	"reflect"
 	"slices"
 )
@@ -101,7 +101,7 @@ func (pReq *TCPRequest) MarshalPayload() (payload []uint16, err error) {
 		err = fmt.Errorf("error on marshaling request: %s", err)
 		return
 	}
-	if pReq.Header.FunctionType == byte(utils.Functions.HRMultipleWrite) {
+	if pReq.Header.FunctionType == byte(conf.Functions.HRMultipleWrite) {
 		if payload, err = RegistersPayloadPreprocessing(payload); err != nil {
 			err = fmt.Errorf("error on marshaling request: %s", err)
 			return
@@ -140,14 +140,14 @@ func (pReq *TCPRequest) UnmarshalHeader(payload []byte) {
 
 func (pReq *TCPRequest) UnmarshalData(payload []byte) {
 	if slices.Contains([]byte{
-		byte(utils.Functions.CoilsRead),
-		byte(utils.Functions.DIRead),
-		byte(utils.Functions.HRRead),
-		byte(utils.Functions.IRRead)}, pReq.Header.FunctionType) {
+		byte(conf.Functions.CoilsRead),
+		byte(conf.Functions.DIRead),
+		byte(conf.Functions.HRRead),
+		byte(conf.Functions.IRRead)}, pReq.Header.FunctionType) {
 		pReq.Data = new(TCPReadRequest)
-	} else if slices.Contains([]byte{byte(utils.Functions.CoilsSimpleWrite), byte(utils.Functions.HRSimpleWrite)}, pReq.Header.FunctionType) {
+	} else if slices.Contains([]byte{byte(conf.Functions.CoilsSimpleWrite), byte(conf.Functions.HRSimpleWrite)}, pReq.Header.FunctionType) {
 		pReq.Data = new(TCPWriteSimpleRequest)
-	} else if slices.Contains([]byte{byte(utils.Functions.CoilsMultipleWrite), byte(utils.Functions.HRMultipleWrite)}, pReq.Header.FunctionType) {
+	} else if slices.Contains([]byte{byte(conf.Functions.CoilsMultipleWrite), byte(conf.Functions.HRMultipleWrite)}, pReq.Header.FunctionType) {
 		pReq.Data = new(TCPWriteMultipleRequest)
 	}
 	pReq.Data.Unmarshal(payload)
@@ -190,13 +190,13 @@ func (pRes *TCPResponse) UnmarshalHeader(payload []byte) {
 }
 
 func (pRes *TCPResponse) UnmarshalData(payload []byte) {
-	if slices.Contains([]byte{byte(utils.Functions.CoilsRead), byte(utils.Functions.DIRead)}, pRes.Header.FunctionType) {
+	if slices.Contains([]byte{byte(conf.Functions.CoilsRead), byte(conf.Functions.DIRead)}, pRes.Header.FunctionType) {
 		pRes.Data = new(TCPReadBitResponse)
-	} else if slices.Contains([]byte{byte(utils.Functions.HRRead), byte(utils.Functions.IRRead)}, pRes.Header.FunctionType) {
+	} else if slices.Contains([]byte{byte(conf.Functions.HRRead), byte(conf.Functions.IRRead)}, pRes.Header.FunctionType) {
 		pRes.Data = new(TCPReadByteResponse)
-	} else if slices.Contains([]byte{byte(utils.Functions.CoilsSimpleWrite), byte(utils.Functions.HRSimpleWrite)}, pRes.Header.FunctionType) {
+	} else if slices.Contains([]byte{byte(conf.Functions.CoilsSimpleWrite), byte(conf.Functions.HRSimpleWrite)}, pRes.Header.FunctionType) {
 		pRes.Data = new(TCPWriteSimpleResponse)
-	} else if slices.Contains([]byte{byte(utils.Functions.CoilsMultipleWrite), byte(utils.Functions.HRMultipleWrite)}, pRes.Header.FunctionType) {
+	} else if slices.Contains([]byte{byte(conf.Functions.CoilsMultipleWrite), byte(conf.Functions.HRMultipleWrite)}, pRes.Header.FunctionType) {
 		pRes.Data = new(TCPWriteMultipleResponse)
 	}
 	pRes.Data.Unmarshal(payload)

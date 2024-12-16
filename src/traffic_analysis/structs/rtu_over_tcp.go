@@ -3,7 +3,7 @@ package structs
 import (
 	"fmt"
 	"log"
-	"modbus-emulator/src/utils"
+	"modbus-emulator/conf"
 	"slices"
 	"strconv"
 	"strings"
@@ -87,20 +87,19 @@ func (req *RTUOverTCPRequest123456Response56) Unmarshal(payload []byte) {
 }
 
 func (req *RTUOverTCPRequest123456Response56) MarshalPayload() (payload []uint16, err error) {
-	if req.HeaderError.FunctionID == utils.Functions.CoilsSimpleWrite {
+	if req.HeaderError.FunctionID == conf.Functions.CoilsSimpleWrite {
 		if req.ReadWriteDataHight == 255 {
 			payload = append(payload, 1)
 		} else {
 			payload = append(payload, 0)
 		}
 	} else {
-		var currentByte uint64
-		if currentByte, err = strconv.ParseUint(fmt.Sprintf("%s%s",
-			strconv.FormatUint(uint64(req.ReadWriteDataHight), 2), strconv.FormatUint(uint64(req.ReadWriteDataLow), 2)), 2, 64); err != nil {
-			err = fmt.Errorf("error on marshaling registers data: %s", err)
+		var resultBuffer uint16
+		if resultBuffer, err = BytesToDecimal([]uint16{req.ReadWriteDataHight, req.ReadWriteDataLow}); err != nil {
+			err = fmt.Errorf("error on marshaling payload: %s", err)
 			return
 		}
-		payload = append(payload, uint16(currentByte))
+		payload = append(payload, resultBuffer)
 	}
 	return
 }
@@ -110,10 +109,10 @@ func (req *RTUOverTCPRequest123456Response56) LogPrint() {
 	log.Printf("   Start address hight: %d", req.StartingAddressHight)
 	log.Printf("   Start address low: %d", req.StartingAddressLow)
 	if slices.Contains([]uint16{
-		utils.Functions.CoilsRead,
-		utils.Functions.DIRead,
-		utils.Functions.HRRead,
-		utils.Functions.IRRead}, req.HeaderError.FunctionID) {
+		conf.Functions.CoilsRead,
+		conf.Functions.DIRead,
+		conf.Functions.HRRead,
+		conf.Functions.IRRead}, req.HeaderError.FunctionID) {
 		log.Printf("   Quantity of registers hight: %d", req.ReadWriteDataHight)
 		log.Printf("   Quantity of registers low: %d", req.ReadWriteDataLow)
 	} else {
@@ -127,7 +126,7 @@ func (req *RTUOverTCPRequest123456Response56) MarshalAddress() []uint16 {
 }
 
 func (req *RTUOverTCPRequest123456Response56) MarshalQuantity() []uint16 {
-	if slices.Contains([]uint16{utils.Functions.CoilsSimpleWrite, utils.Functions.HRSimpleWrite}, req.HeaderError.FunctionID) {
+	if slices.Contains([]uint16{conf.Functions.CoilsSimpleWrite, conf.Functions.HRSimpleWrite}, req.HeaderError.FunctionID) {
 		return []uint16{0, 1}
 	}
 	return []uint16{req.ReadWriteDataHight, req.ReadWriteDataLow}
@@ -146,7 +145,7 @@ func (rRes *RTUOverTCPReadResponse) Unmarshal(payload []byte) {
 }
 
 func (rRes *RTUOverTCPReadResponse) MarshalPayload() (payload []uint16, err error) {
-	if slices.Contains([]uint16{utils.Functions.CoilsRead, utils.Functions.DIRead}, rRes.HeaderError.FunctionID) {
+	if slices.Contains([]uint16{conf.Functions.CoilsRead, conf.Functions.DIRead}, rRes.HeaderError.FunctionID) {
 		if payload, err = InputsPayloadPreprocessing(rRes.Data); err != nil {
 			err = fmt.Errorf("error on marshaling read data: %s", err)
 		}
@@ -202,7 +201,7 @@ func (mWReq *RTUOverTCPMultipleWriteRequest) Unmarshal(payload []byte) {
 }
 
 func (mWReq *RTUOverTCPMultipleWriteRequest) MarshalPayload() (payload []uint16, err error) {
-	if mWReq.Body.HeaderError.FunctionID == utils.Functions.CoilsMultipleWrite {
+	if mWReq.Body.HeaderError.FunctionID == conf.Functions.CoilsMultipleWrite {
 		countPayloadByte := int(mWReq.Body.QuantityOfRegistersHight + mWReq.Body.QuantityOfRegistersLow)
 		for _, currentByte := range mWReq.Data {
 			var currentBinaryData []string

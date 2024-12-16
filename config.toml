@@ -1,0 +1,59 @@
+[1501]
+    HostAddress = "192.168.1.25"
+    PortAddress = "502"
+    WorkMode    = "rtu_over_tcp"
+
+[1502]
+    HostAddress = "192.168.1.29"
+    PortAddress = "502"
+    WorkMode    = "rtu_over_tcp"
+
+[1503]
+    HostAddress = "192.168.1.31"
+    PortAddress = "502"
+    WorkMode    = "rtu_over_tcp"
+
+[1505]
+    HostAddress = "192.168.1.34"
+    PortAddress = "502"
+    WorkMode    = "tcp"
+
+[1506]
+    HostAddress = "192.168.1.35"
+    PortAddress = "502"
+    WorkMode    = "tcp"
+
+[1507]
+    HostAddress = "192.168.1.36"
+    PortAddress = "502"
+    WorkMode    = "tcp"
+
+[1508]
+    HostAddress = "192.168.1.37"
+    PortAddress = "502"
+    WorkMode    = "tcp"
+
+[1509]
+    HostAddress = "192.168.1.101"
+    PortAddress = "502"
+    WorkMode    = "tcp"
+
+[1510]
+    HostAddress = "192.168.1.105"
+    PortAddress = "502"
+    WorkMode    = "tcp"
+
+[1511]
+    HostAddress = "192.168.1.110"
+    PortAddress = "502"
+    WorkMode    = "tcp"
+
+[1512]
+    HostAddress = "192.168.1.111"
+    PortAddress = "502"
+    WorkMode    = "tcp"
+
+[1513]
+    HostAddress = "192.168.1.120"
+    PortAddress = "502"
+    WorkMode    = "tcp"
