@@ -12,7 +12,7 @@ import (
 func serverInit(port uint16) {
 	var err error
 	server := ms.NewServer()
-	if err = server.ListenTCP(fmt.Sprintf("%s:%d", conf.ServerTCPHost, port)); err != nil {
+	if err = server.ListenTCP(fmt.Sprintf("%s:%d", conf.ServerDefaultEmulateHost, port)); err != nil {
 		log.Fatalf("Error on listening TCP: %s\n", err)
 	}
 	defer server.Close()

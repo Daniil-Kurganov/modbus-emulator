@@ -23,28 +23,16 @@ func main() {
 	defer logFile.Close()
 	multiWriter := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(multiWriter)
-	var history map[uint16]structs.ServerHistory
-	// conf.WorkMode = "rtu_over_tcp"
-	// conf.DumpDirectoryPath = `pcapng_files/tests_files/multiple_ports`
-	// conf.Ports = map[uint16]conf.ServerSocket{
-	// 	1502: {
-	// 		HostAddress: "127.0.0.1",
-	// 		PortAddress: "1502",
-	// 	},
-	// 	1503: {
-	// 		HostAddress: "127.0.0.1",
-	// 		PortAddress: "1503",
-	// 	},
-	// }
-	if _, err = ta.ParseDump(); err != nil {
+	var history map[string]structs.ServerHistory
+	if history, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error: %s", err)
 	}
-	log.Printf("Ports: %v", maps.Keys(history))
+	log.Printf("Sockets: %v", maps.Keys(history))
 	time.Sleep(time.Second)
-	for currentPort, currentHistory := range history {
+	for currentSocket, currentHistory := range history {
 		log.Printf("Slaves for current port: %v", currentHistory.Slaves)
 		for _, currentHistoryEvent := range currentHistory.Transactions {
-			log.Printf("Current port: %d", currentPort)
+			log.Printf("Current port: %s", currentSocket)
 			currentHistoryEvent.LogPrint()
 		}
 		time.Sleep(3 * time.Second)

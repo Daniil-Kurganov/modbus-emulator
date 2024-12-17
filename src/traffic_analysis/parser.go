@@ -2,6 +2,7 @@ package trafficanalysis
 
 import (
 	"fmt"
+	"log"
 	"modbus-emulator/conf"
 	"modbus-emulator/src/traffic_analysis/structs"
 	"slices"
@@ -23,9 +24,9 @@ func TCPTransactionIDParsing(transcationID []byte) (key string) {
 func ParseDump() (history map[string]structs.ServerHistory, err error) {
 	var currentHandle *pcap.Handle
 	history = make(map[string]structs.ServerHistory)
-	for currentPhysicalPort, currentServerSocketData := range conf.Ports {
-		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcapng`, conf.ModulePath, conf.DumpDirectoryPath, conf.DumpFileName)); err != nil {
-			if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s/%s/%s.pcap`, conf.ModulePath, conf.DumpDirectoryPath, conf.DumpFileName)); err != nil {
+	for currentPhysicalSocket, currentServerSocketData := range conf.Sockets {
+		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s.pcapng`, conf.DumpFilePath)); err != nil {
+			if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s.pcap`, conf.DumpFilePath)); err != nil {
 				err = fmt.Errorf("error on opening file: %s", err)
 				return
 			}
@@ -40,7 +41,7 @@ func ParseDump() (history map[string]structs.ServerHistory, err error) {
 		var currentHistory []structs.HistoryEvent
 		var currentSlavesId []uint8
 		var rtuOverTCPTransactionDictionary map[uint8]int
-		if currentServerSocketData.WorkMode == "rtu_over_tcp" {
+		if currentServerSocketData.Protocol == conf.Protocols.RTUOverTCP {
 			rtuOverTCPTransactionDictionary = make(map[uint8]int)
 		}
 		for currentPacket := range currentPacketsSource.Packets() {
@@ -55,24 +56,25 @@ func ParseDump() (history map[string]structs.ServerHistory, err error) {
 					continue
 				}
 				if currentHistory[len(currentHistory)-1].Handshake.Response != nil {
-					if currentServerSocketData.WorkMode == "rtu_over_tcp" {
+					if currentServerSocketData.Protocol == conf.Protocols.RTUOverTCP {
 						rtuOverTCPTransactionDictionary[currentHistory[len(currentHistory)-1].Header.SlaveID] -= 1
 					}
 					currentHistory = currentHistory[:len(currentHistory)-1]
 					continue
 				}
-				currentHistory[len(currentHistory)-1].Handshake.ResponseUnmarshal(currentServerSocketData.WorkMode, currentPayload)
+				currentHistory[len(currentHistory)-1].Handshake.ResponseUnmarshal(currentServerSocketData.Protocol, currentPayload)
 				currentHistory[len(currentHistory)-1].TransactionTime = currentPacket.Metadata().Timestamp
 			} else {
 				if len(currentHistory) != 0 && currentHistory[len(currentHistory)-1].Handshake.Response == nil {
-					if currentServerSocketData.WorkMode == " rtu_over_tcp" {
+					if currentServerSocketData.Protocol == conf.Protocols.RTUOverTCP {
 						rtuOverTCPTransactionDictionary[currentHistory[len(currentHistory)-1].Header.SlaveID] -= 1
 					}
 					currentHistory = currentHistory[:len(currentHistory)-1]
 					continue
 				}
 				currentHistoryEvent := new(structs.HistoryEvent)
-				if currentServerSocketData.WorkMode == "rtu_over_tcp" {
+				switch currentServerSocketData.Protocol {
+				case conf.Protocols.RTUOverTCP:
 					currentSlaveId := uint8(currentPayload[0])
 					if _, ok := rtuOverTCPTransactionDictionary[currentSlaveId]; !ok {
 						rtuOverTCPTransactionDictionary[currentSlaveId] = 1
@@ -83,16 +85,18 @@ func ParseDump() (history map[string]structs.ServerHistory, err error) {
 						SlaveID:       currentSlaveId,
 						TransactionID: strconv.Itoa(rtuOverTCPTransactionDictionary[currentSlaveId]),
 					}
-				} else {
+				case conf.Protocols.TCP:
 					currentHistoryEvent.Header = structs.SlaveTransaction{
 						SlaveID:       uint8(currentPayload[6]),
 						TransactionID: TCPTransactionIDParsing(currentPayload[:2]),
 					}
+				default:
+					log.Fatalf("Error on parsing dump: %+v has invalid protocol", currentServerSocketData)
 				}
 				if !slices.Contains(currentSlavesId, currentHistoryEvent.Header.SlaveID) {
 					currentSlavesId = append(currentSlavesId, currentHistoryEvent.Header.SlaveID)
 				}
-				currentHistoryEvent.Handshake.RequestUnmarshal(currentServerSocketData.WorkMode, currentPayload)
+				currentHistoryEvent.Handshake.RequestUnmarshal(currentServerSocketData.Protocol, currentPayload)
 				currentHistory = append(currentHistory, *currentHistoryEvent)
 			}
 		}
@@ -102,7 +106,7 @@ func ParseDump() (history map[string]structs.ServerHistory, err error) {
 			Slaves:       currentSlavesId,
 		}
 		currentPortHistory.SelfClean()
-		history[currentPhysicalPort] = currentPortHistory
+		history[currentPhysicalSocket] = currentPortHistory
 	}
 	return
 }
