@@ -1,9 +1,7 @@
 package main
 
 import (
-	"io"
 	"log"
-	"os"
 
 	// "time"
 
@@ -16,18 +14,19 @@ import (
 func main() {
 	log.SetFlags(0)
 	var err error
-	var logFile *os.File
-	logFile, err = os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	defer logFile.Close()
-	multiWriter := io.MultiWriter(os.Stdout, logFile)
-	log.SetOutput(multiWriter)
+	// var logFile *os.File
+	// logFile, err = os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// if err != nil {
+	// 	log.Fatalf("error opening file: %v", err)
+	// }
+	// defer logFile.Close()
+	// multiWriter := io.MultiWriter(os.Stdout, logFile)
+	// log.SetOutput(multiWriter)
 
-	conf.DumpFilePath = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/pcapng_files/main_files/main`
+	conf.DumpFilePath = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/pcapng_files/tests_files/auto_parse`
 	conf.ServerDefaultDumpPort = "502"
 	conf.EmulationPortAddressStart = 1501
+	conf.ServerDefaultEmulateHost = "127.0.0.1"
 	if err = ta.SocketAutoAccumulation(); err != nil {
 		log.Fatal(err)
 	}

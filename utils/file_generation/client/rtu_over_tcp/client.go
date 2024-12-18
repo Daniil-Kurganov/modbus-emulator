@@ -13,7 +13,7 @@ func client(wG *sync.WaitGroup, port uint16) {
 	var err error
 	var client *modbus.ModbusClient
 	if client, err = modbus.NewClient(&modbus.ClientConfiguration{
-		URL:     fmt.Sprintf("rtuovertcp://localhost:%d", port),
+		URL:     fmt.Sprintf("rtuovertcp://127.0.0.1:%d", port),
 		Speed:   19200,
 		Timeout: 1 * time.Second,
 	}); err != nil {
@@ -29,7 +29,7 @@ func client(wG *sync.WaitGroup, port uint16) {
 	// var sHR, sIR uint16``
 	for _, currentUnitID := range []uint8{1, 2, 3} {
 		if err = client.SetUnitId(currentUnitID); err != nil {
-			log.Fatalf("Error on setting uint ID")
+			log.Fatalf("Error on setting uint ID: %s", err)
 		}
 		log.Printf("\nSet uint ID = %d", currentUnitID)
 		// if err = client.WriteCoil(5, true); err != nil {
@@ -85,7 +85,7 @@ func main() {
 	log.SetFlags(0)
 	var wG sync.WaitGroup
 	wG.Add(2)
-	go client(&wG, 1502)
+	go client(&wG, 1501)
 	go client(&wG, 1503)
 	wG.Wait()
 }

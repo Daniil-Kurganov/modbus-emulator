@@ -9,11 +9,18 @@ import (
 	ms "github.com/Daniil-Kurganov/modbus-server"
 )
 
-func serverInit(port uint16) {
+func serverInit(port uint16, protocol string) {
 	var err error
 	server := ms.NewServer()
-	if err = server.ListenTCP(fmt.Sprintf("%s:%d", conf.ServerDefaultEmulateHost, port)); err != nil {
-		log.Fatalf("Error on listening TCP: %s\n", err)
+	switch protocol {
+	case conf.Protocols.RTUOverTCP:
+		if err = server.ListenRTUOverTCP(fmt.Sprintf("127.0.0.1:%d", port)); err != nil {
+			log.Fatalf("Error on listening RTU over TCP: %s\n", err)
+		}
+	case conf.Protocols.TCP:
+		if err = server.ListenTCP(fmt.Sprintf("127.0.0.1:%d", port)); err != nil {
+			log.Fatalf("Error on listening TCP: %s\n", err)
+		}
 	}
 	defer server.Close()
 	server.InitSlave(1)
@@ -29,8 +36,10 @@ func serverInit(port uint16) {
 
 func main() {
 	log.SetFlags(0)
-	go serverInit(1502)
-	go serverInit(1503)
+	go serverInit(1501, conf.Protocols.RTUOverTCP)
+	go serverInit(1502, conf.Protocols.TCP)
+	go serverInit(1503, conf.Protocols.RTUOverTCP)
+	go serverInit(1504, conf.Protocols.TCP)
 	for {
 		time.Sleep(time.Second)
 	}

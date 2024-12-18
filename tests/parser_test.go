@@ -2967,3 +2967,100 @@ func TestParsePackets(t *testing.T) {
 			currentTestCase.expectedHistory, currentRecievedHistory)
 	}
 }
+
+func TestSocketAutoAccumulation(t *testing.T) {
+	expectedEumlationSockets := []string{
+		"127.0.0.1:1501",
+		"127.0.0.1:1502",
+		"127.0.0.1:1503",
+		"127.0.0.1:1504",
+		"127.0.0.1:1505",
+		"127.0.0.1:1506",
+		"127.0.0.1:1507",
+		"127.0.0.1:1508",
+		"127.0.0.1:1509",
+		"127.0.0.1:1510",
+		"127.0.0.1:1511",
+		"127.0.0.1:1512",
+	}
+	expectedDumpSockets := []conf.ServerSocketData{
+		{
+			HostAddress: "192.168.1.105",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.TCP,
+		},
+		{
+			HostAddress: "192.168.1.101",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.TCP,
+		},
+		{
+			HostAddress: "192.168.1.110",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.TCP,
+		},
+		{
+			HostAddress: "192.168.1.29",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.RTUOverTCP,
+		},
+		{
+			HostAddress: "192.168.1.31",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.RTUOverTCP,
+		},
+		{
+			HostAddress: "192.168.1.36",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.TCP,
+		},
+		{
+			HostAddress: "192.168.1.37",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.TCP,
+		},
+		{
+			HostAddress: "192.168.1.35",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.TCP,
+		},
+		{
+			HostAddress: "192.168.1.120",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.TCP,
+		},
+		{
+			HostAddress: "192.168.1.34",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.TCP,
+		},
+		{
+			HostAddress: "192.168.1.25",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.RTUOverTCP,
+		},
+		{
+			HostAddress: "192.168.1.111",
+			PortAddress: "502",
+			Protocol:    conf.Protocols.TCP,
+		},
+	}
+	conf.DumpFilePath = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/pcapng_files/tests_files/auto_parse`
+	conf.ServerDefaultDumpPort = "502"
+	conf.EmulationPortAddressStart = 1501
+	conf.ServerDefaultEmulateHost = "127.0.0.1"
+	conf.Sockets = make(map[string]conf.ServerSocketData)
+	if err := ta.SocketAutoAccumulation(); err != nil {
+		assert.EqualErrorf(t, err, "nil",
+			"Error: recieved and expected errors isn't equal:\n expected: nil;\n recieved: %s", err,
+		)
+	}
+	for currentEmulationSocket, currentDumpSocketData := range conf.Sockets {
+		assert.Containsf(t, expectedEumlationSockets, currentEmulationSocket,
+			"Error: recieved emulatino socket isn't expected:\n recieved: %s;\n expected: %v", currentEmulationSocket, expectedEumlationSockets,
+		)
+		assert.Containsf(t, expectedDumpSockets, currentDumpSocketData,
+			"Error: recieved dump socket's data isn't expected:\n recieved: %+v;\n expected: %+v", currentDumpSocketData, expectedDumpSockets,
+		)
+	}
+}
