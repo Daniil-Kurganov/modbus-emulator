@@ -4,12 +4,13 @@ import (
 	"io"
 	"log"
 	"os"
-	"time"
 
+	// "time"
+
+	"modbus-emulator/conf"
 	ta "modbus-emulator/src/traffic_analysis"
-	"modbus-emulator/src/traffic_analysis/structs"
-
-	"golang.org/x/exp/maps"
+	// "modbus-emulator/src/traffic_analysis/structs"
+	// "golang.org/x/exp/maps"
 )
 
 func main() {
@@ -23,18 +24,29 @@ func main() {
 	defer logFile.Close()
 	multiWriter := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(multiWriter)
-	var history map[string]structs.ServerHistory
-	if history, err = ta.ParseDump(); err != nil {
-		log.Fatalf("Error: %s", err)
+
+	conf.DumpFilePath = `/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/pcapng_files/main_files/main`
+	conf.ServerDefaultDumpPort = "502"
+	conf.EmulationPortAddressStart = 1501
+	if err = ta.SocketAutoAccumulation(); err != nil {
+		log.Fatal(err)
 	}
-	log.Printf("Sockets: %v", maps.Keys(history))
-	time.Sleep(time.Second)
-	for currentSocket, currentHistory := range history {
-		log.Printf("Slaves for current port: %v", currentHistory.Slaves)
-		for _, currentHistoryEvent := range currentHistory.Transactions {
-			log.Printf("Current port: %s", currentSocket)
-			currentHistoryEvent.LogPrint()
-		}
-		time.Sleep(3 * time.Second)
+	for cS, cD := range conf.Sockets {
+		log.Print(cS, cD)
 	}
+
+	// var history map[string]structs.ServerHistory
+	// if history, err = ta.ParseDump(); err != nil {
+	// 	log.Fatalf("Error: %s", err)
+	// }
+	// log.Printf("Sockets: %v", maps.Keys(history))
+	// time.Sleep(time.Second)
+	// for currentSocket, currentHistory := range history {
+	// 	log.Printf("Slaves for current port: %v", currentHistory.Slaves)
+	// 	for _, currentHistoryEvent := range currentHistory.Transactions {
+	// 		log.Printf("Current port: %s", currentSocket)
+	// 		currentHistoryEvent.LogPrint()
+	// 	}
+	// 	time.Sleep(3 * time.Second)
+	// }
 }

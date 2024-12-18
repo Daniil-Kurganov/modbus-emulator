@@ -22,20 +22,24 @@ type (
 		Protocol   string `toml:"Protocol"`
 	}
 	TOMLConfig struct {
-		DumpConfig               []DumpSocketsConfigData `toml:"DumpConfig"`
-		ServerDefaultEmulateHost string
-		ServerDefaultDumpPort    string
-		FinishDelayTime          time.Duration
-		DumpFilePath             string
+		DumpConfig                []DumpSocketsConfigData `toml:"DumpConfig"`
+		ServerDefaultEmulateHost  string
+		ServerDefaultDumpPort     string
+		FinishDelayTime           time.Duration
+		DumpFilePath              string
+		IsAutoParsingMode         bool
+		EmulationPortAddressStart int
 	}
 )
 
 var (
-	Sockets                  map[string]ServerSocketData
-	ServerDefaultEmulateHost string
-	ServerDefaultDumpPort    string
-	FinishDelayTime          time.Duration
-	DumpFilePath             string
+	Sockets                   map[string]ServerSocketData
+	ServerDefaultEmulateHost  string
+	ServerDefaultDumpPort     string
+	FinishDelayTime           time.Duration
+	DumpFilePath              string
+	IsAutoParsingMode         bool
+	EmulationPortAddressStart uint16
 
 	Functions = struct {
 		CoilsRead          uint16
@@ -63,6 +67,37 @@ var (
 		RTUOverTCP: "rtu_over_tcp",
 		TCP:        "tcp",
 	}
+	GenFileName   = "result_config.toml"
+	GenFileTitles = struct {
+		ServerDefaultEmulateHost  string
+		ServerDefaultDumpPort     string
+		FinishDelayTime           string
+		DumpFilePath              string
+		IsAutoParsingMode         string
+		EmulationPortAddressStart string
+		DumpConfig                struct {
+			Title string
+			DumpSocketsConfigData
+		}
+	}{
+		ServerDefaultEmulateHost:  "ServerDefaultEmulateHost",
+		ServerDefaultDumpPort:     "ServerDefaultDumpPort",
+		FinishDelayTime:           "FinishDelayTime",
+		DumpFilePath:              "DumpFilePath",
+		IsAutoParsingMode:         "IsAutoParsingMode",
+		EmulationPortAddressStart: "EmulationPortAddressStart",
+		DumpConfig: struct {
+			Title string
+			DumpSocketsConfigData
+		}{
+			Title: "[DumpConfig]",
+			DumpSocketsConfigData: DumpSocketsConfigData{
+				DumpSocket: " DumpSocket",
+				RealSocket: " RealSocket",
+				Protocol:   " Protocol",
+			},
+		},
+	}
 )
 
 func init() {
@@ -72,7 +107,7 @@ func init() {
 	if workDirectory, err = os.Getwd(); err != nil {
 		log.Fatalf("Error on configuration preprocessing: %s", err)
 	}
-	if strings.Contains(workDirectory, "tests") {
+	if strings.Contains(workDirectory, "tests") || strings.Contains(workDirectory, "utils") {
 		return
 	}
 	var config TOMLConfig
@@ -83,22 +118,29 @@ func init() {
 	ServerDefaultDumpPort = config.ServerDefaultDumpPort
 	FinishDelayTime = config.FinishDelayTime
 	DumpFilePath = config.DumpFilePath
+	IsAutoParsingMode = config.IsAutoParsingMode
+	EmulationPortAddressStart = uint16(config.EmulationPortAddressStart)
 	Sockets = make(map[string]ServerSocketData)
-	for _, currentSocketData := range config.DumpConfig {
-		var currentServePath string
-		currentServerSocketData := ServerSocketData{Protocol: currentSocketData.Protocol}
-		if currentSepIndex := strings.Index(currentSocketData.DumpSocket, ":"); currentSepIndex == -1 {
-			currentServerSocketData.HostAddress = currentSocketData.DumpSocket
-			currentServerSocketData.PortAddress = ServerDefaultDumpPort
-		} else {
-			currentServerSocketData.HostAddress = currentSocketData.DumpSocket[:currentSepIndex]
-			currentServerSocketData.PortAddress = currentSocketData.DumpSocket[currentSepIndex+1:]
+	if !IsAutoParsingMode {
+		log.Print("Using manually work mode of parsing dump: using configuration list")
+		for _, currentSocketData := range config.DumpConfig {
+			var currentServePath string
+			currentServerSocketData := ServerSocketData{Protocol: currentSocketData.Protocol}
+			if currentSepIndex := strings.Index(currentSocketData.DumpSocket, ":"); currentSepIndex == -1 {
+				currentServerSocketData.HostAddress = currentSocketData.DumpSocket
+				currentServerSocketData.PortAddress = ServerDefaultDumpPort
+			} else {
+				currentServerSocketData.HostAddress = currentSocketData.DumpSocket[:currentSepIndex]
+				currentServerSocketData.PortAddress = currentSocketData.DumpSocket[currentSepIndex+1:]
+			}
+			if currentSepIndex := strings.Index(currentSocketData.RealSocket, ":"); currentSepIndex == -1 {
+				currentServePath = fmt.Sprintf("%s:%s", ServerDefaultEmulateHost, currentSocketData.RealSocket)
+			} else {
+				currentServePath = currentSocketData.RealSocket
+			}
+			Sockets[currentServePath] = currentServerSocketData
 		}
-		if currentSepIndex := strings.Index(currentSocketData.RealSocket, ":"); currentSepIndex == -1 {
-			currentServePath = fmt.Sprintf("%s:%s", ServerDefaultEmulateHost, currentSocketData.RealSocket)
-		} else {
-			currentServePath = currentSocketData.RealSocket
-		}
-		Sockets[currentServePath] = currentServerSocketData
+	} else {
+		log.Print("Using automatically work mode of parsing dump")
 	}
 }

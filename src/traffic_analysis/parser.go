@@ -13,12 +13,9 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-func TCPTransactionIDParsing(transcationID []byte) (key string) {
-	for _, currentByte := range transcationID {
-		key = fmt.Sprintf("%s-%s", key, strconv.Itoa(int(currentByte)))
-	}
-	key = key[1:]
-	return
+type protocolDistribution struct {
+	RTUOverTCP uint
+	TCP        uint
 }
 
 func ParseDump() (history map[string]structs.ServerHistory, err error) {
@@ -30,7 +27,6 @@ func ParseDump() (history map[string]structs.ServerHistory, err error) {
 				err = fmt.Errorf("error on opening file: %s", err)
 				return
 			}
-
 		}
 		if err = currentHandle.SetBPFFilter(fmt.Sprintf("host %s and tcp port %s",
 			currentServerSocketData.HostAddress, currentServerSocketData.PortAddress)); err != nil {
@@ -108,5 +104,71 @@ func ParseDump() (history map[string]structs.ServerHistory, err error) {
 		currentPortHistory.SelfClean()
 		history[currentPhysicalSocket] = currentPortHistory
 	}
+	return
+}
+
+func SocketAutoAccumulation() (err error) {
+	var currentHandle *pcap.Handle
+	if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s.pcapng`, conf.DumpFilePath)); err != nil {
+		if currentHandle, err = pcap.OpenOffline(fmt.Sprintf(`%s.pcap`, conf.DumpFilePath)); err != nil {
+			err = fmt.Errorf("error on opening file: %s", err)
+			return
+		}
+	}
+	if err = currentHandle.SetBPFFilter(conf.Protocols.TCP); err != nil {
+		err = fmt.Errorf("error on setting handle filter: %s", err)
+		return
+	}
+	packetsSource := gopacket.NewPacketSource(currentHandle, currentHandle.LinkType())
+	dumpHosts := make(map[string]protocolDistribution)
+	for currentPacket := range packetsSource.Packets() {
+		currentPayload := currentPacket.Layer(layers.LayerTypeTCP).LayerPayload()
+		if len(currentPayload) == 0 {
+			continue
+		}
+		var currentDumpHost string
+		if conf.ServerDefaultDumpPort == currentPacket.TransportLayer().TransportFlow().Dst().String() {
+			currentDumpHost = currentPacket.NetworkLayer().NetworkFlow().Dst().String()
+		} else if conf.ServerDefaultDumpPort == currentPacket.TransportLayer().TransportFlow().Src().String() {
+			currentDumpHost = currentPacket.NetworkLayer().NetworkFlow().Src().String()
+		}
+		if currentDumpHost == "" {
+			continue
+		}
+		if currentPayload[5] == uint8(len(currentPayload[6:])) {
+			dumpHosts[currentDumpHost] = protocolDistribution{
+				RTUOverTCP: dumpHosts[currentDumpHost].RTUOverTCP,
+				TCP:        dumpHosts[currentDumpHost].TCP + 1,
+			}
+		} else {
+			dumpHosts[currentDumpHost] = protocolDistribution{
+				RTUOverTCP: dumpHosts[currentDumpHost].RTUOverTCP + 1,
+				TCP:        dumpHosts[currentDumpHost].TCP,
+			}
+		}
+	}
+	for currentHost, currentProtocolDefinition := range dumpHosts {
+		currentEmulationSocket := fmt.Sprintf("%s:%d", conf.ServerDefaultEmulateHost, conf.EmulationPortAddressStart)
+		conf.EmulationPortAddressStart++
+		var currentResultProtocol string
+		if currentProtocolDefinition.RTUOverTCP > currentProtocolDefinition.TCP {
+			currentResultProtocol = conf.Protocols.RTUOverTCP
+		} else {
+			currentResultProtocol = conf.Protocols.TCP
+		}
+		conf.Sockets[currentEmulationSocket] = conf.ServerSocketData{
+			HostAddress: currentHost,
+			PortAddress: conf.ServerDefaultDumpPort,
+			Protocol:    currentResultProtocol,
+		}
+	}
+	return
+}
+
+func TCPTransactionIDParsing(transcationID []byte) (key string) {
+	for _, currentByte := range transcationID {
+		key = fmt.Sprintf("%s-%s", key, strconv.Itoa(int(currentByte)))
+	}
+	key = key[1:]
 	return
 }

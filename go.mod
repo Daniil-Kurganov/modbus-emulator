@@ -12,10 +12,11 @@ require (
 
 require github.com/BurntSushi/toml v1.4.0
 
+require github.com/akiyosi/tomlwriter v0.2.3
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/goburrow/serial v0.1.0 // indirect
-	github.com/libp2p/go-reuseport v0.4.0 // indirect
 	github.com/libp2p/go-reuseport v0.4.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
