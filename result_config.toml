@@ -1,0 +1,67 @@
+
+ServerDefaultDumpPort = "502"
+FinishDelayTime = "3s"
+DumpFilePath = '/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/pcapng_files/main_files/main'
+IsAutoParsingMode = true
+EmulationPortAddressStart = 1513
+ServerDefaultEmulateHost = "0.0.0.0"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.120"
+  RealSocket = "1503"
+  Protocol = "tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.29"
+  RealSocket = "1505"
+  Protocol = "rtu_over_tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.105"
+  RealSocket = "1507"
+  Protocol = "tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.31"
+  RealSocket = "1511"
+  Protocol = "rtu_over_tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.101"
+  RealSocket = "1508"
+  Protocol = "tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.37"
+  RealSocket = "1509"
+  Protocol = "tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.35"
+  RealSocket = "1510"
+  Protocol = "tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.111"
+  RealSocket = "1512"
+  Protocol = "tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.34"
+  RealSocket = "1501"
+  Protocol = "tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.36"
+  RealSocket = "1502"
+  Protocol = "tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.25"
+  RealSocket = "1504"
+  Protocol = "rtu_over_tcp"
+
+[[DumpConfig]]
+  DumpSocket = "192.168.1.110"
+  RealSocket = "1506"
+  Protocol = "tcp"

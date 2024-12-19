@@ -25,7 +25,7 @@ func main() {
 	defer client.Close()
 	var coils, DI []bool
 	var HR, IR []uint16
-	for _, currentUnitID := range []uint8{3, 4, 5} {
+	for _, currentUnitID := range []uint8{10} {
 		client.SetUnitId(currentUnitID)
 		log.Printf("\nCurrent slave: %d", currentUnitID)
 		if coils, err = client.ReadCoils(5, 5); err != nil {

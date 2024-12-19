@@ -64,7 +64,8 @@ func (hE *HistoryEvent) LogPrint() {
 }
 
 func (hdhk *Handshake) RequestUnmarshal(workMode string, payload []byte) {
-	if workMode == "rtu_over_tcp" {
+	switch workMode {
+	case conf.Protocols.RTUOverTCP:
 		functionID := payload[1]
 		if slices.Contains([]byte{
 			byte(conf.Functions.CoilsRead),
@@ -77,14 +78,17 @@ func (hdhk *Handshake) RequestUnmarshal(workMode string, payload []byte) {
 		} else if slices.Contains([]byte{byte(conf.Functions.CoilsMultipleWrite), byte(conf.Functions.HRMultipleWrite)}, functionID) {
 			hdhk.Request = new(RTUOverTCPMultipleWriteRequest)
 		}
-	} else {
+	case conf.Protocols.TCP:
 		hdhk.Request = new(TCPRequest)
+	default:
+		log.Fatal("Error on unmarshaling request: invalid protocol")
 	}
 	hdhk.Request.Unmarshal(payload)
 }
 
 func (hdhk *Handshake) ResponseUnmarshal(workMode string, payload []byte) {
-	if workMode == "rtu_over_tcp" {
+	switch workMode {
+	case conf.Protocols.RTUOverTCP:
 		functionID := payload[1]
 		if slices.Contains([]byte{
 			byte(conf.Functions.CoilsRead),
@@ -99,8 +103,10 @@ func (hdhk *Handshake) ResponseUnmarshal(workMode string, payload []byte) {
 		} else {
 			hdhk.Response = new(RTUOverTCPErrorResponse)
 		}
-	} else {
+	case conf.Protocols.TCP:
 		hdhk.Response = new(TCPResponse)
+	default:
+		log.Fatal("Error on unmarshaling request: invalid protocol")
 	}
 	hdhk.Response.Unmarshal(payload)
 }

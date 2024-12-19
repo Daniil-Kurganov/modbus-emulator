@@ -1,24 +1,42 @@
 package src
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 	"sync"
 	"time"
 
 	"modbus-emulator/conf"
-	ta "modbus-emulator/src/traffic_analysis"
 	"modbus-emulator/src/traffic_analysis/structs"
 
 	mS "github.com/Daniil-Kurganov/modbus-server"
 )
 
-func sliceUint16ToByte(source []uint16) (destination []byte) {
-	for _, currentByte := range source {
-		destination = append(destination, byte(currentByte))
+func ServerInit(waitGroup *sync.WaitGroup, servePath string, serverHistory structs.ServerHistory) {
+	var err error
+	server := mS.NewServer()
+	switch conf.Sockets[servePath].Protocol {
+	case conf.Protocols.RTUOverTCP:
+		if err = server.ListenRTUOverTCP(servePath); err != nil {
+			log.Fatalf("Error on listening RTU over TCP: %s", err)
+		}
+	case conf.Protocols.TCP:
+		if err = server.ListenTCP(servePath); err != nil {
+			log.Fatalf("Error on listening TCP: %s", err)
+		}
+	default:
+		log.Fatalf("Error: invalid servers's work mode: %s", conf.Sockets[servePath].Protocol)
 	}
-	return
+	log.Printf("Start server on %s, protocol: %s", servePath, conf.Sockets[servePath].Protocol)
+	for _, currentSlaveId := range serverHistory.Slaves {
+		server.InitSlave(currentSlaveId)
+	}
+	closeChannel := make(chan bool)
+	go emulate(server, serverHistory.Transactions, closeChannel)
+	<-closeChannel
+	close(closeChannel)
+	server.Close()
+	waitGroup.Done()
 }
 
 func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel chan (bool)) {
@@ -151,34 +169,9 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 	closeChannel <- true
 }
 
-func ServerInit(waitGroup *sync.WaitGroup, physicalPort string) {
-	var err error
-	server := mS.NewServer()
-	servePath := fmt.Sprintf("%s:%s", conf.ServerTCPHost, physicalPort)
-	switch conf.Ports[physicalPort].WorkMode {
-	case "rtu_over_tcp":
-		if err = server.ListenRTUOverTCP(servePath); err != nil {
-			log.Fatalf("Error on listening RTU over TCP: %s", err)
-		}
-	case "tcp":
-		if err = server.ListenTCP(servePath); err != nil {
-			log.Fatalf("Error on listening TCP: %s", err)
-		}
-	default:
-		log.Fatalf("Error: invalid servers's work mode: %s", conf.Ports[physicalPort].WorkMode)
+func sliceUint16ToByte(source []uint16) (destination []byte) {
+	for _, currentByte := range source {
+		destination = append(destination, byte(currentByte))
 	}
-	log.Printf("Start server on %s, work mode: %s", servePath, conf.Ports[physicalPort].WorkMode)
-	var history map[string]structs.ServerHistory
-	if history, err = ta.ParseDump(); err != nil {
-		log.Fatalf("Error on parsing dump history: %s", err)
-	}
-	for _, currentSlaveId := range history[physicalPort].Slaves {
-		server.InitSlave(currentSlaveId)
-	}
-	closeChannel := make(chan bool)
-	go emulate(server, history[physicalPort].Transactions, closeChannel)
-	<-closeChannel
-	close(closeChannel)
-	server.Close()
-	waitGroup.Done()
-}
+	return
+}	
