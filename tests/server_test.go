@@ -135,7 +135,7 @@ func TestServerTCPMode(t *testing.T) {
 		directoryPath, testCasesTCP.workMode,
 	)
 	conf.FinishDelayTime = 3 * time.Second
-	conf.DefaultOneTimeEmulation = true
+	conf.OneTimeEmulation = true
 	conf.Sockets = map[string]conf.DumpSocketData{
 		"127.0.0.1:1502": {
 			HostAddress: "localhost",
@@ -312,7 +312,7 @@ func TestServerRTUOverTCPMode(t *testing.T) {
 		},
 	}
 	conf.FinishDelayTime = 3 * time.Second
-	conf.DefaultOneTimeEmulation = true
+	conf.OneTimeEmulation = true
 	var history map[string]structs.ServerHistory
 	if history, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error on parsing dump: %s", err)
@@ -499,7 +499,7 @@ func TestServerRTUOverTCPMupliplePorts(t *testing.T) {
 		},
 	}
 	conf.FinishDelayTime = 3 * time.Second
-	conf.DefaultOneTimeEmulation = true
+	conf.OneTimeEmulation = true
 	var history map[string]structs.ServerHistory
 	if history, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error on parsing dump: %s", err)
@@ -697,7 +697,7 @@ func TestServerTCPMupliplePorts(t *testing.T) {
 		},
 	}
 	conf.FinishDelayTime = 5 * time.Second
-	conf.DefaultOneTimeEmulation = true
+	conf.OneTimeEmulation = true
 	var history map[string]structs.ServerHistory
 	if history, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error on parsing dump: %s", err)
