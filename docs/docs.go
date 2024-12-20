@@ -28,6 +28,15 @@ const docTemplate = `{
         "produces": [
           "application/json"
         ],
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "If parameter == nil -> response contains data about all servers"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -67,33 +76,6 @@ const docTemplate = `{
               "items": {
                 "$ref": "#/definitions/ServersData"
               }
-            }
-          }
-        }
-      }
-    },
-    "/settings/{server}": {
-      "get": {
-        "tags": [
-          "Settings"
-        ],
-        "description": "Get settings for working server",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "server",
-            "in": "path",
-            "required": true,
-            "type": "integer"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/Server"
             }
           }
         }

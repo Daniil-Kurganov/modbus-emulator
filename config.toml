@@ -1,5 +1,5 @@
 ServerDefaultEmulateHost  = "0.0.0.0"
-ServerHTTPServesocket     = "0.0.0.0:8080"
+ServerHTTPServesocket     = "127.0.0.1:8080"
 ServerDefaultDumpPort     = "502"
 FinishDelayTime           = "3s"
 DumpFilePath              = '/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/pcapng_files/main_files/main'

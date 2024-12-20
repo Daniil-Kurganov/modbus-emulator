@@ -56,10 +56,8 @@ func StartHTTPServer() {
 		}
 		settings := emulator.Group("settings")
 		{
-			settings.GET("", getAllSettings)
-			settings.POST("emulation_mode", setAllEmulationMode)
-			settings.GET(":server", getSettings)
-			settings.POST(":server/emulation_mode") // set emulation mode for server
+			settings.GET("", getSettings)
+			settings.POST("emulation_mode", setEmulationMode)
 		}
 		emulator.GET("doc", func(gctx *gin.Context) {
 			gctx.Redirect(http.StatusPermanentRedirect,
@@ -71,20 +69,40 @@ func StartHTTPServer() {
 	router.Run(conf.ServerHTTPServesocket)
 }
 
-func getAllSettings(gctx *gin.Context) {
+func getSettings(gctx *gin.Context) {
 	var response []serverData
-	for currentID, currentSetting := range getSettingsBuffer() {
-		response = append(response,
-			serverData{
-				ID:       currentID,
-				Settings: currentSetting,
-			},
-		)
+	if id, ok := gctx.GetQuery("server_id"); ok {
+		var idInt int
+		var err error
+		if idInt, err = strconv.Atoi(id); err != nil {
+			log.Printf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "server_id" parameter`: err.Error()})
+			return
+		}
+		serversData := getSettingsBuffer()
+		if idInt > len(serversData)-1 || idInt < 0 {
+			log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+			return
+		}
+		response = append(response, serverData{
+			ID:       idInt,
+			Settings: serversData[idInt],
+		})
+	} else {
+		for currentID, currentSetting := range getSettingsBuffer() {
+			response = append(response,
+				serverData{
+					ID:       currentID,
+					Settings: currentSetting,
+				},
+			)
+		}
 	}
 	gctx.JSON(http.StatusOK, response)
 }
 
-func setAllEmulationMode(gctx *gin.Context) {
+func setEmulationMode(gctx *gin.Context) {
 	var mode string
 	var ok bool
 	if mode, ok = gctx.GetQuery("one-time"); !ok {
@@ -113,26 +131,64 @@ func setAllEmulationMode(gctx *gin.Context) {
 	gctx.JSON(http.StatusOK, response)
 }
 
-func getSettings(gctx *gin.Context) {
-	var err error
-	var id int
-	if id, err = strconv.Atoi(gctx.Param("server")); err != nil {
-		log.Printf("Error on HTTP-request: invalid \"server\" parameter: %s", err)
-		gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Invalid \"server\" parameter": err.Error()})
-		return
-	}
-	serversData := getSettingsBuffer()
-	if id > len(serversData)-1 || id < 0 {
-		log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
-		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
-		return
-	}
-	response := serverData{
-		ID:       id,
-		Settings: serversData[id],
-	}
-	gctx.JSON(http.StatusOK, response)
-}
+// func getSettings(gctx *gin.Context) {
+// 	var err error
+// 	var id int
+// 	if id, err = strconv.Atoi(gctx.Param("server")); err != nil {
+// 		log.Printf("Error on HTTP-request: invalid \"server\" parameter: %s", err)
+// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Invalid \"server\" parameter": err.Error()})
+// 		return
+// 	}
+// 	serversData := getSettingsBuffer()
+// 	if id > len(serversData)-1 || id < 0 {
+// 		log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+// 		return
+// 	}
+// 	response := serverData{
+// 		ID:       id,
+// 		Settings: serversData[id],
+// 	}
+// 	gctx.JSON(http.StatusOK, response)
+// }
+
+// func setEmulationMode(gctx *gin.Context) {
+// 	var err error
+// 	var id int
+// 	if id, err = strconv.Atoi(gctx.Param("server")); err != nil {
+// 		log.Printf("%s: invalid \"server\" parameter: %s", errorHeader, err)
+// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Invalid \"server\" parameter": err.Error()})
+// 		return
+// 	}
+// 	serversData := getSettingsBuffer()
+// 	if id > len(serversData)-1 || id < 0 {
+// 		log.Printf("%s: \"server\" parameter must be in range [0:%d]", errorHeader, len(serversData))
+// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+// 		return
+// 	}
+// 	var mode string
+// 	var ok bool
+// 	if mode, ok = gctx.GetQuery("one-time"); !ok {
+// 		errorLog := "missig \"one-time\" parameter"
+// 		log.Printf("%s: %s", errorHeader, errorLog)
+// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: errorLog})
+// 		return
+// 	}
+// 	var flagValue bool
+// 	if flagValue, ok = boolStringValues[mode]; !ok {
+// 		errorLog := "invalid \"one-time\" parameter (must be \"true\" or \"false\")"
+// 		log.Printf("%s: %s", errorHeader, errorLog)
+// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: errorLog})
+// 		return
+// 	}
+// 	emulationServers.readWriteMutex.Lock()
+// 	emulationServers.serversData[id].OneTimeEmulation = flagValue
+// 	response := serverData{
+// 		ID:       id,
+// 		Settings: emulationServers.serversData[id],
+// 	}
+// 	gctx.JSON(http.StatusOK, response)
+// }
 
 func getSettingsBuffer() []emulationServer {
 	emulationServers.readWriteMutex.RLock()
