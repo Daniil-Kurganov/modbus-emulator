@@ -47,12 +47,9 @@ func StartHTTPServer() {
 	{
 		time := emulator.Group("time")
 		{
-			time.GET("actual")            // info about current time of all working emulations servers
-			time.GET("start&end")         // info about starting and ending times all working emulations servers
-			time.POST("rewind")           // rewind all working servers on a specified time
-			time.GET(":server/actual")    // info of current time of server
-			time.GET(":server/start&end") // info about starting and ending of server
-			time.POST(":server/rewind")   // rewind server on a specified time
+			time.GET("actual")    // info about current time of all working emulations servers
+			time.GET("start&end") // info about starting and ending times all working emulations servers
+			time.POST("rewind")   // rewind all working servers on a specified time
 		}
 		settings := emulator.Group("settings")
 		{
@@ -118,9 +115,28 @@ func setEmulationMode(gctx *gin.Context) {
 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: errorLog})
 		return
 	}
+	var leftBorder, rightBorder int
+	serversData := getSettingsBuffer()
+	if id, ok := gctx.GetQuery("server_id"); ok {
+		var idInt int
+		var err error
+		if idInt, err = strconv.Atoi(id); err != nil {
+			log.Printf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "server_id" parameter`: err.Error()})
+			return
+		}
+		if idInt > len(serversData)-1 || idInt < 0 {
+			log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+			return
+		}
+		leftBorder, rightBorder = idInt, idInt+1
+	} else {
+		leftBorder, rightBorder = 0, len(serversData)
+	}
 	var response []serverData
 	emulationServers.readWriteMutex.Lock()
-	for currentID := range emulationServers.serversData {
+	for currentID := range emulationServers.serversData[leftBorder:rightBorder] {
 		emulationServers.serversData[currentID].OneTimeEmulation = flagValue
 		response = append(response, serverData{
 			ID:       currentID,

@@ -66,6 +66,13 @@ const docTemplate = `{
             "required": true,
             "description": "Must be \"true\" or \"false\"",
             "type": "boolean"
+          },
+		  {
+            "name": "server_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "If parameter == nil -> flag will be set for all servers"
           }
         ],
         "responses": {
