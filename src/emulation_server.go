@@ -1,6 +1,7 @@
 package src
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 	"sync"
@@ -31,142 +32,170 @@ func ServerInit(waitGroup *sync.WaitGroup, servePath string, serverHistory struc
 	for _, currentSlaveId := range serverHistory.Slaves {
 		server.InitSlave(currentSlaveId)
 	}
+	serverInfo := workServer{
+		DumpSocketsConfigData: conf.DumpSocketsConfigData{
+			DumpSocket: fmt.Sprintf("%s:%s", conf.Sockets[servePath].HostAddress, conf.Sockets[servePath].PortAddress),
+			RealSocket: servePath,
+			Protocol:   conf.Sockets[servePath].Protocol,
+		},
+		OneTimeEmulation: conf.OneTimeEmulation,
+		StartTime:        serverHistory.Transactions[0].TransactionTime,
+		EndTime:          serverHistory.Transactions[len(serverHistory.Transactions)-1].TransactionTime,
+	}
+	workServers.readWriteMutex.Lock()
+	workServers.serversData = append(workServers.serversData, serverInfo)
+	workServers.readWriteMutex.Unlock()
+	workServers.readWriteMutex.RLock()
+	serverID := len(workServers.serversData) - 1
+	workServers.readWriteMutex.RUnlock()
 	closeChannel := make(chan bool)
-	go emulate(server, serverHistory.Transactions, closeChannel)
+	go emulate(server, serverHistory.Transactions, closeChannel, serverID)
 	<-closeChannel
 	close(closeChannel)
 	server.Close()
 	waitGroup.Done()
 }
 
-func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel chan (bool)) {
+func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel chan (bool), serverID int) {
 	log.Print("Waiting of client connection")
 	<-server.ConnectionChanel
-	for currentIndex, currentHistoryEvent := range history {
-		var timeEmulation time.Duration
-		if currentIndex == len(history)-1 {
-			timeEmulation = conf.FinishDelayTime
-		} else {
-			timeEmulation = history[currentIndex+1].TransactionTime.Sub(currentHistoryEvent.TransactionTime)
-		}
-		currentHistoryEvent.LogPrint()
-		var currentObjectType, currentOperation string
-		if currentHistoryEvent.Handshake.TransactionErrorCheck() {
-			log.Print("Current transaction isn't valid")
-			continue
-		}
-		var currentEmulationData structs.EmulationData
-		var err error
-		if currentEmulationData, err = currentHistoryEvent.Handshake.Marshal(); err != nil {
-			log.Printf("Error: %s", err)
-			continue
-		}
-		currentRightBorder := int(currentEmulationData.Address + currentEmulationData.Quantity)
-		switch currentEmulationData.FunctionID {
-		case conf.Functions.CoilsRead:
-			currentObjectType, currentOperation = "coils", "read"
-			log.Printf("\n\n Before: Coils[%d:%d] = %d",
-				currentEmulationData.Address, currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder])
-			if !reflect.DeepEqual(server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder], sliceUint16ToByte(currentEmulationData.Payload)) {
-				for currentIndex := int(currentEmulationData.Address); currentIndex < currentRightBorder; currentIndex++ {
+	for {
+		for currentIndex, currentHistoryEvent := range history {
+			workServers.readWriteMutex.Lock()
+			workServers.serversData[serverID].CurrentTime = currentHistoryEvent.TransactionTime
+			workServers.readWriteMutex.Unlock()
+			var timeEmulation time.Duration
+			if currentIndex == len(history)-1 {
+				timeEmulation = conf.FinishDelayTime
+			} else {
+				timeEmulation = history[currentIndex+1].TransactionTime.Sub(currentHistoryEvent.TransactionTime)
+			}
+			currentHistoryEvent.LogPrint()
+			var currentObjectType, currentOperation string
+			if currentHistoryEvent.Handshake.TransactionErrorCheck() {
+				log.Print("Current transaction isn't valid")
+				continue
+			}
+			var currentEmulationData structs.EmulationData
+			var err error
+			if currentEmulationData, err = currentHistoryEvent.Handshake.Marshal(); err != nil {
+				log.Printf("Error: %s", err)
+				continue
+			}
+			currentRightBorder := int(currentEmulationData.Address + currentEmulationData.Quantity)
+			switch currentEmulationData.FunctionID {
+			case conf.Functions.CoilsRead:
+				currentObjectType, currentOperation = "coils", "read"
+				log.Printf("\n\n Before: Coils[%d:%d] = %d",
+					currentEmulationData.Address, currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder])
+				if !reflect.DeepEqual(server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder], sliceUint16ToByte(currentEmulationData.Payload)) {
+					for currentIndex := int(currentEmulationData.Address); currentIndex < currentRightBorder; currentIndex++ {
+						server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentIndex] = byte(currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)])
+					}
+				}
+				log.Printf(" After: Coils[%d:%d] = %d",
+					currentEmulationData.Address,
+					currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder])
+			case conf.Functions.DIRead:
+				currentObjectType, currentOperation = "DI", "read"
+				log.Printf("\n\n Before: DI[%d:%d] = %d",
+					currentEmulationData.Address,
+					currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].DiscreteInputs[currentEmulationData.Address:currentRightBorder])
+				if !reflect.DeepEqual(server.Slaves[currentHistoryEvent.Header.SlaveID].DiscreteInputs[currentEmulationData.Address:currentRightBorder], sliceUint16ToByte(currentEmulationData.Payload)) {
+					for currentIndex := int(currentEmulationData.Address); currentIndex < currentRightBorder; currentIndex++ {
+						server.Slaves[currentHistoryEvent.Header.SlaveID].DiscreteInputs[currentIndex] = byte(currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)])
+					}
+				}
+				log.Printf(" After: DI[%d:%d] = %d",
+					currentEmulationData.Address,
+					currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].DiscreteInputs[currentEmulationData.Address:currentRightBorder])
+			case conf.Functions.HRRead:
+				currentObjectType, currentOperation = "HR", "read"
+				log.Printf("\n\n Before: HR[%d:%d] = %d",
+					currentEmulationData.Address,
+					currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder])
+				if !reflect.DeepEqual(server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder], sliceUint16ToByte(currentEmulationData.Payload)) {
+					for currentIndex := int(currentEmulationData.Address); currentIndex < currentRightBorder; currentIndex++ {
+						server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentIndex] = currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)]
+					}
+				}
+				log.Printf(" After: HR[%d:%d] = %d",
+					currentEmulationData.Address,
+					currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder])
+			case conf.Functions.IRRead:
+				currentObjectType, currentOperation = "IR", "read"
+				log.Printf("\n\n Before: IR[%d:%d] = %d", currentEmulationData.Address, currentRightBorder, server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentEmulationData.Address:currentRightBorder])
+				if !reflect.DeepEqual(server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentEmulationData.Address:currentRightBorder], sliceUint16ToByte(currentEmulationData.Payload)) {
+					for currentIndex := int(currentEmulationData.Address); currentIndex < currentRightBorder; currentIndex++ {
+						server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentIndex] = currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)]
+					}
+				}
+				log.Printf(" After: IR[%d:%d] = %d",
+					currentEmulationData.Address,
+					currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentEmulationData.Address:currentRightBorder])
+			case conf.Functions.CoilsSimpleWrite:
+				currentObjectType, currentOperation = "coils", "simple write"
+				log.Printf("\n\n Before: Coils[%d] = %d",
+					currentEmulationData.Address,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address])
+				server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address] = byte(currentEmulationData.Payload[0])
+				log.Printf(" After: Coils[%d] = %d", currentEmulationData.Address, server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address])
+			case conf.Functions.HRSimpleWrite:
+				currentObjectType, currentOperation = "HR", "simple write"
+				log.Printf("\n\n Before: HR[%d] = %d", currentEmulationData.Address, server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address])
+				server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address] = currentEmulationData.Payload[0]
+				log.Printf(" After: HR[%d] = %d", currentEmulationData.Address, server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address])
+			case conf.Functions.CoilsMultipleWrite:
+				currentObjectType, currentOperation = "coils", "multiple write"
+				log.Printf("\n\n Before: Coils[%d:%d] = %v",
+					currentEmulationData.Address,
+					currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder])
+				for currentIndex := int(currentEmulationData.Address); currentIndex < int(currentRightBorder); currentIndex++ {
 					server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentIndex] = byte(currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)])
 				}
-			}
-			log.Printf(" After: Coils[%d:%d] = %d",
-				currentEmulationData.Address,
-				currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder])
-		case conf.Functions.DIRead:
-			currentObjectType, currentOperation = "DI", "read"
-			log.Printf("\n\n Before: DI[%d:%d] = %d",
-				currentEmulationData.Address,
-				currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].DiscreteInputs[currentEmulationData.Address:currentRightBorder])
-			if !reflect.DeepEqual(server.Slaves[currentHistoryEvent.Header.SlaveID].DiscreteInputs[currentEmulationData.Address:currentRightBorder], sliceUint16ToByte(currentEmulationData.Payload)) {
-				for currentIndex := int(currentEmulationData.Address); currentIndex < currentRightBorder; currentIndex++ {
-					server.Slaves[currentHistoryEvent.Header.SlaveID].DiscreteInputs[currentIndex] = byte(currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)])
-				}
-			}
-			log.Printf(" After: DI[%d:%d] = %d",
-				currentEmulationData.Address,
-				currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].DiscreteInputs[currentEmulationData.Address:currentRightBorder])
-		case conf.Functions.HRRead:
-			currentObjectType, currentOperation = "HR", "read"
-			log.Printf("\n\n Before: HR[%d:%d] = %d",
-				currentEmulationData.Address,
-				currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder])
-			if !reflect.DeepEqual(server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder], sliceUint16ToByte(currentEmulationData.Payload)) {
-				for currentIndex := int(currentEmulationData.Address); currentIndex < currentRightBorder; currentIndex++ {
+				log.Printf(" After: Coils[%d:%d] = %v",
+					currentEmulationData.Address,
+					currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder])
+			case conf.Functions.HRMultipleWrite:
+				currentObjectType, currentOperation = "HR", "multiple write"
+				log.Printf("\n\n Before: HR[%d:%d] = %v",
+					currentEmulationData.Address,
+					currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder])
+				for currentIndex := int(currentEmulationData.Address); currentIndex < int(currentRightBorder); currentIndex++ {
 					server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentIndex] = currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)]
 				}
+				log.Printf(" After: HR[%d:%d] = %v",
+					currentEmulationData.Address,
+					currentRightBorder,
+					server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder])
 			}
-			log.Printf(" After: HR[%d:%d] = %d",
-				currentEmulationData.Address,
-				currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder])
-		case conf.Functions.IRRead:
-			currentObjectType, currentOperation = "IR", "read"
-			log.Printf("\n\n Before: IR[%d:%d] = %d", currentEmulationData.Address, currentRightBorder, server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentEmulationData.Address:currentRightBorder])
-			if !reflect.DeepEqual(server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentEmulationData.Address:currentRightBorder], sliceUint16ToByte(currentEmulationData.Payload)) {
-				for currentIndex := int(currentEmulationData.Address); currentIndex < currentRightBorder; currentIndex++ {
-					server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentIndex] = currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)]
-				}
-			}
-			log.Printf(" After: IR[%d:%d] = %d",
-				currentEmulationData.Address,
-				currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].InputRegisters[currentEmulationData.Address:currentRightBorder])
-		case conf.Functions.CoilsSimpleWrite:
-			currentObjectType, currentOperation = "coils", "simple write"
-			log.Printf("\n\n Before: Coils[%d] = %d",
-				currentEmulationData.Address,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address])
-			server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address] = byte(currentEmulationData.Payload[0])
-			log.Printf(" After: Coils[%d] = %d", currentEmulationData.Address, server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address])
-		case conf.Functions.HRSimpleWrite:
-			currentObjectType, currentOperation = "HR", "simple write"
-			log.Printf("\n\n Before: HR[%d] = %d", currentEmulationData.Address, server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address])
-			server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address] = currentEmulationData.Payload[0]
-			log.Printf(" After: HR[%d] = %d", currentEmulationData.Address, server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address])
-		case conf.Functions.CoilsMultipleWrite:
-			currentObjectType, currentOperation = "coils", "multiple write"
-			log.Printf("\n\n Before: Coils[%d:%d] = %v",
-				currentEmulationData.Address,
-				currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder])
-			for currentIndex := int(currentEmulationData.Address); currentIndex < int(currentRightBorder); currentIndex++ {
-				server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentIndex] = byte(currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)])
-			}
-			log.Printf(" After: Coils[%d:%d] = %v",
-				currentEmulationData.Address,
-				currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].Coils[currentEmulationData.Address:currentRightBorder])
-		case conf.Functions.HRMultipleWrite:
-			currentObjectType, currentOperation = "HR", "multiple write"
-			log.Printf("\n\n Before: HR[%d:%d] = %v",
-				currentEmulationData.Address,
-				currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder])
-			for currentIndex := int(currentEmulationData.Address); currentIndex < int(currentRightBorder); currentIndex++ {
-				server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentIndex] = currentEmulationData.Payload[currentIndex-int(currentEmulationData.Address)]
-			}
-			log.Printf(" After: HR[%d:%d] = %v",
-				currentEmulationData.Address,
-				currentRightBorder,
-				server.Slaves[currentHistoryEvent.Header.SlaveID].HoldingRegisters[currentEmulationData.Address:currentRightBorder])
+			log.Printf("\nCurrent iteration:\n slave ID: %d\n object type: %s\n operation: %s\n delay: %v\n\n",
+				currentHistoryEvent.Header.SlaveID,
+				currentObjectType,
+				currentOperation,
+				timeEmulation)
+			time.Sleep(timeEmulation)
 		}
-		log.Printf("\nCurrent iteration:\n slave ID: %d\n object type: %s\n operation: %s\n delay: %v\n\n",
-			currentHistoryEvent.Header.SlaveID,
-			currentObjectType,
-			currentOperation,
-			timeEmulation)
-		time.Sleep(timeEmulation)
+		log.Print("\nEnd of dump history file.")
+		workServers.readWriteMutex.RLock()
+		defer workServers.readWriteMutex.RUnlock()
+		if workServers.serversData[serverID].OneTimeEmulation {
+			log.Print("Emulation mode: one-time. Closing connection")
+			closeChannel <- true
+			return
+		}
+		log.Print("Emulation mode: continuously. Starting new loop of emulation")
 	}
-	log.Print("\nEnd of dump history file. Closing connection")
-	closeChannel <- true
 }
 
 func sliceUint16ToByte(source []uint16) (destination []byte) {
@@ -174,4 +203,4 @@ func sliceUint16ToByte(source []uint16) (destination []byte) {
 		destination = append(destination, byte(currentByte))
 	}
 	return
-}	
+}

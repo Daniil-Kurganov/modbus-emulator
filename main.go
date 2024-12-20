@@ -30,6 +30,7 @@ func main() {
 		waitGroup.Add(1)
 		go src.ServerInit(&waitGroup, currentPhysicalSocket, history[currentPhysicalSocket])
 	}
+	src.StartHTTPServer()
 	waitGroup.Wait()
 	log.Print("All servers finished the work")
 }

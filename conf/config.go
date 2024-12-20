@@ -11,35 +11,39 @@ import (
 )
 
 type (
-	ServerSocketData struct {
+	DumpSocketData struct {
 		HostAddress string
 		PortAddress string
 		Protocol    string
 	}
 	DumpSocketsConfigData struct {
-		DumpSocket string `toml:"DumpSocket"`
-		RealSocket string `toml:"RealSocket"`
-		Protocol   string `toml:"Protocol"`
+		DumpSocket string `toml:"DumpSocket" json:"dump_socket"`
+		RealSocket string `toml:"RealSocket" json:"real_socket"`
+		Protocol   string `toml:"Protocol" json:"protocol"`
 	}
 	TOMLConfig struct {
-		DumpConfig                []DumpSocketsConfigData `toml:"DumpConfig"`
 		ServerDefaultEmulateHost  string
+		ServerHTTPServesocket     string
 		ServerDefaultDumpPort     string
 		FinishDelayTime           time.Duration
 		DumpFilePath              string
 		IsAutoParsingMode         bool
 		EmulationPortAddressStart int
+		OneTimeEmulation          bool
+		DumpConfig                []DumpSocketsConfigData `toml:"DumpConfig"`
 	}
 )
 
 var (
-	Sockets                   map[string]ServerSocketData
 	ServerDefaultEmulateHost  string
+	ServerHTTPServesocket     string
 	ServerDefaultDumpPort     string
 	FinishDelayTime           time.Duration
 	DumpFilePath              string
 	IsAutoParsingMode         bool
 	EmulationPortAddressStart uint16
+	OneTimeEmulation          bool
+	Sockets                   map[string]DumpSocketData
 
 	Functions = struct {
 		CoilsRead          uint16
@@ -70,22 +74,26 @@ var (
 	GenFileName   = "result_config.toml"
 	GenFileTitles = struct {
 		ServerDefaultEmulateHost  string
+		ServerHTTPServesocket     string
 		ServerDefaultDumpPort     string
 		FinishDelayTime           string
 		DumpFilePath              string
 		IsAutoParsingMode         string
 		EmulationPortAddressStart string
+		OneTimeEmulation          string
 		DumpConfig                struct {
 			Title string
 			DumpSocketsConfigData
 		}
 	}{
 		ServerDefaultEmulateHost:  "ServerDefaultEmulateHost",
+		ServerHTTPServesocket:     "ServerHTTPServesocket",
 		ServerDefaultDumpPort:     "ServerDefaultDumpPort",
 		FinishDelayTime:           "FinishDelayTime",
 		DumpFilePath:              "DumpFilePath",
 		IsAutoParsingMode:         "IsAutoParsingMode",
 		EmulationPortAddressStart: "EmulationPortAddressStart",
+		OneTimeEmulation:          "OneTimeEmulation",
 		DumpConfig: struct {
 			Title string
 			DumpSocketsConfigData
@@ -115,17 +123,19 @@ func init() {
 		log.Fatalf("Error on unmarshaling configuration: %s", err)
 	}
 	ServerDefaultEmulateHost = config.ServerDefaultEmulateHost
+	ServerHTTPServesocket = config.ServerHTTPServesocket
 	ServerDefaultDumpPort = config.ServerDefaultDumpPort
 	FinishDelayTime = config.FinishDelayTime
 	DumpFilePath = config.DumpFilePath
 	IsAutoParsingMode = config.IsAutoParsingMode
 	EmulationPortAddressStart = uint16(config.EmulationPortAddressStart)
-	Sockets = make(map[string]ServerSocketData)
+	OneTimeEmulation = config.OneTimeEmulation
+	Sockets = make(map[string]DumpSocketData)
 	if !IsAutoParsingMode {
 		log.Print("Using manually work mode of parsing dump: using configuration list")
 		for _, currentSocketData := range config.DumpConfig {
 			var currentServePath string
-			currentServerSocketData := ServerSocketData{Protocol: currentSocketData.Protocol}
+			currentServerSocketData := DumpSocketData{Protocol: currentSocketData.Protocol}
 			if currentSepIndex := strings.Index(currentSocketData.DumpSocket, ":"); currentSepIndex == -1 {
 				currentServerSocketData.HostAddress = currentSocketData.DumpSocket
 				currentServerSocketData.PortAddress = ServerDefaultDumpPort

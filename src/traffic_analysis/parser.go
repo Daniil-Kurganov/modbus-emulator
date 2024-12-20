@@ -156,7 +156,7 @@ func SocketAutoAccumulation() (err error) {
 		} else {
 			currentResultProtocol = conf.Protocols.TCP
 		}
-		conf.Sockets[currentEmulationSocket] = conf.ServerSocketData{
+		conf.Sockets[currentEmulationSocket] = conf.DumpSocketData{
 			HostAddress: currentHost,
 			PortAddress: conf.ServerDefaultDumpPort,
 			Protocol:    currentResultProtocol,

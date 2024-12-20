@@ -15,12 +15,12 @@ import (
 func TestParsePackets(t *testing.T) {
 	testTable := []struct {
 		directoryPath   string
-		ports           map[string]conf.ServerSocketData
+		ports           map[string]conf.DumpSocketData
 		expectedHistory map[string]structs.ServerHistory
 	}{
 		{
 			directoryPath: `pcapng_files/tests_files/simple_port`,
-			ports: map[string]conf.ServerSocketData{
+			ports: map[string]conf.DumpSocketData{
 				"1502": {
 					HostAddress: "127.0.0.1",
 					PortAddress: "1502",
@@ -214,7 +214,7 @@ func TestParsePackets(t *testing.T) {
 		},
 		{
 			directoryPath: `pcapng_files/tests_files/simple_port`,
-			ports: map[string]conf.ServerSocketData{
+			ports: map[string]conf.DumpSocketData{
 				"1502": {
 					HostAddress: "127.0.0.1",
 					PortAddress: "1502",
@@ -425,7 +425,7 @@ func TestParsePackets(t *testing.T) {
 		},
 		{
 			directoryPath: `pcapng_files/tests_files/multiple_ports`,
-			ports: map[string]conf.ServerSocketData{
+			ports: map[string]conf.DumpSocketData{
 				"1502": {
 					HostAddress: "127.0.0.1",
 					PortAddress: "1502",
@@ -1640,7 +1640,7 @@ func TestParsePackets(t *testing.T) {
 		},
 		{
 			directoryPath: `pcapng_files/tests_files/multiple_ports`,
-			ports: map[string]conf.ServerSocketData{
+			ports: map[string]conf.DumpSocketData{
 				"1502": {
 					HostAddress: "127.0.0.1",
 					PortAddress: "1502",
@@ -2983,7 +2983,7 @@ func TestSocketAutoAccumulation(t *testing.T) {
 		"127.0.0.1:1511",
 		"127.0.0.1:1512",
 	}
-	expectedDumpSockets := []conf.ServerSocketData{
+	expectedDumpSockets := []conf.DumpSocketData{
 		{
 			HostAddress: "192.168.1.105",
 			PortAddress: "502",
@@ -3049,7 +3049,7 @@ func TestSocketAutoAccumulation(t *testing.T) {
 	conf.ServerDefaultDumpPort = "502"
 	conf.EmulationPortAddressStart = 1501
 	conf.ServerDefaultEmulateHost = "127.0.0.1"
-	conf.Sockets = make(map[string]conf.ServerSocketData)
+	conf.Sockets = make(map[string]conf.DumpSocketData)
 	if err := ta.SocketAutoAccumulation(); err != nil {
 		assert.EqualErrorf(t, err, "nil",
 			"Error: recieved and expected errors isn't equal:\n expected: nil;\n recieved: %s", err,
