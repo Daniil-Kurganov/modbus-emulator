@@ -49,6 +49,31 @@ const docTemplate = `{
         }
       }
     },
+    "/settings/emulation_mode": {
+      "post": {
+        "tags": [
+          "Settings"
+        ],
+        "description": "Update \"one-time emulation mode\" parameter for all working servers",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "one-time",
+            "in": "query",
+            "required": true,
+            "description": "Must be \"true\" or \"false\"",
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/settings/{server}": {
       "get": {
         "tags": [

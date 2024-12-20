@@ -30,10 +30,15 @@ type (
 	}
 )
 
-var workServers struct {
-	readWriteMutex sync.RWMutex
-	serversData    []workServer
-}
+var (
+	workServers struct {
+		readWriteMutex sync.RWMutex
+		serversData    []workServer
+	}
+
+	boolStringValues = map[string]bool{"true": true, "false": false}
+	errorHeader      = "Error on HTTP-request"
+)
 
 func StartHTTPServer() {
 	router := gin.Default()
@@ -51,13 +56,13 @@ func StartHTTPServer() {
 		settings := emulator.Group("settings")
 		{
 			settings.GET("", getAllSettings)
-			settings.POST("emulation_mode") // set emulation mode for all server
+			settings.POST("emulation_mode", setAllEmulationMode)
 			settings.GET(":server", getSettings)
 			settings.POST(":server/emulation_mode") // set emulation mode for server
 		}
 		emulator.GET("doc", func(gctx *gin.Context) {
 			gctx.Redirect(http.StatusPermanentRedirect,
-				fmt.Sprintf("http://%s/modbus-emulator/docs/index.html", conf.ServerHTTPServesocket),
+				fmt.Sprintf("http://%s:8080/modbus-emulator/docs/index.html", gctx.Request.Host),
 			)
 		})
 		emulator.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -76,6 +81,31 @@ func getAllSettings(gctx *gin.Context) {
 		)
 	}
 	gctx.JSON(http.StatusOK, response)
+}
+
+func setAllEmulationMode(gctx *gin.Context) {
+	var mode string
+	var ok bool
+	if mode, ok = gctx.GetQuery("one-time"); !ok {
+		errorLog := "missig \"one-time\" parameter"
+		log.Printf("%s: %s", errorHeader, errorLog)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: errorLog})
+		return
+	}
+	var flagValue bool
+	if flagValue, ok = boolStringValues[mode]; !ok {
+		errorLog := "invalid \"one-time\" parameter (must be \"true\" or \"false\")"
+		log.Printf("%s: %s", errorHeader, errorLog)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: errorLog})
+		return
+	}
+	workServers.readWriteMutex.RLock()
+	length := len(workServers.serversData)
+	for currentID := range workServers.serversData {
+		workServers.serversData[currentID].OneTimeEmulation = flagValue
+	}
+	workServers.readWriteMutex.RUnlock()
+	gctx.JSON(http.StatusOK, gin.H{"Success": fmt.Sprintf("updated %d servers", length)})
 }
 
 func getSettings(gctx *gin.Context) {
