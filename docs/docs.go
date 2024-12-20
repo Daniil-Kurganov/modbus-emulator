@@ -30,19 +30,11 @@ const docTemplate = `{
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Success",
             "schema": {
-              "type": "object",
-              "properties": {
-                "settings": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/Server"
-                  }
-                },
-                "id": {
-                  "type": "integer"
-                }
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ServersData"
               }
             }
           }
@@ -69,7 +61,13 @@ const docTemplate = `{
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ServersData"
+              }
+            }
           }
         }
       }
@@ -93,7 +91,7 @@ const docTemplate = `{
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Success",
             "schema": {
               "$ref": "#/definitions/Server"
             }
@@ -106,6 +104,9 @@ const docTemplate = `{
     "Server": {
       "type": "object",
       "properties": {
+        "is_working": {
+          "type": "boolean"
+        },
         "dump_socket": {
           "type": "string"
         },
@@ -126,6 +127,20 @@ const docTemplate = `{
         },
         "current_time": {
           "type": "string"
+        }
+      }
+    },
+    "ServersData": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "settings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Server"
+          }
         }
       }
     }

@@ -17,7 +17,8 @@ import (
 )
 
 type (
-	workServer struct {
+	emulationServer struct {
+		IsWorking bool `json:"is_working"`
 		conf.DumpSocketsConfigData
 		OneTimeEmulation bool      `json:"one_time_emulation"`
 		StartTime        time.Time `json:"start_time"`
@@ -25,15 +26,15 @@ type (
 		CurrentTime      time.Time `json:"current_time"`
 	}
 	serverData struct {
-		ID       int        `json:"id"`
-		Settings workServer `json:"settings"`
+		ID       int             `json:"id"`
+		Settings emulationServer `json:"settings"`
 	}
 )
 
 var (
-	workServers struct {
+	emulationServers struct {
 		readWriteMutex sync.RWMutex
-		serversData    []workServer
+		serversData    []emulationServer
 	}
 
 	boolStringValues = map[string]bool{"true": true, "false": false}
@@ -99,13 +100,17 @@ func setAllEmulationMode(gctx *gin.Context) {
 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: errorLog})
 		return
 	}
-	workServers.readWriteMutex.RLock()
-	length := len(workServers.serversData)
-	for currentID := range workServers.serversData {
-		workServers.serversData[currentID].OneTimeEmulation = flagValue
+	var response []serverData
+	emulationServers.readWriteMutex.Lock()
+	for currentID := range emulationServers.serversData {
+		emulationServers.serversData[currentID].OneTimeEmulation = flagValue
+		response = append(response, serverData{
+			ID:       currentID,
+			Settings: emulationServers.serversData[currentID],
+		})
 	}
-	workServers.readWriteMutex.RUnlock()
-	gctx.JSON(http.StatusOK, gin.H{"Success": fmt.Sprintf("updated %d servers", length)})
+	emulationServers.readWriteMutex.Unlock()
+	gctx.JSON(http.StatusOK, response)
 }
 
 func getSettings(gctx *gin.Context) {
@@ -129,10 +134,10 @@ func getSettings(gctx *gin.Context) {
 	gctx.JSON(http.StatusOK, response)
 }
 
-func getSettingsBuffer() []workServer {
-	workServers.readWriteMutex.RLock()
-	serversData := make([]workServer, len(workServers.serversData))
-	copy(serversData, workServers.serversData)
-	workServers.readWriteMutex.RUnlock()
+func getSettingsBuffer() []emulationServer {
+	emulationServers.readWriteMutex.RLock()
+	serversData := make([]emulationServer, len(emulationServers.serversData))
+	copy(serversData, emulationServers.serversData)
+	emulationServers.readWriteMutex.RUnlock()
 	return serversData
 }

@@ -32,7 +32,8 @@ func ServerInit(waitGroup *sync.WaitGroup, servePath string, serverHistory struc
 	for _, currentSlaveId := range serverHistory.Slaves {
 		server.InitSlave(currentSlaveId)
 	}
-	serverInfo := workServer{
+	serverInfo := emulationServer{
+		IsWorking: true,
 		DumpSocketsConfigData: conf.DumpSocketsConfigData{
 			DumpSocket: fmt.Sprintf("%s:%s", conf.Sockets[servePath].HostAddress, conf.Sockets[servePath].PortAddress),
 			RealSocket: servePath,
@@ -42,12 +43,12 @@ func ServerInit(waitGroup *sync.WaitGroup, servePath string, serverHistory struc
 		StartTime:        serverHistory.Transactions[0].TransactionTime,
 		EndTime:          serverHistory.Transactions[len(serverHistory.Transactions)-1].TransactionTime,
 	}
-	workServers.readWriteMutex.Lock()
-	workServers.serversData = append(workServers.serversData, serverInfo)
-	workServers.readWriteMutex.Unlock()
-	workServers.readWriteMutex.RLock()
-	serverID := len(workServers.serversData) - 1
-	workServers.readWriteMutex.RUnlock()
+	emulationServers.readWriteMutex.Lock()
+	emulationServers.serversData = append(emulationServers.serversData, serverInfo)
+	emulationServers.readWriteMutex.Unlock()
+	emulationServers.readWriteMutex.RLock()
+	serverID := len(emulationServers.serversData) - 1
+	emulationServers.readWriteMutex.RUnlock()
 	closeChannel := make(chan bool)
 	go emulate(server, serverHistory.Transactions, closeChannel, serverID)
 	<-closeChannel
@@ -61,9 +62,9 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 	<-server.ConnectionChanel
 	for {
 		for currentIndex, currentHistoryEvent := range history {
-			workServers.readWriteMutex.Lock()
-			workServers.serversData[serverID].CurrentTime = currentHistoryEvent.TransactionTime
-			workServers.readWriteMutex.Unlock()
+			emulationServers.readWriteMutex.Lock()
+			emulationServers.serversData[serverID].CurrentTime = currentHistoryEvent.TransactionTime
+			emulationServers.readWriteMutex.Unlock()
 			var timeEmulation time.Duration
 			if currentIndex == len(history)-1 {
 				timeEmulation = conf.FinishDelayTime
@@ -187,10 +188,11 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 			time.Sleep(timeEmulation)
 		}
 		log.Print("\nEnd of dump history file.")
-		workServers.readWriteMutex.RLock()
-		defer workServers.readWriteMutex.RUnlock()
-		if workServers.serversData[serverID].OneTimeEmulation {
+		emulationServers.readWriteMutex.Lock()
+		defer emulationServers.readWriteMutex.Unlock()
+		if emulationServers.serversData[serverID].OneTimeEmulation {
 			log.Print("Emulation mode: one-time. Closing connection")
+			emulationServers.serversData[serverID].IsWorking = false
 			closeChannel <- true
 			return
 		}
