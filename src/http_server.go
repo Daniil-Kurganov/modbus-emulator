@@ -2,8 +2,10 @@ package src
 
 import (
 	"fmt"
+	"log"
 	"modbus-emulator/conf"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -49,8 +51,8 @@ func StartHTTPServer() {
 		settings := emulator.Group("settings")
 		{
 			settings.GET("", getAllSettings)
-			settings.POST("emulation_mode")         // set emulation mode for all server
-			settings.GET(":server")                 // settings of server
+			settings.POST("emulation_mode") // set emulation mode for all server
+			settings.GET(":server", getSettings)
 			settings.POST(":server/emulation_mode") // set emulation mode for server
 		}
 		emulator.GET("doc", func(gctx *gin.Context) {
@@ -65,11 +67,7 @@ func StartHTTPServer() {
 
 func getAllSettings(gctx *gin.Context) {
 	var response []serverData
-	workServers.readWriteMutex.RLock()
-	serversData := make([]workServer, len(workServers.serversData))
-	copy(serversData, workServers.serversData)
-	workServers.readWriteMutex.RUnlock()
-	for currentID, currentSetting := range serversData {
+	for currentID, currentSetting := range getSettingsBuffer() {
 		response = append(response,
 			serverData{
 				ID:       currentID,
@@ -78,4 +76,33 @@ func getAllSettings(gctx *gin.Context) {
 		)
 	}
 	gctx.JSON(http.StatusOK, response)
+}
+
+func getSettings(gctx *gin.Context) {
+	var err error
+	var id int
+	if id, err = strconv.Atoi(gctx.Param("server")); err != nil {
+		log.Printf("Error on HTTP-request: invalid \"server\" parameter: %s", err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Invalid \"server\" parameter": err.Error()})
+		return
+	}
+	serversData := getSettingsBuffer()
+	if id > len(serversData)-1 || id < 0 {
+		log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+		return
+	}
+	response := serverData{
+		ID:       id,
+		Settings: serversData[id],
+	}
+	gctx.JSON(http.StatusOK, response)
+}
+
+func getSettingsBuffer() []workServer {
+	workServers.readWriteMutex.RLock()
+	serversData := make([]workServer, len(workServers.serversData))
+	copy(serversData, workServers.serversData)
+	workServers.readWriteMutex.RUnlock()
+	return serversData
 }

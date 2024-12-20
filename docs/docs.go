@@ -48,6 +48,33 @@ const docTemplate = `{
           }
         }
       }
+    },
+    "/settings/{server}": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "description": "Get settings for working server",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "server",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Server"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
