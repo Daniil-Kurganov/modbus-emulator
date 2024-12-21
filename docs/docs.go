@@ -67,7 +67,7 @@ const docTemplate = `{
             "description": "Must be \"true\" or \"false\"",
             "type": "boolean"
           },
-		  {
+          {
             "name": "server_id",
             "in": "query",
             "required": false,
@@ -82,6 +82,37 @@ const docTemplate = `{
               "type": "array",
               "items": {
                 "$ref": "#/definitions/ServersData"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/time/actual": {
+      "get": {
+        "tags": [
+          "Time"
+        ],
+        "description": "Get actual time of emulation",
+        "produces": [
+          "applicaion/json"
+        ],
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "If parameter == nil -> response consist of data for all servers"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActualTime"
               }
             }
           }
@@ -130,6 +161,17 @@ const docTemplate = `{
           "items": {
             "$ref": "#/definitions/Server"
           }
+        }
+      }
+    },
+    "ActualTime": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "actual_time": {
+          "type": "string"
         }
       }
     }

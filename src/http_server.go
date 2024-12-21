@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
-	"time"
 
 	_ "modbus-emulator/docs"
 
@@ -20,14 +19,18 @@ type (
 	emulationServer struct {
 		IsWorking bool `json:"is_working"`
 		conf.DumpSocketsConfigData
-		OneTimeEmulation bool      `json:"one_time_emulation"`
-		StartTime        time.Time `json:"start_time"`
-		EndTime          time.Time `json:"end_time"`
-		CurrentTime      time.Time `json:"current_time"`
+		OneTimeEmulation bool   `json:"one_time_emulation"`
+		StartTime        string `json:"start_time"`
+		EndTime          string `json:"end_time"`
+		CurrentTime      string `json:"current_time"`
 	}
 	serverData struct {
 		ID       int             `json:"id"`
 		Settings emulationServer `json:"settings"`
+	}
+	actualTime struct {
+		ID         int    `json:"id"`
+		ActualTime string `json:"actual_time"`
 	}
 )
 
@@ -45,22 +48,22 @@ func StartHTTPServer() {
 	router := gin.Default()
 	emulator := router.Group("/modbus-emulator")
 	{
-		time := emulator.Group("time")
-		{
-			time.GET("actual")    // info about current time of all working emulations servers
-			time.GET("start&end") // info about starting and ending times all working emulations servers
-			time.POST("rewind")   // rewind all working servers on a specified time
-		}
 		settings := emulator.Group("settings")
 		{
 			settings.GET("", getSettings)
 			settings.POST("emulation_mode", setEmulationMode)
 		}
-		emulator.GET("doc", func(gctx *gin.Context) {
-			gctx.Redirect(http.StatusPermanentRedirect,
-				fmt.Sprintf("http://%s:8080/modbus-emulator/docs/index.html", gctx.Request.Host),
-			)
-		})
+		time := emulator.Group("time")
+		{
+			time.GET("actual", getActualTime)
+			time.GET("start&end") // info about starting and ending times all working emulations servers
+			time.POST("rewind")   // rewind all working servers on a specified time
+		}
+		// emulator.GET("doc", func(gctx *gin.Context) {
+		// 	gctx.Redirect(http.StatusPermanentRedirect,
+		// 		fmt.Sprintf("http://%s:8080/modbus-emulator/docs/index.html", gctx.Request.Host),
+		// 	)
+		// })
 		emulator.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 	router.Run(conf.ServerHTTPServesocket)
@@ -147,64 +150,40 @@ func setEmulationMode(gctx *gin.Context) {
 	gctx.JSON(http.StatusOK, response)
 }
 
-// func getSettings(gctx *gin.Context) {
-// 	var err error
-// 	var id int
-// 	if id, err = strconv.Atoi(gctx.Param("server")); err != nil {
-// 		log.Printf("Error on HTTP-request: invalid \"server\" parameter: %s", err)
-// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Invalid \"server\" parameter": err.Error()})
-// 		return
-// 	}
-// 	serversData := getSettingsBuffer()
-// 	if id > len(serversData)-1 || id < 0 {
-// 		log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
-// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
-// 		return
-// 	}
-// 	response := serverData{
-// 		ID:       id,
-// 		Settings: serversData[id],
-// 	}
-// 	gctx.JSON(http.StatusOK, response)
-// }
-
-// func setEmulationMode(gctx *gin.Context) {
-// 	var err error
-// 	var id int
-// 	if id, err = strconv.Atoi(gctx.Param("server")); err != nil {
-// 		log.Printf("%s: invalid \"server\" parameter: %s", errorHeader, err)
-// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Invalid \"server\" parameter": err.Error()})
-// 		return
-// 	}
-// 	serversData := getSettingsBuffer()
-// 	if id > len(serversData)-1 || id < 0 {
-// 		log.Printf("%s: \"server\" parameter must be in range [0:%d]", errorHeader, len(serversData))
-// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
-// 		return
-// 	}
-// 	var mode string
-// 	var ok bool
-// 	if mode, ok = gctx.GetQuery("one-time"); !ok {
-// 		errorLog := "missig \"one-time\" parameter"
-// 		log.Printf("%s: %s", errorHeader, errorLog)
-// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: errorLog})
-// 		return
-// 	}
-// 	var flagValue bool
-// 	if flagValue, ok = boolStringValues[mode]; !ok {
-// 		errorLog := "invalid \"one-time\" parameter (must be \"true\" or \"false\")"
-// 		log.Printf("%s: %s", errorHeader, errorLog)
-// 		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: errorLog})
-// 		return
-// 	}
-// 	emulationServers.readWriteMutex.Lock()
-// 	emulationServers.serversData[id].OneTimeEmulation = flagValue
-// 	response := serverData{
-// 		ID:       id,
-// 		Settings: emulationServers.serversData[id],
-// 	}
-// 	gctx.JSON(http.StatusOK, response)
-// }
+func getActualTime(gctx *gin.Context) {
+	serversData := getSettingsBuffer()
+	var response []actualTime
+	if id, ok := gctx.GetQuery("server_id"); ok {
+		var idInt int
+		var err error
+		if idInt, err = strconv.Atoi(id); err != nil {
+			log.Printf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "server_id" parameter`: err.Error()})
+			return
+		}
+		if idInt > len(serversData)-1 || idInt < 0 {
+			log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+			return
+		}
+		emulationServers.readWriteMutex.RLock()
+		response = append(response, actualTime{
+			ID:         idInt,
+			ActualTime: emulationServers.serversData[idInt].CurrentTime,
+		})
+		emulationServers.readWriteMutex.RUnlock()
+	} else {
+		emulationServers.readWriteMutex.RLock()
+		for currentID, currentData := range emulationServers.serversData {
+			response = append(response, actualTime{
+				ID:         currentID,
+				ActualTime: currentData.CurrentTime,
+			})
+		}
+		emulationServers.readWriteMutex.RUnlock()
+	}
+	gctx.JSON(http.StatusOK, response)
+}
 
 func getSettingsBuffer() []emulationServer {
 	emulationServers.readWriteMutex.RLock()

@@ -40,8 +40,9 @@ func ServerInit(waitGroup *sync.WaitGroup, servePath string, serverHistory struc
 			Protocol:   conf.Sockets[servePath].Protocol,
 		},
 		OneTimeEmulation: conf.OneTimeEmulation,
-		StartTime:        serverHistory.Transactions[0].TransactionTime,
-		EndTime:          serverHistory.Transactions[len(serverHistory.Transactions)-1].TransactionTime,
+		StartTime:        serverHistory.Transactions[0].TransactionTime.String(),
+		EndTime:          serverHistory.Transactions[len(serverHistory.Transactions)-1].TransactionTime.String(),
+		CurrentTime:      "",
 	}
 	emulationServers.readWriteMutex.Lock()
 	emulationServers.serversData = append(emulationServers.serversData, serverInfo)
@@ -63,7 +64,7 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 	for {
 		for currentIndex, currentHistoryEvent := range history {
 			emulationServers.readWriteMutex.Lock()
-			emulationServers.serversData[serverID].CurrentTime = currentHistoryEvent.TransactionTime
+			emulationServers.serversData[serverID].CurrentTime = currentHistoryEvent.TransactionTime.String()
 			emulationServers.readWriteMutex.Unlock()
 			var timeEmulation time.Duration
 			if currentIndex == len(history)-1 {
