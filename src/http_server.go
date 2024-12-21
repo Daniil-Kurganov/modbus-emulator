@@ -32,6 +32,11 @@ type (
 		ID         int    `json:"id"`
 		ActualTime string `json:"actual_time"`
 	}
+	startEndTime struct {
+		ID        int    `json:"id"`
+		StartTime string `json:"start_time"`
+		EndTime   string `json:"end_time"`
+	}
 )
 
 var (
@@ -56,8 +61,8 @@ func StartHTTPServer() {
 		time := emulator.Group("time")
 		{
 			time.GET("actual", getActualTime)
-			time.GET("start&end") // info about starting and ending times all working emulations servers
-			time.POST("rewind")   // rewind all working servers on a specified time
+			time.GET("start&end", getStartEndTime)
+			time.POST("rewind") // rewind all working servers on a specified time
 		}
 		// emulator.GET("doc", func(gctx *gin.Context) {
 		// 	gctx.Redirect(http.StatusPermanentRedirect,
@@ -181,6 +186,39 @@ func getActualTime(gctx *gin.Context) {
 			})
 		}
 		emulationServers.readWriteMutex.RUnlock()
+	}
+	gctx.JSON(http.StatusOK, response)
+}
+
+func getStartEndTime(gctx *gin.Context) {
+	serversData := getSettingsBuffer()
+	var response []startEndTime
+	if id, ok := gctx.GetQuery("server_id"); ok {
+		var idInt int
+		var err error
+		if idInt, err = strconv.Atoi(id); err != nil {
+			log.Printf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "server_id" parameter`: err.Error()})
+			return
+		}
+		if idInt > len(serversData)-1 || idInt < 0 {
+			log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+			return
+		}
+		response = append(response, startEndTime{
+			ID:        idInt,
+			StartTime: serversData[idInt].StartTime,
+			EndTime:   serversData[idInt].EndTime,
+		})
+	} else {
+		for currentID, currentData := range serversData {
+			response = append(response, startEndTime{
+				ID:        currentID,
+				StartTime: currentData.StartTime,
+				EndTime:   currentData.EndTime,
+			})
+		}
 	}
 	gctx.JSON(http.StatusOK, response)
 }

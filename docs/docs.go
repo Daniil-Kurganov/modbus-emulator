@@ -118,6 +118,37 @@ const docTemplate = `{
           }
         }
       }
+    },
+    "/time/start&end": {
+      "get": {
+        "tags": [
+          "Time"
+        ],
+        "description": "Get time of first and last operation in the dump",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "If parameter == nil -> response consist of data for all servers"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/StartEndTime"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -171,6 +202,20 @@ const docTemplate = `{
           "type": "integer"
         },
         "actual_time": {
+          "type": "string"
+        }
+      }
+    },
+    "StartEndTime": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "start_time": {
+          "type": "string"
+        },
+        "end_time": {
           "type": "string"
         }
       }
