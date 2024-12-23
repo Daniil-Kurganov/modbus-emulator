@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"modbus-emulator/conf"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	_ "modbus-emulator/docs"
 
 	"github.com/gin-gonic/gin"
+	reuse "github.com/libp2p/go-reuseport"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -59,6 +61,7 @@ var (
 
 func StartHTTPServer() {
 	router := gin.Default()
+
 	emulator := router.Group("/modbus-emulator")
 	{
 		settings := emulator.Group("settings")
@@ -79,7 +82,14 @@ func StartHTTPServer() {
 		// })
 		emulator.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
-	router.Run(conf.ServerHTTPServesocket)
+	var listener net.Listener
+	var err error
+	if listener, err = reuse.Listen("tcp", conf.ServerHTTPServesocket); err != nil {
+		log.Fatalf("Error on creating listener: %s", err)
+	}
+	if err = router.RunListener(listener); err != nil {
+		log.Fatalf("Error on starting HTTP-server: %s", err)
+	}
 }
 
 func getSettings(gctx *gin.Context) {
@@ -262,7 +272,7 @@ func rewindServersEmulation(gctx *gin.Context) {
 			return
 		}
 		if serverID > len(serversData)-1 || serverID < 0 {
-			err = fmt.Errorf("error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+			err = fmt.Errorf("error on HTTP-request: \"server_id\" parameter must be in range [0:%d]", len(serversData))
 			log.Print(err.Error())
 			responseValue.Error = err.Error()
 			response = append(response, responseValue)
