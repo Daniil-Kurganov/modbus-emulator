@@ -210,7 +210,7 @@ func getStartEndTime(gctx *gin.Context) {
 			return
 		}
 		if idInt > len(serversData)-1 || idInt < 0 {
-			log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+			log.Printf("Error on HTTP-request: \"server_id\" parameter must be in range [0:%d]", len(serversData))
 			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
 			return
 		}

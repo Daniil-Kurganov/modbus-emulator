@@ -37,6 +37,9 @@
                 "$ref": "#/definitions/ServersData"
               }
             }
+          },
+          "422": {
+            "description": "Invalid \"server_id\" parameter"
           }
         }
       }
@@ -75,6 +78,9 @@
                 "$ref": "#/definitions/ServersData"
               }
             }
+          },
+          "422": {
+            "description": "Invalid \"one-time\" or \"server_id\" parameter"
           }
         }
       }
@@ -106,6 +112,9 @@
                 "$ref": "#/definitions/ActualTime"
               }
             }
+          },
+          "422": {
+            "description": "Invalid \"server_id\" parameter"
           }
         }
       }
@@ -137,6 +146,9 @@
                 "$ref": "#/definitions/StartEndTime"
               }
             }
+          },
+          "422": {
+            "description": "Invalid \"server_id\" parameter"
           }
         }
       }
@@ -175,6 +187,9 @@
                 "$ref": "#/definitions/Rewind"
               }
             }
+          },
+          "422": {
+            "description": "Invalid \"timepoint\" or \"server_id\" parameter"
           }
         }
       }

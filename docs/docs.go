@@ -46,6 +46,9 @@ const docTemplate = `{
                 "$ref": "#/definitions/ServersData"
               }
             }
+          },
+          "422": {
+            "description": "Invalid \"server_id\" parameter"
           }
         }
       }
@@ -84,6 +87,9 @@ const docTemplate = `{
                 "$ref": "#/definitions/ServersData"
               }
             }
+          },
+          "422": {
+            "description": "Invalid \"one-time\" or \"server_id\" parameter"
           }
         }
       }
@@ -115,6 +121,9 @@ const docTemplate = `{
                 "$ref": "#/definitions/ActualTime"
               }
             }
+          },
+          "422": {
+            "description": "Invalid \"server_id\" parameter"
           }
         }
       }
@@ -146,6 +155,9 @@ const docTemplate = `{
                 "$ref": "#/definitions/StartEndTime"
               }
             }
+          },
+          "422": {
+            "description": "Invalid \"server_id\" parameter"
           }
         }
       }
@@ -184,6 +196,9 @@ const docTemplate = `{
                 "$ref": "#/definitions/Rewind"
               }
             }
+          },
+          "422": {
+            "description": "Invalid \"timepoint\" or \"server_id\" parameter"
           }
         }
       }
