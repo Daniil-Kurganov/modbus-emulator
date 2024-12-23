@@ -5,7 +5,6 @@ import (
 	"modbus-emulator/conf"
 	"modbus-emulator/src"
 	ta "modbus-emulator/src/traffic_analysis"
-	"modbus-emulator/src/traffic_analysis/structs"
 	"sync"
 
 	"golang.org/x/exp/maps"
@@ -20,15 +19,11 @@ func main() {
 		}
 		src.GenerateConfig()
 	}
-	var history map[string]structs.ServerHistory
-	if history, err = ta.ParseDump(); err != nil {
-		log.Fatalf("Error on parsing dump: %s", err)
-	}
 	var waitGroup sync.WaitGroup
 	for _, currentPhysicalSocket := range maps.Keys(conf.Sockets) {
 		log.Print(currentPhysicalSocket)
 		waitGroup.Add(1)
-		go src.ServerInit(&waitGroup, currentPhysicalSocket, history[currentPhysicalSocket])
+		go src.ServerInit(&waitGroup, currentPhysicalSocket)
 	}
 	src.StartHTTPServer()
 	waitGroup.Wait()

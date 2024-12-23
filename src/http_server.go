@@ -6,7 +6,9 @@ import (
 	"modbus-emulator/conf"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
+	"time"
 
 	_ "modbus-emulator/docs"
 
@@ -43,6 +45,7 @@ var (
 	emulationServers struct {
 		readWriteMutex sync.RWMutex
 		serversData    []emulationServer
+		rewindChannels []chan (int)
 	}
 
 	boolStringValues = map[string]bool{"true": true, "false": false}
@@ -62,7 +65,7 @@ func StartHTTPServer() {
 		{
 			time.GET("actual", getActualTime)
 			time.GET("start&end", getStartEndTime)
-			time.POST("rewind") // rewind all working servers on a specified time
+			time.POST("rewind", rewindServers)
 		}
 		// emulator.GET("doc", func(gctx *gin.Context) {
 		// 	gctx.Redirect(http.StatusPermanentRedirect,
@@ -223,10 +226,101 @@ func getStartEndTime(gctx *gin.Context) {
 	gctx.JSON(http.StatusOK, response)
 }
 
+func rewindServers(gctx *gin.Context) {
+	var timePointString string
+	var ok bool
+	if timePointString, ok = gctx.GetQuery("timepoint"); !ok {
+		log.Printf("%s: missing required \"timepoint\" parameter", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{errorHeader: `missing required timepoint" parameter`})
+		return
+	}
+	var err error
+	var timepoint time.Time
+	if timepoint, err = time.ParseInLocation(time.DateTime, timePointString, conf.DumpTimeLocation); err != nil {
+		log.Printf("%s: invalid \"timepoint\" parameter", errorHeader)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: `invalid "timepoint" parameter`})
+		return
+	}
+	serversData := getSettingsBuffer()
+	var idString string
+	if idString, ok = gctx.GetQuery("server_id"); ok {
+		var err error
+		var serverID int
+		if serverID, err = strconv.Atoi(idString); err != nil {
+			log.Printf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "server_id" parameter`: err.Error()})
+			return
+		}
+		if serverID > len(serversData)-1 || serverID < 0 {
+			log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+			return
+		}
+		var httpCode int
+		if httpCode, ok, err = timeRewindTimepointCheck(serversData[serverID], timepoint); !ok {
+			log.Printf("%s: %s", errorHeader, err)
+			gctx.JSON(httpCode, gin.H{errorHeader: err.Error()})
+			return
+		}
+		var transactionIndex int
+		for currentIndex, currentTransaction := range History[serversData[serverID].DumpSocketsConfigData.RealSocket].Transactions {
+			if timepoint.After(currentTransaction.TransactionTime) {
+				transactionIndex = currentIndex
+			}
+		}
+		emulationServers.readWriteMutex.RLock()
+		emulationServers.rewindChannels[serverID] <- transactionIndex
+		emulationServers.readWriteMutex.RUnlock()
+		logString := fmt.Sprintf("Successfully rewinded %d server to %s timepoint", serverID, timepoint.String())
+		log.Print(logString)
+		gctx.JSON(http.StatusOK, gin.H{"Success": logString})
+		return
+	}
+	// emulationServers.readWriteMutex.RLock()
+	// for currentServerID, currentServerData := range emulationServers.serversData {
+	// 	if serverID != -1 && serverID == currentServerID {
+
+	// 	}
+	// }
+	// emulationServers.readWriteMutex.RUnlock()
+	gctx.JSON(http.StatusOK, gin.H{"Success": timepoint.String()})
+}
+
 func getSettingsBuffer() []emulationServer {
 	emulationServers.readWriteMutex.RLock()
 	serversData := make([]emulationServer, len(emulationServers.serversData))
 	copy(serversData, emulationServers.serversData)
 	emulationServers.readWriteMutex.RUnlock()
 	return serversData
+}
+
+func timeRewindTimepointCheck(serverData emulationServer, timepoint time.Time) (httpCode int, result bool, err error) {
+	if !serverData.IsWorking {
+		err = fmt.Errorf("current server isn't working")
+		httpCode = http.StatusUnprocessableEntity
+		return
+	}
+	if serverData.CurrentTime == "" {
+		err = fmt.Errorf("current server isn't emulating data")
+		httpCode = http.StatusUnprocessableEntity
+		return
+	}
+	var startTime, endTime time.Time
+	if startTime, err = time.ParseInLocation(time.DateTime, serverData.StartTime[:strings.Index(serverData.StartTime, " +")], conf.DumpTimeLocation); err != nil {
+		err = fmt.Errorf("error on preprocessing start time: %s", err)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+	if endTime, err = time.ParseInLocation(time.DateTime, serverData.EndTime[:strings.Index(serverData.EndTime, " +")], conf.DumpTimeLocation); err != nil {
+		err = fmt.Errorf("error on preprocessing end time: %s", err)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+	if !(timepoint.After(startTime) && timepoint.Before(endTime)) {
+		err = fmt.Errorf("\"timepoint\" must be between %s and %s", startTime.String(), endTime.String())
+		httpCode = http.StatusInternalServerError
+		return
+	}
+	result = true
+	return
 }

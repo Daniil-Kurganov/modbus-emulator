@@ -8,12 +8,22 @@ import (
 	"time"
 
 	"modbus-emulator/conf"
+	ta "modbus-emulator/src/traffic_analysis"
 	"modbus-emulator/src/traffic_analysis/structs"
 
 	mS "github.com/Daniil-Kurganov/modbus-server"
 )
 
-func ServerInit(waitGroup *sync.WaitGroup, servePath string, serverHistory structs.ServerHistory) {
+var History map[string]structs.ServerHistory
+
+func init() {
+	var err error
+	if History, err = ta.ParseDump(); err != nil {
+		log.Fatalf("Error on parsing dump: %s", err)
+	}
+}
+
+func ServerInit(waitGroup *sync.WaitGroup, servePath string) {
 	var err error
 	server := mS.NewServer()
 	switch conf.Sockets[servePath].Protocol {
@@ -29,6 +39,7 @@ func ServerInit(waitGroup *sync.WaitGroup, servePath string, serverHistory struc
 		log.Fatalf("Error: invalid servers's work mode: %s", conf.Sockets[servePath].Protocol)
 	}
 	log.Printf("Start server on %s, protocol: %s", servePath, conf.Sockets[servePath].Protocol)
+	serverHistory := History[servePath]
 	for _, currentSlaveId := range serverHistory.Slaves {
 		server.InitSlave(currentSlaveId)
 	}
@@ -44,25 +55,35 @@ func ServerInit(waitGroup *sync.WaitGroup, servePath string, serverHistory struc
 		EndTime:          serverHistory.Transactions[len(serverHistory.Transactions)-1].TransactionTime.String(),
 		CurrentTime:      "",
 	}
+	rewindChannel := make(chan int)
 	emulationServers.readWriteMutex.Lock()
 	emulationServers.serversData = append(emulationServers.serversData, serverInfo)
+	emulationServers.rewindChannels = append(emulationServers.rewindChannels, rewindChannel)
 	emulationServers.readWriteMutex.Unlock()
 	emulationServers.readWriteMutex.RLock()
 	serverID := len(emulationServers.serversData) - 1
 	emulationServers.readWriteMutex.RUnlock()
 	closeChannel := make(chan bool)
-	go emulate(server, serverHistory.Transactions, closeChannel, serverID)
+	go emulate(server, serverHistory.Transactions, closeChannel, serverID, rewindChannel)
 	<-closeChannel
 	close(closeChannel)
 	server.Close()
 	waitGroup.Done()
 }
 
-func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel chan (bool), serverID int) {
+func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel chan (bool), serverID int, rewindChannel chan int) {
 	log.Print("Waiting of client connection")
 	<-server.ConnectionChanel
 	for {
-		for currentIndex, currentHistoryEvent := range history {
+		for currentIndex := 0; currentIndex < len(history); currentIndex++ {
+			var currentHistoryEvent structs.HistoryEvent
+			select {
+			case transactionIndex := <-rewindChannel:
+				log.Printf("Rewind (%d):\n %v", transactionIndex, history[transactionIndex])
+				currentIndex = transactionIndex
+			default:
+			}
+			currentHistoryEvent = history[currentIndex]
 			emulationServers.readWriteMutex.Lock()
 			emulationServers.serversData[serverID].CurrentTime = currentHistoryEvent.TransactionTime.String()
 			emulationServers.readWriteMutex.Unlock()

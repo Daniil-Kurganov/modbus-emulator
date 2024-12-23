@@ -30,11 +30,13 @@ type (
 		IsAutoParsingMode         bool
 		EmulationPortAddressStart int
 		OneTimeEmulation          bool
+		DumpTimeLocation          string
 		DumpConfig                []DumpSocketsConfigData `toml:"DumpConfig"`
 	}
 )
 
 var (
+	Sockets                   map[string]DumpSocketData
 	ServerDefaultEmulateHost  string
 	ServerHTTPServesocket     string
 	ServerDefaultDumpPort     string
@@ -43,7 +45,7 @@ var (
 	IsAutoParsingMode         bool
 	EmulationPortAddressStart uint16
 	OneTimeEmulation          bool
-	Sockets                   map[string]DumpSocketData
+	DumpTimeLocation          *time.Location
 
 	Functions = struct {
 		CoilsRead          uint16
@@ -81,6 +83,7 @@ var (
 		IsAutoParsingMode         string
 		EmulationPortAddressStart string
 		OneTimeEmulation          string
+		DumpTimeLocation          string
 		DumpConfig                struct {
 			Title string
 			DumpSocketsConfigData
@@ -94,6 +97,7 @@ var (
 		IsAutoParsingMode:         "IsAutoParsingMode",
 		EmulationPortAddressStart: "EmulationPortAddressStart",
 		OneTimeEmulation:          "OneTimeEmulation",
+		DumpTimeLocation:          "DumpTimeLocation",
 		DumpConfig: struct {
 			Title string
 			DumpSocketsConfigData
@@ -130,6 +134,9 @@ func init() {
 	IsAutoParsingMode = config.IsAutoParsingMode
 	EmulationPortAddressStart = uint16(config.EmulationPortAddressStart)
 	OneTimeEmulation = config.OneTimeEmulation
+	if DumpTimeLocation, err = time.LoadLocation(config.DumpTimeLocation); err != nil {
+		log.Fatalf("Error on parsing dump time location: %s", err)
+	}
 	Sockets = make(map[string]DumpSocketData)
 	if !IsAutoParsingMode {
 		log.Print("Using manually work mode of parsing dump: using configuration list")

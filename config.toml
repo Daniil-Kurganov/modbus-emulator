@@ -6,6 +6,7 @@ DumpFilePath              = '/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator
 IsAutoParsingMode         = false
 EmulationPortAddressStart = 1501
 OneTimeEmulation          = true
+DumpTimeLocation              = "Europe/Moscow"
 
 [[DumpConfig]]
     DumpSocket = "192.168.1.25"
