@@ -75,11 +75,11 @@ func StartHTTPServer() {
 			time.GET("start&end", getStartEndTime)
 			time.POST("rewind_emulation", rewindServersEmulation)
 		}
-		// emulator.GET("doc", func(gctx *gin.Context) {
-		// 	gctx.Redirect(http.StatusPermanentRedirect,
-		// 		fmt.Sprintf("http://%s:8080/modbus-emulator/docs/index.html", gctx.Request.Host),
-		// 	)
-		// })
+		emulator.GET("/", func(gctx *gin.Context) {
+			gctx.Redirect(http.StatusPermanentRedirect,
+				fmt.Sprintf("http://%s/modbus-emulator/docs/index.html", gctx.Request.Host),
+			)
+		})
 		emulator.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 	var listener net.Listener
