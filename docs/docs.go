@@ -149,6 +149,44 @@ const docTemplate = `{
           }
         }
       }
+    },
+    "/time/rewind_emulation": {
+      "post": {
+        "tags": [
+          "Time"
+        ],
+        "description": "Rewinding emulation time",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "timepoint",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Time staring by format: \"yyyy-mm-dd hh:mm:ss(.ms)"
+          },
+          {
+            "name": "server_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "If parameter == nil -> rewind will done for all servers"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Rewind"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -216,6 +254,20 @@ const docTemplate = `{
           "type": "string"
         },
         "end_time": {
+          "type": "string"
+        }
+      }
+    },
+    "Rewind": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "error": {
+          "type": "string"
+        },
+        "setted_timepoint": {
           "type": "string"
         }
       }

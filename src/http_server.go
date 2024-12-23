@@ -70,7 +70,7 @@ func StartHTTPServer() {
 		{
 			time.GET("actual", getActualTime)
 			time.GET("start&end", getStartEndTime)
-			time.POST("rewind", rewindServers)
+			time.POST("rewind_emulation", rewindServersEmulation)
 		}
 		// emulator.GET("doc", func(gctx *gin.Context) {
 		// 	gctx.Redirect(http.StatusPermanentRedirect,
@@ -231,7 +231,7 @@ func getStartEndTime(gctx *gin.Context) {
 	gctx.JSON(http.StatusOK, response)
 }
 
-func rewindServers(gctx *gin.Context) {
+func rewindServersEmulation(gctx *gin.Context) {
 	var timePointString string
 	var ok bool
 	if timePointString, ok = gctx.GetQuery("timepoint"); !ok {
