@@ -8,20 +8,12 @@ import (
 	"time"
 
 	"modbus-emulator/conf"
-	ta "modbus-emulator/src/traffic_analysis"
 	"modbus-emulator/src/traffic_analysis/structs"
 
 	mS "github.com/Daniil-Kurganov/modbus-server"
 )
 
 var History map[string]structs.ServerHistory
-
-func init() {
-	var err error
-	if History, err = ta.ParseDump(); err != nil {
-		log.Fatalf("Error on parsing dump: %s", err)
-	}
-}
 
 func ServerInit(waitGroup *sync.WaitGroup, servePath string) {
 	var err error

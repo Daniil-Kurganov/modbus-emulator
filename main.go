@@ -19,6 +19,9 @@ func main() {
 		}
 		src.GenerateConfig()
 	}
+	if src.History, err = ta.ParseDump(); err != nil {
+		log.Fatalf("Error on parsing dump: %s", err)
+	}
 	var waitGroup sync.WaitGroup
 	for _, currentPhysicalSocket := range maps.Keys(conf.Sockets) {
 		log.Print(currentPhysicalSocket)
