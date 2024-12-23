@@ -26,18 +26,23 @@ type (
 		EndTime          string `json:"end_time"`
 		CurrentTime      string `json:"current_time"`
 	}
-	serverData struct {
+	settingsResponse struct {
 		ID       int             `json:"id"`
 		Settings emulationServer `json:"settings"`
 	}
-	actualTime struct {
+	actualTimeResponse struct {
 		ID         int    `json:"id"`
 		ActualTime string `json:"actual_time"`
 	}
-	startEndTime struct {
+	startEndTimeRespoonse struct {
 		ID        int    `json:"id"`
 		StartTime string `json:"start_time"`
 		EndTime   string `json:"end_time"`
+	}
+	rewindResponse struct {
+		ID              int    `json:"id"`
+		Error           string `json:"error"`
+		SettedTimepoint string `json:"setted_timepoint"`
 	}
 )
 
@@ -78,7 +83,7 @@ func StartHTTPServer() {
 }
 
 func getSettings(gctx *gin.Context) {
-	var response []serverData
+	var response []settingsResponse
 	if id, ok := gctx.GetQuery("server_id"); ok {
 		var idInt int
 		var err error
@@ -93,14 +98,14 @@ func getSettings(gctx *gin.Context) {
 			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
 			return
 		}
-		response = append(response, serverData{
+		response = append(response, settingsResponse{
 			ID:       idInt,
 			Settings: serversData[idInt],
 		})
 	} else {
 		for currentID, currentSetting := range getSettingsBuffer() {
 			response = append(response,
-				serverData{
+				settingsResponse{
 					ID:       currentID,
 					Settings: currentSetting,
 				},
@@ -145,11 +150,11 @@ func setEmulationMode(gctx *gin.Context) {
 	} else {
 		leftBorder, rightBorder = 0, len(serversData)
 	}
-	var response []serverData
+	var response []settingsResponse
 	emulationServers.readWriteMutex.Lock()
 	for currentID := range emulationServers.serversData[leftBorder:rightBorder] {
 		emulationServers.serversData[currentID].OneTimeEmulation = flagValue
-		response = append(response, serverData{
+		response = append(response, settingsResponse{
 			ID:       currentID,
 			Settings: emulationServers.serversData[currentID],
 		})
@@ -160,7 +165,7 @@ func setEmulationMode(gctx *gin.Context) {
 
 func getActualTime(gctx *gin.Context) {
 	serversData := getSettingsBuffer()
-	var response []actualTime
+	var response []actualTimeResponse
 	if id, ok := gctx.GetQuery("server_id"); ok {
 		var idInt int
 		var err error
@@ -175,7 +180,7 @@ func getActualTime(gctx *gin.Context) {
 			return
 		}
 		emulationServers.readWriteMutex.RLock()
-		response = append(response, actualTime{
+		response = append(response, actualTimeResponse{
 			ID:         idInt,
 			ActualTime: emulationServers.serversData[idInt].CurrentTime,
 		})
@@ -183,7 +188,7 @@ func getActualTime(gctx *gin.Context) {
 	} else {
 		emulationServers.readWriteMutex.RLock()
 		for currentID, currentData := range emulationServers.serversData {
-			response = append(response, actualTime{
+			response = append(response, actualTimeResponse{
 				ID:         currentID,
 				ActualTime: currentData.CurrentTime,
 			})
@@ -195,7 +200,7 @@ func getActualTime(gctx *gin.Context) {
 
 func getStartEndTime(gctx *gin.Context) {
 	serversData := getSettingsBuffer()
-	var response []startEndTime
+	var response []startEndTimeRespoonse
 	if id, ok := gctx.GetQuery("server_id"); ok {
 		var idInt int
 		var err error
@@ -209,14 +214,14 @@ func getStartEndTime(gctx *gin.Context) {
 			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
 			return
 		}
-		response = append(response, startEndTime{
+		response = append(response, startEndTimeRespoonse{
 			ID:        idInt,
 			StartTime: serversData[idInt].StartTime,
 			EndTime:   serversData[idInt].EndTime,
 		})
 	} else {
 		for currentID, currentData := range serversData {
-			response = append(response, startEndTime{
+			response = append(response, startEndTimeRespoonse{
 				ID:        currentID,
 				StartTime: currentData.StartTime,
 				EndTime:   currentData.EndTime,
@@ -243,47 +248,94 @@ func rewindServers(gctx *gin.Context) {
 	}
 	serversData := getSettingsBuffer()
 	var idString string
+	var response []rewindResponse
 	if idString, ok = gctx.GetQuery("server_id"); ok {
 		var err error
 		var serverID int
+		responseValue := rewindResponse{}
 		if serverID, err = strconv.Atoi(idString); err != nil {
-			log.Printf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
-			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "server_id" parameter`: err.Error()})
+			err = fmt.Errorf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
+			log.Print(err.Error())
+			responseValue.Error = err.Error()
+			response = append(response, responseValue)
+			gctx.JSON(http.StatusUnprocessableEntity, response)
 			return
 		}
 		if serverID > len(serversData)-1 || serverID < 0 {
-			log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
-			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+			err = fmt.Errorf("error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+			log.Print(err.Error())
+			responseValue.Error = err.Error()
+			response = append(response, responseValue)
+			gctx.JSON(http.StatusUnprocessableEntity, response)
 			return
 		}
+		responseValue.ID = serverID
 		var httpCode int
 		if httpCode, ok, err = timeRewindTimepointCheck(serversData[serverID], timepoint); !ok {
-			log.Printf("%s: %s", errorHeader, err)
-			gctx.JSON(httpCode, gin.H{errorHeader: err.Error()})
+			err = fmt.Errorf("%s: %s", errorHeader, err)
+			log.Print(err)
+			responseValue.Error = err.Error()
+			response = append(response, responseValue)
+			gctx.JSON(httpCode, response)
 			return
 		}
-		var transactionIndex int
+		transactionIndex := -1
 		for currentIndex, currentTransaction := range History[serversData[serverID].DumpSocketsConfigData.RealSocket].Transactions {
 			if timepoint.After(currentTransaction.TransactionTime) {
 				transactionIndex = currentIndex
 			}
 		}
+		if transactionIndex == -1 {
+			err := fmt.Errorf("error on detected atcual rewind timepoint")
+			log.Print(err.Error())
+			responseValue.Error = err.Error()
+			response = append(response, responseValue)
+			gctx.JSON(http.StatusUnprocessableEntity, response)
+			return
+		}
+		responseValue.SettedTimepoint = timepoint.String()
 		emulationServers.readWriteMutex.RLock()
 		emulationServers.rewindChannels[serverID] <- transactionIndex
 		emulationServers.readWriteMutex.RUnlock()
 		logString := fmt.Sprintf("Successfully rewinded %d server to %s timepoint", serverID, timepoint.String())
 		log.Print(logString)
-		gctx.JSON(http.StatusOK, gin.H{"Success": logString})
+		response = append(response, responseValue)
+		gctx.JSON(http.StatusOK, response)
 		return
 	}
-	// emulationServers.readWriteMutex.RLock()
-	// for currentServerID, currentServerData := range emulationServers.serversData {
-	// 	if serverID != -1 && serverID == currentServerID {
-
-	// 	}
-	// }
-	// emulationServers.readWriteMutex.RUnlock()
-	gctx.JSON(http.StatusOK, gin.H{"Success": timepoint.String()})
+	for currentIndex, currentServerData := range serversData {
+		currentResponse := rewindResponse{
+			ID: currentIndex,
+		}
+		if _, ok, err = timeRewindTimepointCheck(currentServerData, timepoint); !ok {
+			err = fmt.Errorf("%s: %s", errorHeader, err)
+			log.Print(err)
+			currentResponse.Error = err.Error()
+			response = append(response, currentResponse)
+			continue
+		}
+		currentTransactionIndex := -1
+		for currentIndex, currentTransaction := range History[currentServerData.DumpSocketsConfigData.RealSocket].Transactions {
+			if timepoint.After(currentTransaction.TransactionTime) {
+				currentTransactionIndex = currentIndex
+			}
+		}
+		if currentTransactionIndex == -1 {
+			err = fmt.Errorf("%s: error on detected atcual rewind timepoint", errorHeader)
+			log.Print(err)
+			currentResponse.Error = err.Error()
+			response = append(response, currentResponse)
+			continue
+		}
+		currentResponse.SettedTimepoint = timepoint.String()
+		emulationServers.readWriteMutex.RLock()
+		emulationServers.rewindChannels[currentIndex] <- currentTransactionIndex
+		emulationServers.readWriteMutex.RUnlock()
+		logString := fmt.Sprintf("Successfully rewinded %d server to %s timepoint", currentIndex, timepoint.String())
+		log.Print(logString)
+		response = append(response, currentResponse)
+	}
+	gctx.JSON(http.StatusOK, response)
 }
 
 func getSettingsBuffer() []emulationServer {
@@ -318,7 +370,7 @@ func timeRewindTimepointCheck(serverData emulationServer, timepoint time.Time) (
 	}
 	if !(timepoint.After(startTime) && timepoint.Before(endTime)) {
 		err = fmt.Errorf("\"timepoint\" must be between %s and %s", startTime.String(), endTime.String())
-		httpCode = http.StatusInternalServerError
+		httpCode = http.StatusUnprocessableEntity
 		return
 	}
 	result = true
