@@ -10,6 +10,8 @@ github.com/Daniil-Kurganov/modbus-server v0.0.0-20241224111235-9bb95c06465b h1:e
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241224111235-9bb95c06465b/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241224112132-e7840a2aae29 h1:Eavcxi2/DMo5MBCGjfuV6bhUIvx9ZFOuqf8Z3Zhh9xE=
 github.com/Daniil-Kurganov/modbus-server v0.0.0-20241224112132-e7840a2aae29/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
+github.com/Daniil-Kurganov/modbus-server v1.0.0 h1:T2cVeK76lNyF/qhLIhQ+sv7MJpGiValwThLsPiJQtmQ=
+github.com/Daniil-Kurganov/modbus-server v1.0.0/go.mod h1:0hXILbquPaS+/Zz0VBIrfnwb2+UwBfnk79UL0Gga5Sk=
 github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc=
 github.com/KyleBanks/depth v1.2.1/go.mod h1:jzSb9d0L43HxTQfT+oSA1EEp2q+ne2uh6XgeJcm8brE=
 github.com/PuerkitoBio/purell v1.2.1 h1:QsZ4TjvwiMpat6gBCBxEQI0rcS9ehtkKtSpiUnd9N28=

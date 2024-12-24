@@ -19,11 +19,14 @@ func main() {
 		}
 		src.GenerateConfig()
 	}
+	if len(conf.Sockets) == 0 {
+		log.Fatal("Error: empty sockets data")
+	}
 	if src.History, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error on parsing dump: %s", err)
 	}
 	if conf.SimultaneouslyEmulation {
-		src.IsEmulatingChannel = make(chan bool, len(conf.Sockets) - 1)
+		src.IsEmulatingChannel = make(chan bool, len(conf.Sockets)-1)
 	}
 	var waitGroup sync.WaitGroup
 	for _, currentPhysicalSocket := range maps.Keys(conf.Sockets) {
