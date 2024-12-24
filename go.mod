@@ -3,7 +3,7 @@ module modbus-emulator
 go 1.22.4
 
 require (
-	github.com/Daniil-Kurganov/modbus-server v0.0.0-20241205142206-9b646afa6b68
+	github.com/Daniil-Kurganov/modbus-server v0.0.0-20241224112132-e7840a2aae29
 	github.com/goburrow/modbus v0.1.0
 	github.com/google/gopacket v1.1.20-0.20220810144506-32ee38206866
 	github.com/simonvetter/modbus v1.6.3

@@ -13,7 +13,10 @@ import (
 	mS "github.com/Daniil-Kurganov/modbus-server"
 )
 
-var History map[string]structs.ServerHistory
+var (
+	History            map[string]structs.ServerHistory
+	IsEmulatingChannel chan (bool)
+)
 
 func ServerInit(waitGroup *sync.WaitGroup, servePath string) {
 	var err error
@@ -64,8 +67,19 @@ func ServerInit(waitGroup *sync.WaitGroup, servePath string) {
 }
 
 func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel chan (bool), serverID int, rewindChannel chan int) {
-	log.Print("Waiting of client connection")
-	<-server.ConnectionChanel
+	if conf.SimultaneouslyEmulation {
+		select {
+		case <-server.ConnectionChanel:
+			for counter := 0; counter < len(conf.Sockets)-1; counter++ {
+				IsEmulatingChannel <- true
+			}
+		case <-IsEmulatingChannel:
+			server.ConnectionChanel = nil
+		}
+	} else {
+		log.Print("Waiting of client connection")
+		<-server.ConnectionChanel
+	}
 	for {
 		for currentIndex := 0; currentIndex < len(history); currentIndex++ {
 			var currentHistoryEvent structs.HistoryEvent

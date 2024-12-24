@@ -22,6 +22,9 @@ func main() {
 	if src.History, err = ta.ParseDump(); err != nil {
 		log.Fatalf("Error on parsing dump: %s", err)
 	}
+	if conf.SimultaneouslyEmulation {
+		src.IsEmulatingChannel = make(chan bool, len(conf.Sockets) - 1)
+	}
 	var waitGroup sync.WaitGroup
 	for _, currentPhysicalSocket := range maps.Keys(conf.Sockets) {
 		log.Print(currentPhysicalSocket)

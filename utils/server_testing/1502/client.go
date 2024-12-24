@@ -13,7 +13,7 @@ func main() {
 	time.Sleep(time.Second)
 	var client *modbus.ModbusClient
 	if client, err = modbus.NewClient(&modbus.ClientConfiguration{
-		URL:     "rtuovertcp://localhost:1502",
+		URL:     "rtuovertcp://127.0.0.1:1502",
 		Speed:   19200,
 		Timeout: 1 * time.Second,
 	}); err != nil {
