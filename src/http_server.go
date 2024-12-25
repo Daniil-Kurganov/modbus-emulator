@@ -6,6 +6,7 @@ import (
 	"modbus-emulator/conf"
 	"net"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -13,10 +14,12 @@ import (
 
 	_ "modbus-emulator/docs"
 
+	ms "github.com/Daniil-Kurganov/modbus-server"
 	"github.com/gin-gonic/gin"
 	reuse "github.com/libp2p/go-reuseport"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"golang.org/x/exp/maps"
 )
 
 type (
@@ -46,16 +49,21 @@ type (
 		Error           string `json:"error"`
 		SettedTimepoint string `json:"setted_timepoint"`
 	}
+	slaveResponse struct {
+		ServerID        int    `json:"server_id"`
+		AnswerwedSlaves []int8 `json:"answered_slaves"`
+	}
 )
 
 var (
 	emulationServers struct {
 		readWriteMutex sync.RWMutex
 		serversData    []emulationServer
+		servers        []*ms.Server
 		rewindChannels []chan (int)
 	}
 
-	boolStringValues = map[string]bool{"true": true, "false": false}
+	boolStringValues = map[string]bool{"true": true, "false": false, "start": true, "stop": false}
 	errorHeader      = "Error on HTTP-request"
 )
 
@@ -68,6 +76,7 @@ func StartHTTPServer() {
 		{
 			settings.GET("", getSettings)
 			settings.POST("emulation_mode", setEmulationMode)
+			settings.POST("slave_answer", setSlaveState)
 		}
 		time := emulator.Group("time")
 		{
@@ -170,6 +179,82 @@ func setEmulationMode(gctx *gin.Context) {
 		})
 	}
 	emulationServers.readWriteMutex.Unlock()
+	gctx.JSON(http.StatusOK, response)
+}
+
+func setSlaveState(gctx *gin.Context) {
+	var err error
+	serversData := getSettingsBuffer()
+	var serverID, slaveID int
+	var workMode bool
+	var id, mode string
+	var ok bool
+	if id, ok = gctx.GetQuery("server_id"); !ok {
+		err = fmt.Errorf("missed required \"server_id\" parameter")
+		log.Printf("%s: %s", errorHeader, err)
+		gctx.JSON(http.StatusBadRequest, gin.H{errorHeader: err.Error()})
+		return
+	}
+	if serverID, err = strconv.Atoi(id); err != nil {
+		log.Printf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "server_id" parameter`: err.Error()})
+		return
+	}
+	if serverID > len(serversData)-1 || serverID < 0 {
+		log.Printf("Error on HTTP-request: \"server_id\" parameter must be in range [0:%d]", len(serversData))
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+		return
+	}
+	if id, ok = gctx.GetQuery("slave_id"); !ok {
+		err = fmt.Errorf("missed required \"slave_id\" parameter")
+		log.Printf("%s: %s", errorHeader, err)
+		gctx.JSON(http.StatusBadRequest, gin.H{errorHeader: err.Error()})
+		return
+	}
+	if slaveID, err = strconv.Atoi(id); err != nil {
+		err = fmt.Errorf("invalid \"slave_id\" parameter: %s", err)
+		log.Printf("%s: %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: err.Error()})
+		return
+	}
+	if mode, ok = gctx.GetQuery("answer_mode"); !ok {
+		err = fmt.Errorf("missed required \"answer_mode\" parameter")
+		log.Printf("%s: %s", errorHeader, err)
+		gctx.JSON(http.StatusBadRequest, gin.H{errorHeader: err.Error()})
+		return
+	}
+	if workMode, ok = boolStringValues[mode]; !ok || !slices.Contains([]string{"start", "stop"}, mode) {
+		err = fmt.Errorf("invalid \"answer_mode\" parameter (must be \"start\" or \"stop\")")
+		log.Printf("%s: %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: err.Error()})
+		return
+	}
+	emulationServers.readWriteMutex.RLock()
+	defer emulationServers.readWriteMutex.RUnlock()
+	if workMode {
+		if err = emulationServers.servers[serverID].SlaveStartResponse(uint8(slaveID)); err != nil {
+			log.Printf("%s: %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: err.Error()})
+			return
+		}
+	}
+	if !workMode {
+		if err = emulationServers.servers[serverID].SlaveStopResponse(uint8(slaveID)); err != nil {
+			log.Printf("%s: %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: err.Error()})
+			return
+		}
+	}
+	slavesAnswered := maps.Keys(emulationServers.servers[serverID].Slaves)
+	slavesStoped := emulationServers.servers[serverID].SlavesStoppedResponse
+	var slavesResponse []int8
+	for _, currentSlave := range slavesAnswered {
+		if !slices.Contains(slavesStoped, currentSlave) {
+			slavesResponse = append(slavesResponse, int8(currentSlave))
+		}
+	}
+	response := slaveResponse{ServerID: serverID}
+	response.AnswerwedSlaves = slavesResponse
 	gctx.JSON(http.StatusOK, response)
 }
 

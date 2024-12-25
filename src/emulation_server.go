@@ -53,6 +53,7 @@ func ServerInit(waitGroup *sync.WaitGroup, servePath string) {
 	rewindChannel := make(chan int)
 	emulationServers.readWriteMutex.Lock()
 	emulationServers.serversData = append(emulationServers.serversData, serverInfo)
+	emulationServers.servers = append(emulationServers.servers, server)
 	emulationServers.rewindChannels = append(emulationServers.rewindChannels, rewindChannel)
 	emulationServers.readWriteMutex.Unlock()
 	emulationServers.readWriteMutex.RLock()

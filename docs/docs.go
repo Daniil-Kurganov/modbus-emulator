@@ -94,6 +94,52 @@ const docTemplate = `{
         }
       }
     },
+    "/settings/slave_answer": {
+      "post": {
+        "tags": [
+          "Settings"
+        ],
+        "description": "Set answer mod for slave of server",
+        "products": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "query",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "slave_id",
+            "in": "query",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "answer_mode",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Must be \"start\" or \"stop\""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ValidSlaves"
+            }
+          },
+          "400": {
+            "description": "Missed required parameters"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        }
+      }
+    },
     "/time/actual": {
       "get": {
         "tags": [
@@ -284,6 +330,20 @@ const docTemplate = `{
         },
         "setted_timepoint": {
           "type": "string"
+        }
+      }
+    },
+    "ValidSlaves": {
+      "type": "object",
+      "properties": {
+        "server_id": {
+          "type": "integer"
+        },
+        "answered_slaves": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
         }
       }
     }
