@@ -23,8 +23,9 @@ import (
 )
 
 type (
-	emulationServer struct {
-		IsWorking bool `json:"is_working"`
+	emulationServerSettings struct {
+		IsWorking   bool `json:"is_working"`
+		IsEmulating bool `json:"is_emulating"`
 		conf.DumpSocketsConfigData
 		OneTimeEmulation bool   `json:"one_time_emulation"`
 		StartTime        string `json:"start_time"`
@@ -32,8 +33,8 @@ type (
 		CurrentTime      string `json:"current_time"`
 	}
 	settingsResponse struct {
-		ID       int             `json:"id"`
-		Settings emulationServer `json:"settings"`
+		ID       int                     `json:"id"`
+		Settings emulationServerSettings `json:"settings"`
 	}
 	actualTimeResponse struct {
 		ID         int    `json:"id"`
@@ -53,14 +54,20 @@ type (
 		ServerID        int    `json:"server_id"`
 		AnswerwedSlaves []int8 `json:"answered_slaves"`
 	}
+	emulationControlResponse struct {
+		ID          int    `json:"id"`
+		Error       string `json:"error"`
+		IsEmulating bool   `json:"is_emulating"`
+	}
 )
 
 var (
 	emulationServers struct {
-		readWriteMutex sync.RWMutex
-		serversData    []emulationServer
-		servers        []*ms.Server
-		rewindChannels []chan (int)
+		readWriteMutex           sync.RWMutex
+		serversData              []emulationServerSettings
+		servers                  []*ms.Server
+		rewindChannels           []chan (int)
+		emulationControlChannels []chan (bool)
 	}
 
 	boolStringValues = map[string]bool{"true": true, "false": false, "start": true, "stop": false}
@@ -77,6 +84,7 @@ func StartHTTPServer() {
 			settings.GET("", getSettings)
 			settings.POST("emulation_mode", setEmulationMode)
 			settings.POST("slave_answer", setSlaveState)
+			settings.POST("emulation_control", controlEmulation)
 		}
 		time := emulator.Group("time")
 		{
@@ -258,6 +266,86 @@ func setSlaveState(gctx *gin.Context) {
 	gctx.JSON(http.StatusOK, response)
 }
 
+func controlEmulation(gctx *gin.Context) {
+	var err error
+	var flag string
+	var ok bool
+	if flag, ok = gctx.GetQuery("emulation_switch"); !ok {
+		err = fmt.Errorf("missed required \"emulation_switch\" parameter")
+		log.Printf("%s: %s", errorHeader, err)
+		gctx.JSON(http.StatusBadRequest, gin.H{errorHeader: err.Error()})
+		return
+	}
+	var isEmulating bool
+	if isEmulating, ok = boolStringValues[flag]; !ok || !slices.Contains([]string{"start", "stop"}, flag) {
+		err = fmt.Errorf("invalid \"emulation_switch\" parameter (must be \"start\" or \"stop\")")
+		log.Printf("%s: %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: err.Error()})
+		return
+	}
+	var id string
+	serversData := getSettingsBuffer()
+	var response []emulationControlResponse
+	if id, ok = gctx.GetQuery("server_id"); ok {
+		var serverID int
+		if serverID, err = strconv.Atoi(id); err != nil {
+			log.Printf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "server_id" parameter`: err.Error()})
+			return
+		}
+		if serverID > len(serversData)-1 || serverID < 0 {
+			log.Printf("Error on HTTP-request: \"server_id\" parameter must be in range [0:%d]", len(serversData))
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+			return
+		}
+		if serversData[serverID].IsEmulating == isEmulating {
+			err = fmt.Errorf("invalid \"emulation_switch\" parameter: server is already in requested state")
+			log.Printf("%s: %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: err.Error()})
+			return
+		}
+		emulationServers.readWriteMutex.RLock()
+		defer emulationServers.readWriteMutex.RUnlock()
+		select {
+		case emulationServers.emulationControlChannels[serverID] <- true:
+			response = append(response, emulationControlResponse{
+				ID:          serverID,
+				IsEmulating: isEmulating,
+			})
+			gctx.JSON(http.StatusOK, response)
+			return
+		case <-time.After(time.Second):
+			err = fmt.Errorf("invalid \"emulation_switch\" parameter: server couldn't process state (emulation isn't initialized)")
+			log.Printf("%s: %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{errorHeader: err.Error()})
+			return
+		}
+	}
+	for currentID, currentData := range serversData {
+		currentResponse := emulationControlResponse{ID: currentID}
+		if currentData.IsEmulating == isEmulating {
+			err = fmt.Errorf("invalid \"emulation_switch\" parameter: server is already in requested state")
+			log.Printf("%s: %s", errorHeader, err)
+			currentResponse.Error = err.Error()
+			currentResponse.IsEmulating = currentData.IsEmulating
+		} else {
+			emulationServers.readWriteMutex.RLock()
+			defer emulationServers.readWriteMutex.RUnlock()
+			select {
+			case emulationServers.emulationControlChannels[currentID] <- true:
+				currentResponse.IsEmulating = isEmulating
+			case <-time.After(time.Second):
+				err = fmt.Errorf("invalid \"emulation_switch\" parameter: server couldn't process state (emulation isn't initialized)")
+				log.Printf("%s: %s", errorHeader, err)
+				currentResponse.Error = err.Error()
+				currentResponse.IsEmulating = currentData.IsEmulating
+			}
+		}
+		response = append(response, currentResponse)
+	}
+	gctx.JSON(http.StatusOK, response)
+}
+
 func getActualTime(gctx *gin.Context) {
 	serversData := getSettingsBuffer()
 	var response []actualTimeResponse
@@ -270,7 +358,7 @@ func getActualTime(gctx *gin.Context) {
 			return
 		}
 		if idInt > len(serversData)-1 || idInt < 0 {
-			log.Printf("Error on HTTP-request: \"server\" parameter must be in range [0:%d]", len(serversData))
+			log.Printf("Error on HTTP-request: \"server_id\" parameter must be in range [0:%d]", len(serversData))
 			gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
 			return
 		}
@@ -433,15 +521,15 @@ func rewindServersEmulation(gctx *gin.Context) {
 	gctx.JSON(http.StatusOK, response)
 }
 
-func getSettingsBuffer() []emulationServer {
+func getSettingsBuffer() []emulationServerSettings {
 	emulationServers.readWriteMutex.RLock()
-	serversData := make([]emulationServer, len(emulationServers.serversData))
+	serversData := make([]emulationServerSettings, len(emulationServers.serversData))
 	copy(serversData, emulationServers.serversData)
 	emulationServers.readWriteMutex.RUnlock()
 	return serversData
 }
 
-func timeRewindTimepointCheck(serverData emulationServer, timepoint time.Time) (httpCode int, result bool, err error) {
+func timeRewindTimepointCheck(serverData emulationServerSettings, timepoint time.Time) (httpCode int, result bool, err error) {
 	if !serverData.IsWorking {
 		err = fmt.Errorf("current server isn't working")
 		httpCode = http.StatusUnprocessableEntity

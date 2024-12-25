@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	History            map[string]structs.ServerHistory
-	IsEmulatingChannel chan (bool)
+	History               map[string]structs.ServerHistory
+	IsAllEmulatingChannel chan (bool)
 )
 
 func ServerInit(waitGroup *sync.WaitGroup, servePath string) {
@@ -38,7 +38,7 @@ func ServerInit(waitGroup *sync.WaitGroup, servePath string) {
 	for _, currentSlaveId := range serverHistory.Slaves {
 		server.InitSlave(currentSlaveId)
 	}
-	serverInfo := emulationServer{
+	serverInfo := emulationServerSettings{
 		IsWorking: true,
 		DumpSocketsConfigData: conf.DumpSocketsConfigData{
 			DumpSocket: fmt.Sprintf("%s:%s", conf.Sockets[servePath].HostAddress, conf.Sockets[servePath].PortAddress),
@@ -51,38 +51,56 @@ func ServerInit(waitGroup *sync.WaitGroup, servePath string) {
 		CurrentTime:      "",
 	}
 	rewindChannel := make(chan int)
+	emulationControlChannel := make(chan bool)
 	emulationServers.readWriteMutex.Lock()
 	emulationServers.serversData = append(emulationServers.serversData, serverInfo)
 	emulationServers.servers = append(emulationServers.servers, server)
 	emulationServers.rewindChannels = append(emulationServers.rewindChannels, rewindChannel)
+	emulationServers.emulationControlChannels = append(emulationServers.emulationControlChannels, emulationControlChannel)
 	emulationServers.readWriteMutex.Unlock()
 	emulationServers.readWriteMutex.RLock()
 	serverID := len(emulationServers.serversData) - 1
 	emulationServers.readWriteMutex.RUnlock()
 	closeChannel := make(chan bool)
-	go emulate(server, serverHistory.Transactions, closeChannel, serverID, rewindChannel)
+	go emulate(server, serverHistory.Transactions, closeChannel, serverID, rewindChannel, emulationControlChannel)
 	<-closeChannel
 	close(closeChannel)
 	server.Close()
 	waitGroup.Done()
 }
 
-func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel chan (bool), serverID int, rewindChannel chan int) {
+func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel chan (bool), serverID int, rewindChannel chan int, emulationControlChannel chan bool) {
 	if conf.SimultaneouslyEmulation {
 		select {
 		case <-server.ConnectionChanel:
 			for counter := 0; counter < len(conf.Sockets)-1; counter++ {
-				IsEmulatingChannel <- true
+				IsAllEmulatingChannel <- true
 			}
-		case <-IsEmulatingChannel:
+		case <-IsAllEmulatingChannel:
 			server.ConnectionChanel = nil
 		}
 	} else {
 		log.Print("Waiting of client connection")
 		<-server.ConnectionChanel
 	}
+	emulationServers.readWriteMutex.Lock()
+	emulationServers.serversData[serverID].IsEmulating = true
+	emulationServers.readWriteMutex.Unlock()
 	for {
 		for currentIndex := 0; currentIndex < len(history); currentIndex++ {
+			select {
+			case <-emulationControlChannel:
+				log.Print("Emulation has been stopped")
+				emulationServers.readWriteMutex.Lock()
+				emulationServers.serversData[serverID].IsEmulating = false
+				emulationServers.readWriteMutex.Unlock()
+				<-emulationControlChannel
+				log.Print("Emulation has been started")
+				emulationServers.readWriteMutex.Lock()
+				emulationServers.serversData[serverID].IsEmulating = true
+				emulationServers.readWriteMutex.Unlock()
+			default:
+			}
 			var currentHistoryEvent structs.HistoryEvent
 			select {
 			case transactionIndex := <-rewindChannel:

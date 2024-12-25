@@ -48,7 +48,10 @@ const docTemplate = `{
             }
           },
           "422": {
-            "description": "Invalid \"server_id\" parameter"
+            "description": "Invalid \"server_id\" parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -89,7 +92,10 @@ const docTemplate = `{
             }
           },
           "422": {
-            "description": "Invalid \"one-time\" or \"server_id\" parameter"
+            "description": "Invalid \"one-time\" or \"server_id\" parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -100,7 +106,7 @@ const docTemplate = `{
           "Settings"
         ],
         "description": "Set answer mod for slave of server",
-        "products": [
+        "produces": [
           "application/json"
         ],
         "parameters": [
@@ -132,10 +138,65 @@ const docTemplate = `{
             }
           },
           "400": {
-            "description": "Missed required parameters"
+            "description": "Missed required parameters",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "422": {
-            "description": "Invalid parameters"
+            "description": "Invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/settings/emulation_control": {
+      "post": {
+        "tags": [
+          "Settings"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "emulation_switch",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Must be \"start\" or \"stop\""
+          },
+          {
+            "name": "server_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "If parameter == nil -> emulation will be switch for all servers"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EmulationControl"
+              }
+            }
+          },
+          "400": {
+            "description": "Missed required \"emulation_switch\" parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "422": {
+            "description": "Invalid \"emulation_switch\" or \"server_id\" parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -169,7 +230,10 @@ const docTemplate = `{
             }
           },
           "422": {
-            "description": "Invalid \"server_id\" parameter"
+            "description": "Invalid \"server_id\" parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -203,7 +267,10 @@ const docTemplate = `{
             }
           },
           "422": {
-            "description": "Invalid \"server_id\" parameter"
+            "description": "Invalid \"server_id\" parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -244,7 +311,10 @@ const docTemplate = `{
             }
           },
           "422": {
-            "description": "Invalid \"timepoint\" or \"server_id\" parameter"
+            "description": "Invalid \"timepoint\" or \"server_id\" parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -344,6 +414,31 @@ const docTemplate = `{
           "items": {
             "type": "integer"
           }
+        }
+      }
+    },
+    "EmulationControl": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "error": {
+          "type": "string"
+        },
+        "is_emulating": {
+          "type": "string"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
         }
       }
     }
