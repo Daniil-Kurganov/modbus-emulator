@@ -13,12 +13,16 @@ import (
 func GenerateConfig() (err error) {
 	var newConfig []byte
 	newConfig, _ = tW.WriteValue(fmt.Sprintf("\"%s\"", conf.ServerDefaultEmulateHost), newConfig, nil, conf.GenFileTitles.ServerDefaultEmulateHost, nil)
+	newConfig, _ = tW.WriteValue(fmt.Sprintf("\"%s\"", conf.ServerHTTPServesocket), newConfig, nil, conf.GenFileTitles.ServerHTTPServesocket, nil)
 	newConfig, _ = tW.WriteValue(fmt.Sprintf("\"%s\"", conf.ServerDefaultDumpPort), newConfig, nil, conf.GenFileTitles.ServerDefaultDumpPort, nil)
 	newConfig, _ = tW.WriteValue(fmt.Sprintf("\"%s\"", conf.FinishDelayTime), newConfig, nil, conf.GenFileTitles.FinishDelayTime, nil)
 	newConfig, _ = tW.WriteValue(fmt.Sprintf("'%s'", conf.DumpFilePath), newConfig, nil, conf.GenFileTitles.DumpFilePath, nil)
 	newConfig, _ = tW.WriteValue(conf.IsAutoParsingMode, newConfig, nil, conf.GenFileTitles.IsAutoParsingMode, nil)
 	newConfig, _ = tW.WriteValue(conf.EmulationPortAddressStart, newConfig, nil, conf.GenFileTitles.EmulationPortAddressStart, nil)
-		for currentEmulateSocket, currentDumpSocketData := range conf.Sockets {
+	newConfig, _ = tW.WriteValue(conf.OneTimeEmulation, newConfig, nil, conf.GenFileTitles.OneTimeEmulation, nil)
+	newConfig, _ = tW.WriteValue(fmt.Sprintf("\"%s\"", conf.DumpTimeLocation), newConfig, nil, conf.GenFileTitles.DumpTimeLocation, nil)
+	newConfig, _ = tW.WriteValue(conf.SimultaneouslyEmulation, newConfig, nil, conf.GenFileTitles.SimultaneouslyEmulation, nil)
+	for currentEmulateSocket, currentDumpSocketData := range conf.Sockets {
 		var currentDumpSocket, currentRealSocket string
 		if currentDumpSocketData.PortAddress == conf.ServerDefaultDumpPort {
 			currentDumpSocket = currentDumpSocketData.HostAddress

@@ -7,7 +7,6 @@ import (
 	"modbus-emulator/conf"
 	"modbus-emulator/src"
 	ta "modbus-emulator/src/traffic_analysis"
-	structs "modbus-emulator/src/traffic_analysis/structs"
 	"sync"
 	"testing"
 	"time"
@@ -134,20 +133,24 @@ func TestServerTCPMode(t *testing.T) {
 	conf.DumpFilePath = fmt.Sprintf("/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/%s/%s",
 		directoryPath, testCasesTCP.workMode,
 	)
-	conf.Sockets = map[string]conf.ServerSocketData{
+	conf.FinishDelayTime = 3 * time.Second
+	conf.OneTimeEmulation = true
+	conf.Sockets = map[string]conf.DumpSocketData{
 		"127.0.0.1:1502": {
 			HostAddress: "localhost",
 			PortAddress: "1502",
 			Protocol:    testCasesTCP.workMode,
 		},
 	}
-	var history map[string]structs.ServerHistory
-	if history, err = ta.ParseDump(); err != nil {
-		log.Fatalf("Error on parsing dump: %s", err)
+	if src.History, err = ta.ParseDump(); err != nil {
+		assert.EqualErrorf(t, err, "nil",
+			"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+		)
+		return
 	}
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(1)
-	go src.ServerInit(&waitGroup, "127.0.0.1:1502", history["127.0.0.1:1502"])
+	go src.ServerInit(&waitGroup, "127.0.0.1:1502")
 	time.Sleep(500 * time.Millisecond)
 	handler := mc.NewTCPClientHandler("127.0.0.1:1502")
 	handler.SlaveId = 0
@@ -302,20 +305,24 @@ func TestServerRTUOverTCPMode(t *testing.T) {
 	conf.DumpFilePath = fmt.Sprintf("/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/%s/%s",
 		directoryPath, testCasesRTUOverTCP.workMode,
 	)
-	conf.Sockets = map[string]conf.ServerSocketData{
+	conf.Sockets = map[string]conf.DumpSocketData{
 		"127.0.0.1:1502": {
 			HostAddress: "localhost",
 			PortAddress: "1502",
 			Protocol:    testCasesRTUOverTCP.workMode,
 		},
 	}
-	var history map[string]structs.ServerHistory
-	if history, err = ta.ParseDump(); err != nil {
-		log.Fatalf("Error on parsing dump: %s", err)
+	conf.FinishDelayTime = 3 * time.Second
+	conf.OneTimeEmulation = true
+	if src.History, err = ta.ParseDump(); err != nil {
+		assert.EqualErrorf(t, err, "nil",
+			"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+		)
+		return
 	}
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(1)
-	go src.ServerInit(&waitGroup, socket, history[socket])
+	go src.ServerInit(&waitGroup, socket)
 	time.Sleep(500 * time.Millisecond)
 	var client *modbus.ModbusClient
 	if client, err = modbus.NewClient(&modbus.ClientConfiguration{
@@ -482,7 +489,7 @@ func TestServerRTUOverTCPMupliplePorts(t *testing.T) {
 	conf.DumpFilePath = fmt.Sprintf("/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/pcapng_files/tests_files/multiple_ports/%s",
 		conf.Protocols.RTUOverTCP,
 	)
-	conf.Sockets = map[string]conf.ServerSocketData{
+	conf.Sockets = map[string]conf.DumpSocketData{
 		"127.0.0.1:1502": {
 			HostAddress: "localhost",
 			PortAddress: "1502",
@@ -495,14 +502,17 @@ func TestServerRTUOverTCPMupliplePorts(t *testing.T) {
 		},
 	}
 	conf.FinishDelayTime = 3 * time.Second
-	var history map[string]structs.ServerHistory
-	if history, err = ta.ParseDump(); err != nil {
-		log.Fatalf("Error on parsing dump: %s", err)
+	conf.OneTimeEmulation = true
+	if src.History, err = ta.ParseDump(); err != nil {
+		assert.EqualErrorf(t, err, "nil",
+			"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+		)
+		return
 	}
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(len(testCases))
 	for currentSocket, currentTestCase := range testCases {
-		go src.ServerInit(&waitGroup, currentSocket, history[currentSocket])
+		go src.ServerInit(&waitGroup, currentSocket)
 		time.Sleep(500 * time.Millisecond)
 		var client *modbus.ModbusClient
 		if client, err = modbus.NewClient(&modbus.ClientConfiguration{
@@ -679,7 +689,7 @@ func TestServerTCPMupliplePorts(t *testing.T) {
 	conf.DumpFilePath = fmt.Sprintf("/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/pcapng_files/tests_files/multiple_ports/%s",
 		conf.Protocols.TCP,
 	)
-	conf.Sockets = map[string]conf.ServerSocketData{
+	conf.Sockets = map[string]conf.DumpSocketData{
 		"127.0.0.1:1502": {
 			HostAddress: "localhost",
 			PortAddress: "1502",
@@ -692,14 +702,17 @@ func TestServerTCPMupliplePorts(t *testing.T) {
 		},
 	}
 	conf.FinishDelayTime = 5 * time.Second
-	var history map[string]structs.ServerHistory
-	if history, err = ta.ParseDump(); err != nil {
-		log.Fatalf("Error on parsing dump: %s", err)
+	conf.OneTimeEmulation = true
+	if src.History, err = ta.ParseDump(); err != nil {
+		assert.EqualErrorf(t, err, "nil",
+			"Error: recieved and expected errors isn't equal:\n expected: %s;\n recieved: %s", "nil", err,
+		)
+		return
 	}
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(len(testCases))
 	for currentSocket, currentTestCase := range testCases {
-		go src.ServerInit(&waitGroup, currentSocket, history[currentSocket])
+		go src.ServerInit(&waitGroup, currentSocket)
 		time.Sleep(1000 * time.Millisecond)
 		handler := mc.NewTCPClientHandler(currentSocket)
 		for currentSlaveId, currentTranscationValues := range currentTestCase.transactions {
@@ -711,9 +724,7 @@ func TestServerTCPMupliplePorts(t *testing.T) {
 				t.FailNow()
 			}
 			client := mc.NewClient(handler)
-			// if currentSlaveId == 1 {
 			time.Sleep(1600 * time.Millisecond)
-			// }
 			var currentRecievedStates registersTCP
 			if currentRecievedStates.coils, err = client.ReadCoils(currentTranscationValues[0].browsedRegisters["coils"].start,
 				currentTranscationValues[0].browsedRegisters["coils"].quantity); err != nil {
