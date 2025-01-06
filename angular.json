@@ -1,0 +1,32 @@
+{
+    "version": 1,
+    "projects": {
+      "modbus-emulator": {
+        "projectType": "application",
+        "root": "",
+        "sourceRoot": "src",
+        "architect": {
+          "build": {
+            "builder": "@angular-devkit/build-angular:browser",
+            "options": {
+              "outputPath": "dist/modbus-emulator",
+              "index": "src/index.html",
+              "main": "src/main.ts",
+              "polyfills": ["zone.js"],
+              "tsConfig": "tsconfig.json",
+              "aot": true
+            }
+          },
+          "serve": {
+            "builder": "@angular-devkit/build-angular:dev-server",
+            "options": {
+              "buildTarget": "modbus-emulator:build"
+            }
+          }
+        }
+      }
+    },
+    "cli": {
+      "analytics": "42bc992e-e27b-4c6f-af07-7d66ebe02043"
+    }
+  }
