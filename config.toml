@@ -5,7 +5,7 @@ FinishDelayTime           = "3s"
 DumpFilePath              = '/media/ugpa/1TB/Lavoro/Repositories/modbus-emulator/pcapng_files/main_files/main'
 IsAutoParsingMode         = false
 EmulationPortAddressStart = 1501
-OneTimeEmulation          = true
+OneTimeEmulation          = false
 DumpTimeLocation          = "Europe/Moscow"
 SimultaneouslyEmulation   = false
 

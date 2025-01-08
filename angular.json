@@ -20,7 +20,8 @@
           "serve": {
             "builder": "@angular-devkit/build-angular:dev-server",
             "options": {
-              "buildTarget": "modbus-emulator:build"
+              "buildTarget": "modbus-emulator:build",
+              "proxyConfig": "./proxy.config.json"
             }
           }
         }
