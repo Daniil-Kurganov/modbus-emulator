@@ -9,21 +9,21 @@ OneTimeEmulation          = false
 DumpTimeLocation          = "Europe/Moscow"
 SimultaneouslyEmulation   = false
 
-[[DumpConfig]]
-    DumpSocket = "192.168.1.25"
-    RealSocket = "1501"
-    Protocol   = "rtu_over_tcp"
+# [[DumpConfig]]
+#     DumpSocket = "192.168.1.25"
+#     RealSocket = "1501"
+#     Protocol   = "rtu_over_tcp"
 
 [[DumpConfig]]
     DumpSocket = "192.168.1.29"
     RealSocket = "1502"
     Protocol   = "rtu_over_tcp"
 
-# [[DumpConfig]]
-#     DumpSocket = "192.168.1.31"
-#     RealSocket = "1503"
-#     Protocol   = "rtu_over_tcp"
-# 
+[[DumpConfig]]
+    DumpSocket = "192.168.1.31"
+    RealSocket = "1503"
+    Protocol   = "rtu_over_tcp"
+
 # [[DumpConfig]]
 #     DumpSocket = "192.168.1.34"
 #     RealSocket = "1504"

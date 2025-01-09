@@ -236,13 +236,14 @@ func emulate(server *mS.Server, history []structs.HistoryEvent, closeChannel cha
 		}
 		log.Print("\nEnd of dump history file.")
 		emulationServers.readWriteMutex.Lock()
-		defer emulationServers.readWriteMutex.Unlock()
 		if emulationServers.serversData[serverID].OneTimeEmulation {
 			log.Print("Emulation mode: one-time. Closing connection")
 			emulationServers.serversData[serverID].IsWorking = false
+			emulationServers.readWriteMutex.Unlock()
 			closeChannel <- true
 			return
 		}
+		emulationServers.readWriteMutex.Unlock()
 		log.Print("Emulation mode: continuously. Starting new loop of emulation")
 	}
 }
