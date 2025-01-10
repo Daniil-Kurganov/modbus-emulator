@@ -318,6 +318,74 @@ const docTemplate = `{
           }
         }
       }
+    },
+    "/registers": {
+      "get": {
+        "tags": [
+          "Registers"
+        ],
+        "description": "Manually reading register's data",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "description": "Server ID"
+          },
+          {
+            "name": "slave_id",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "description": "Server's slave ID"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Register's type. Vules: \"coils\", \"DI\", \"HR\", \"IR\""
+          },
+          {
+            "name": "start_index",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "description": "Non-negative number"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "description": "Positive number. Count of responsed data"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Missed required parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "422": {
+            "description": "Invalid request-parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -434,9 +502,6 @@ const docTemplate = `{
     "Error": {
       "type": "object",
       "properties": {
-        "header": {
-          "type": "string"
-        },
         "error": {
           "type": "string"
         }

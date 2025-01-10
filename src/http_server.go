@@ -92,6 +92,10 @@ func StartHTTPServer() {
 			time.GET("start&end", getStartEndTime)
 			time.POST("rewind_emulation", rewindServersEmulation)
 		}
+		registers := emulator.Group("registers")
+		{
+			registers.GET("", readRegisters)
+		}
 		emulator.GET("/", func(gctx *gin.Context) {
 			gctx.Redirect(http.StatusPermanentRedirect,
 				fmt.Sprintf("http://%s/modbus-emulator/docs/index.html", gctx.Request.Host),
@@ -521,6 +525,106 @@ func rewindServersEmulation(gctx *gin.Context) {
 	gctx.JSON(http.StatusOK, response)
 }
 
+func readRegisters(gctx *gin.Context) {
+	var serverIDString string
+	var ok bool
+	if serverIDString, ok = gctx.GetQuery("server_id"); !ok {
+		log.Printf("%s: missimg required \"server_id\" parameter", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{"Error": "missimg required \"server_id\" parameter"})
+		return
+	}
+	var serverID int
+	var err error
+	if serverID, err = strconv.Atoi(serverIDString); err != nil {
+		log.Printf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "server_id" parameter`: err.Error()})
+		return
+	}
+	serversData := getSettingsBuffer()
+	if serverID > len(serversData)-1 || serverID < 0 {
+		log.Printf("Error on HTTP-request: \"server_id\" parameter must be in range [0:%d]", len(serversData))
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+		return
+	}
+	var slaveIDString string
+	if slaveIDString, ok = gctx.GetQuery("slave_id"); !ok {
+		log.Printf("%s: missimg required \"slave_id\" parameter", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{"Error": "missimg required \"slave_id\" parameter"})
+		return
+	}
+	var slaveID int
+	if slaveID, err = strconv.Atoi(slaveIDString); err != nil {
+		log.Printf("%s: invalid \"slave_id\" parameter - %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "slave_id" parameter`: err.Error()})
+		return
+	}
+	var registerType string
+	if registerType, ok = gctx.GetQuery("type"); !ok {
+		log.Printf("%s: missimg required \"type\" parameter", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{"Error": `missimg required "type" parameter`})
+		return
+	}
+	var startIndexString string
+	if startIndexString, ok = gctx.GetQuery("start_index"); !ok {
+		log.Printf("%s: missimg required \"start_index\" parameter", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{"Error": `missimg required "start_index" parameter`})
+		return
+	}
+	var startIndex int
+	if startIndex, err = strconv.Atoi(startIndexString); err != nil {
+		log.Printf("%s: invalid \"start_index\" parameter - %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "start_index" parameter`: err.Error()})
+		return
+	}
+	var countString string
+	if countString, ok = gctx.GetQuery("count"); !ok {
+		log.Printf("%s: missimg required \"count\" parameter", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{"Error": `missimg required "count" parameter`})
+		return
+	}
+	var count int
+	if count, err = strconv.Atoi(countString); err != nil {
+		log.Printf("%s: invalid \"count\" parameter - %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "count" parameter`: err.Error()})
+		return
+	}
+	var slave ms.SlaveData
+	emulationServers.readWriteMutex.RLock()
+	if slave, ok = emulationServers.servers[serverID].Slaves[uint8(slaveID)]; !ok {
+		emulationServers.servers[serverID].InitSlave(uint8(slaveID))
+		slave = emulationServers.servers[serverID].Slaves[uint8(slaveID)]
+	}
+	emulationServers.readWriteMutex.RUnlock()
+	var response string
+	switch registerType {
+	case conf.Registers.Coils:
+		if response, err = readRegistersResponsePreprocessing(slave.Coils, startIndex, count); err != nil {
+			log.Printf("%s: %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Invalid range-parameters": err.Error()})
+			return
+		}
+	case conf.Registers.DiscreteInputs:
+		if response, err = readRegistersResponsePreprocessing(slave.DiscreteInputs, startIndex, count); err != nil {
+			log.Printf("%s: %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Invalid range-parameters": err.Error()})
+			return
+		}
+	case conf.Registers.HoldingRegisters:
+		if response, err = readRegistersResponsePreprocessing(slave.HoldingRegisters, startIndex, count); err != nil {
+			log.Printf("%s: %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Invalid range-parameters": err.Error()})
+			return
+		}
+	case conf.Registers.InputRegisters:
+		if response, err = readRegistersResponsePreprocessing(slave.InputRegisters, startIndex, count); err != nil {
+			log.Printf("%s: %s", errorHeader, err)
+			gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Invalid range-parameters": err.Error()})
+			return
+		}
+	}
+	gctx.JSON(http.StatusOK, response)
+}
+
 func getSettingsBuffer() []emulationServerSettings {
 	emulationServers.readWriteMutex.RLock()
 	serversData := make([]emulationServerSettings, len(emulationServers.serversData))
@@ -557,5 +661,21 @@ func timeRewindTimepointCheck(serverData emulationServerSettings, timepoint time
 		return
 	}
 	result = true
+	return
+}
+
+func readRegistersResponsePreprocessing[T uint16 | byte](register []T, startIndex int, count int) (response string, err error) {
+	if startIndex < 0 || startIndex >= len(register) {
+		err = fmt.Errorf("invalid \"start_index\" parameter: must be in [0:%d]", len(register))
+		return
+	}
+	if count <= 0 {
+		err = fmt.Errorf("invalid \"count\" parameter: must be positive number")
+		return
+	}
+	for _, currentData := range register[startIndex : startIndex+count] {
+		response = fmt.Sprintf("%s %d", response, currentData)
+	}
+	response = response[1:]
 	return
 }

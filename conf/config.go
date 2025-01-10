@@ -49,6 +49,17 @@ var (
 	SimultaneouslyEmulation   bool
 	DumpTimeLocation          *time.Location
 
+	Registers = struct {
+		Coils            string
+		DiscreteInputs   string
+		HoldingRegisters string
+		InputRegisters   string
+	}{
+		Coils:            "coils",
+		DiscreteInputs:   "DI",
+		HoldingRegisters: "HR",
+		InputRegisters:   "IR",
+	}
 	Functions = struct {
 		CoilsRead          uint16
 		DIRead             uint16
