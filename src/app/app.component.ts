@@ -12,15 +12,40 @@ import { ActualTime } from "./actual_time"
                 <input [(ngModel)]="server_id" type="number" min="-1">
                 <p>if server ID == -1 -> actions will done for all servers
                 <p>Status: {{status}}</p>
+                <h2>Getting actual emulation time</h2>
                 <button (click)="getActualTime()">Get actual time</button>
                 @for(current_data of actual_times; track $index){
                     <li>{{current_data.id}} - {{current_data.actual_time}}</li>
                 } @empty {
                     <li>There are no data</li>
                 }
+                <h2>Rewinding emulation</h2>
                 <p>
                     <input type="datetime-local" step="1" [(ngModel)]="rewind_time">
                     <button (click)="rewindEmulation()">Set emulation time</button>
+                </p>
+                <h2>Manually work with registers</h2>
+                <p>
+                    <label>slave ID: </label>
+                    <input type="number" min="0" [(ngModel)]="slaveID">
+                    <select [(ngModel)]="registerType">
+                        <option>coils</option>
+                        <option>DI</option>
+                        <option>HR</option>
+                        <option>IR</option>
+                    </select>
+                    <select [(ngModel)]="operationIsRead">
+                        <option value=true>read</option>
+                        <option value=false>write</option>
+                    </select>
+                    <label>start address: </label>
+                    <input type="number" min="0" [(ngModel)]="startIndex">
+                    <label>count: </label>
+                    <input type="number" min="1" [(ngModel)]="count">
+                </p>
+                <p>
+                    <input [(ngModel)]="registerData">
+                    <button (click)="manuallyRegistersWork()">Do action</button>
                 </p>`
 })
 
@@ -30,8 +55,9 @@ export class AppComponent{
     status: string = "Waiting"
     rewind_time: string
     constructor(private http: HttpClient) {}
+    URLHead = "modbus-emulator"
     getActualTime(): void {
-        let request = 'modbus-emulator/time/actual'
+        let request = `${this.URLHead}/time/actual`
         if (this.server_id!==-1) {
             request = request + `?server_id=${this.server_id}`
         }
@@ -47,11 +73,25 @@ export class AppComponent{
         this.rewind_time = this.rewind_time.replace("T", "%20")
         this.rewind_time = this.rewind_time.replaceAll(":", "%3A")
         console.log(this.rewind_time)
-        let request = `modbus-emulator/time/rewind_emulation?timepoint=${this.rewind_time}`
+        let request = `${this.URLHead}/time/rewind_emulation?timepoint=${this.rewind_time}`
         if (this.server_id!==-1) {
             request = request + `&server_id=${this.server_id}`
         }
         this.http.post(request, {}).subscribe({error: error => console.log(error)});
         this.status = "Success"
+    }
+    slaveID: number
+    registerType: string
+    operationIsRead: boolean
+    startIndex: number
+    count: number
+    registerData: string
+    manuallyRegistersWork(): void {
+        let request = `${this.URLHead}/registers?server_id=${this.server_id}&slave_id=${this.slaveID}&type=${this.registerType}&start_index=${this.startIndex}`
+        if (this.operationIsRead) {
+            request += `&count=${this.count}`
+            this.http.get(request).subscribe({next:(data:any) => this.registerData=data, error: error => console.error(error)});
+            return
+        }
     }
 }
