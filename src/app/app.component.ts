@@ -1,6 +1,7 @@
 import { Component } from "@angular/core";
 import {FormsModule} from "@angular/forms";
-import { HttpClient, HttpClientModule } from "@angular/common/http";
+import { HttpClient, HttpClientModule, HttpHandler } from "@angular/common/http";
+import { interval, Subscription } from 'rxjs';
 import { ActualTime } from "./actual_time"
      
 @Component({
@@ -13,7 +14,6 @@ import { ActualTime } from "./actual_time"
                 <p>if server ID == -1 -> actions will done for all servers
                 <p>Status: {{status}}</p>
                 <h2>Getting actual emulation time</h2>
-                <button (click)="getActualTime()">Get actual time</button>
                 @for(current_data of actual_times; track $index){
                     <li>{{current_data.id}} - {{current_data.actual_time}}</li>
                 } @empty {
@@ -56,7 +56,7 @@ export class AppComponent{
     status: string = "Waiting"
     rewind_time: string
     constructor(private http: HttpClient) {}
-    URLHead = "modbus-emulator"
+    URLHead = "modbus-emulator" 
     getActualTime(): void {
         let request = `${this.URLHead}/time/actual`
         if (this.server_id!==-1) {
@@ -97,4 +97,8 @@ export class AppComponent{
             this.http.post(request, {registers: JSON.parse(`[${this.registerData}]`)}).subscribe({error: error => console.log(error)});
         }
     }
+    subscription = interval(500).subscribe(val => this.getActualTime());
+    ngOnDestroy() {
+        this.subscription.unsubscribe();
+    }    
 }
