@@ -95,6 +95,7 @@ func StartHTTPServer() {
 		registers := emulator.Group("registers")
 		{
 			registers.GET("", readRegisters)
+			registers.POST("", writeRegisters)
 		}
 		emulator.GET("/", func(gctx *gin.Context) {
 			gctx.Redirect(http.StatusPermanentRedirect,
@@ -564,6 +565,12 @@ func readRegisters(gctx *gin.Context) {
 		gctx.JSON(http.StatusBadRequest, gin.H{"Error": `missimg required "type" parameter`})
 		return
 	}
+	if !slices.Contains([]string{conf.Registers.Coils, conf.Registers.DiscreteInputs, conf.Registers.HoldingRegisters, conf.Registers.InputRegisters},
+		registerType) {
+		log.Printf("%s: invalid \"type\" parameter", errorHeader)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Error": `invalid "type" parameter`})
+		return
+	}
 	var startIndexString string
 	if startIndexString, ok = gctx.GetQuery("start_index"); !ok {
 		log.Printf("%s: missimg required \"start_index\" parameter", errorHeader)
@@ -623,6 +630,109 @@ func readRegisters(gctx *gin.Context) {
 		}
 	}
 	gctx.JSON(http.StatusOK, response)
+}
+
+func writeRegisters(gctx *gin.Context) {
+	var serverIDString string
+	var ok bool
+	if serverIDString, ok = gctx.GetQuery("server_id"); !ok {
+		log.Printf("%s: missimg required \"server_id\" parameter", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{"Error": "missimg required \"server_id\" parameter"})
+		return
+	}
+	var serverID int
+	var err error
+	if serverID, err = strconv.Atoi(serverIDString); err != nil {
+		log.Printf("%s: invalid \"server_id\" parameter - %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "server_id" parameter`: err.Error()})
+		return
+	}
+	serversData := getSettingsBuffer()
+	if serverID > len(serversData)-1 || serverID < 0 {
+		log.Printf("Error on HTTP-request: \"server_id\" parameter must be in range [0:%d]", len(serversData))
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`"server" parameter must be in range`: fmt.Sprintf("[0:%d]", len(serversData))})
+		return
+	}
+	var slaveIDString string
+	if slaveIDString, ok = gctx.GetQuery("slave_id"); !ok {
+		log.Printf("%s: missimg required \"slave_id\" parameter", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{"Error": "missimg required \"slave_id\" parameter"})
+		return
+	}
+	var slaveID int
+	if slaveID, err = strconv.Atoi(slaveIDString); err != nil {
+		log.Printf("%s: invalid \"slave_id\" parameter - %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "slave_id" parameter`: err.Error()})
+		return
+	}
+	var registerType string
+	if registerType, ok = gctx.GetQuery("type"); !ok {
+		log.Printf("%s: missimg required \"type\" parameter", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{"Error": `missimg required "type" parameter`})
+		return
+	}
+	if !slices.Contains([]string{conf.Registers.Coils, conf.Registers.DiscreteInputs, conf.Registers.HoldingRegisters, conf.Registers.InputRegisters},
+		registerType) {
+		log.Printf("%s: invalid \"type\" parameter", errorHeader)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{"Error": `invalid "type" parameter`})
+		return
+	}
+	var startIndexString string
+	if startIndexString, ok = gctx.GetQuery("start_index"); !ok {
+		log.Printf("%s: missimg required \"start_index\" parameter", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{"Error": `missimg required "start_index" parameter`})
+		return
+	}
+	var startIndex int
+	if startIndex, err = strconv.Atoi(startIndexString); err != nil {
+		log.Printf("%s: invalid \"start_index\" parameter - %s", errorHeader, err)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "start_index" parameter`: err.Error()})
+		return
+	}
+	if startIndex < 0 {
+		log.Printf("%s: invalid \"start_index\" parameter - must be non-negative number", errorHeader)
+		gctx.JSON(http.StatusUnprocessableEntity, gin.H{`Invalid "start_index" parameter`: "must be non-negative number"})
+		return
+	}
+	var requestData struct {
+		Registers []int `json:"registers" binding:"required"`
+	}
+	gctx.BindJSON(&requestData)
+	if len(requestData.Registers) == 0 {
+		log.Printf("%s: empty body \"registers\" array", errorHeader)
+		gctx.JSON(http.StatusBadRequest, gin.H{"Error": `empty body "registers" array`})
+		return
+	}
+	if _, ok = emulationServers.servers[serverID].Slaves[uint8(slaveID)]; !ok {
+		emulationServers.servers[serverID].InitSlave(uint8(slaveID))
+	}
+	switch registerType {
+	case conf.Registers.Coils:
+		emulationServers.readWriteMutex.Lock()
+		for currenIndex, currentData := range requestData.Registers {
+			emulationServers.servers[serverID].Slaves[uint8(slaveID)].Coils[currenIndex+startIndex] = byte(currentData)
+		}
+		emulationServers.readWriteMutex.Unlock()
+	case conf.Registers.DiscreteInputs:
+		emulationServers.readWriteMutex.Lock()
+		for currenIndex, currentData := range requestData.Registers {
+			emulationServers.servers[serverID].Slaves[uint8(slaveID)].DiscreteInputs[currenIndex+startIndex] = byte(currentData)
+		}
+		emulationServers.readWriteMutex.Unlock()
+	case conf.Registers.HoldingRegisters:
+		emulationServers.readWriteMutex.Lock()
+		for currenIndex, currentData := range requestData.Registers {
+			emulationServers.servers[serverID].Slaves[uint8(slaveID)].HoldingRegisters[currenIndex+startIndex] = uint16(currentData)
+		}
+		emulationServers.readWriteMutex.Unlock()
+	case conf.Registers.InputRegisters:
+		emulationServers.readWriteMutex.Lock()
+		for currenIndex, currentData := range requestData.Registers {
+			emulationServers.servers[serverID].Slaves[uint8(slaveID)].InputRegisters[currenIndex+startIndex] = uint16(currentData)
+		}
+		emulationServers.readWriteMutex.Unlock()
+	}
+	gctx.JSON(http.StatusOK, gin.H{"Success": "Data sucessfully written"})
 }
 
 func getSettingsBuffer() []emulationServerSettings {

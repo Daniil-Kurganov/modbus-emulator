@@ -376,6 +376,97 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Registers"
+        ],
+        "description": "Manually reading register's data",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "description": "Server ID"
+          },
+          {
+            "name": "slave_id",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "description": "Server's slave ID"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Register's type. Vules: \"coils\", \"DI\", \"HR\", \"IR\""
+          },
+          {
+            "name": "start_index",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "description": "Non-negative number"
+          },
+          {
+            "name": "registers",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "registers": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+                "registers": [
+                  9,
+                  53,
+                  2,
+                  7
+                ]
+              }
+            },
+            "description": "Array of new register's data. JSON-body"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "properties": {
+                "success": {
+                  "type": "string"
+                }
+              },
+              "example": {
+                "Success": "Data sucessfully written"
+              }
+            }
+          },
+          "400": {
+            "description": "Missed required parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "422": {
+            "description": "Invalid request-parameter",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
       }
     }
   },

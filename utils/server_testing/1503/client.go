@@ -25,7 +25,7 @@ func main() {
 	defer client.Close()
 	var coils, DI []bool
 	var HR, IR []uint16
-	for _, currentUnitID := range []uint8{8, 9, 10} {
+	for _, currentUnitID := range []uint8{0} {
 		client.SetUnitId(currentUnitID)
 		log.Printf("\nCurrent slave: %d", currentUnitID)
 		if coils, err = client.ReadCoils(5, 5); err != nil {
@@ -36,10 +36,10 @@ func main() {
 			log.Fatalf("Error on reading DI[9:20]: %s", err)
 		}
 		log.Printf("DI[9:20] = %v", DI)
-		if HR, err = client.ReadRegisters(270, 10, modbus.HOLDING_REGISTER); err != nil {
-			log.Fatalf("Error on read HR[270:280]: %s", err)
+		if HR, err = client.ReadRegisters(2, 10, modbus.HOLDING_REGISTER); err != nil {
+			log.Fatalf("Error on read HR[2:12]: %s", err)
 		}
-		log.Printf("HR[270:280] = %v", HR)
+		log.Printf("HR[2:12] = %v", HR)
 		if IR, err = client.ReadRegisters(4, 18, modbus.INPUT_REGISTER); err != nil {
 			log.Fatalf("Error on read IR[4:22]: %s", err)
 		}
