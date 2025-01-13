@@ -25,6 +25,7 @@ import { ActualTime } from "./actual_time"
                     <button (click)="rewindEmulation()">Set emulation time</button>
                 </p>
                 <h2>Manually work with registers</h2>
+                <p>All fields except the data field are used for reading. For writting data ignored "count" and write data with ", "</p>
                 <p>
                     <label>slave ID: </label>
                     <input type="number" min="0" [(ngModel)]="slaveID">
@@ -34,9 +35,9 @@ import { ActualTime } from "./actual_time"
                         <option>HR</option>
                         <option>IR</option>
                     </select>
-                    <select [(ngModel)]="operationIsRead">
-                        <option value=true>read</option>
-                        <option value=false>write</option>
+                    <select [(ngModel)]="operation">
+                        <option value="read">read</option>
+                        <option value="write">write</option>
                     </select>
                     <label>start address: </label>
                     <input type="number" min="0" [(ngModel)]="startIndex">
@@ -82,16 +83,18 @@ export class AppComponent{
     }
     slaveID: number
     registerType: string
-    operationIsRead: boolean
+    operation: string
     startIndex: number
     count: number
     registerData: string
     manuallyRegistersWork(): void {
         let request = `${this.URLHead}/registers?server_id=${this.server_id}&slave_id=${this.slaveID}&type=${this.registerType}&start_index=${this.startIndex}`
-        if (this.operationIsRead) {
+        if (this.operation === "read") {
             request += `&count=${this.count}`
             this.http.get(request).subscribe({next:(data:any) => this.registerData=data, error: error => console.error(error)});
             return
+        } else {
+            this.http.post(request, {registers: JSON.parse(`[${this.registerData}]`)}).subscribe({error: error => console.log(error)});
         }
     }
 }
