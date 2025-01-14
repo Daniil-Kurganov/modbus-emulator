@@ -8,47 +8,7 @@ import { ActualTime, StartEndTime } from "./times"
     selector: "modbus-emulator",
     standalone: true,
     imports: [FormsModule, HttpClientModule],
-    template: ` <h1>Modbus util: emulator</h1>
-                <label>Enter server's ID:</label>
-                <input [(ngModel)]="server_id" type="number" min="-1" (click)="getStartEndTime()">
-                <p>if server ID == -1 -> actions will done for all servers
-                <p>Status: {{status}}</p>
-                <h2>Getting actual emulation time</h2>
-                @for(current_data of actual_times; track $index){
-                    <li>{{current_data.id}} - {{current_data.actual_time}}</li>
-                } @empty {
-                    <li>There are no data</li>
-                }
-                <h2>Rewinding emulation</h2>
-                <p>Start: {{startEndTimes.start_time}}, end: {{startEndTimes.end_time}}</p>
-                <p>
-                    <input type="datetime-local" step="1" [(ngModel)]="rewind_time">
-                    <button (click)="rewindEmulation()">Set emulation time</button>
-                </p>
-                <h2>Manually work with registers</h2>
-                <p>All fields except the data field are used for reading. For writting data ignored "count" and write data with ", "</p>
-                <p>
-                    <label>slave ID: </label>
-                    <input type="number" min="0" [(ngModel)]="slaveID">
-                    <select [(ngModel)]="registerType">
-                        <option>coils</option>
-                        <option>DI</option>
-                        <option>HR</option>
-                        <option>IR</option>
-                    </select>
-                    <select [(ngModel)]="operation">
-                        <option value="read">read</option>
-                        <option value="write">write</option>
-                    </select>
-                    <label>start address: </label>
-                    <input type="number" min="0" [(ngModel)]="startIndex">
-                    <label>count: </label>
-                    <input type="number" min="1" [(ngModel)]="count">
-                </p>
-                <p>
-                    <input [(ngModel)]="registerData">
-                    <button (click)="manuallyRegistersWork()">Do action</button>
-                </p>`
+    templateUrl: './app.component.html'
 })
 
 export class AppComponent{  
@@ -85,12 +45,13 @@ export class AppComponent{
     slaveID: number
     registerType: string
     operation: string
-    startIndex: number
+    startIndex: string
     count: number
     registerData: string
     manuallyRegistersWork(): void {
-        let request = `${this.URLHead}/registers?server_id=${this.server_id}&slave_id=${this.slaveID}&type=${this.registerType}&start_index=${this.startIndex}`
-        console.log(this.operation)
+        let isDecimalCase = true
+        if (this.startIndex.substring(0, 2) === "0x") {isDecimalCase = false}
+        let request = `${this.URLHead}/registers?server_id=${this.server_id}&slave_id=${this.slaveID}&type=${this.registerType}&start_index=${parseInt(this.startIndex)}`
         if (this.operation === "read") {
             request += `&count=${this.count}`
             this.http.get(request).subscribe({next:(data:any) => this.registerData=data, error: error => console.error(error)});
@@ -100,7 +61,13 @@ export class AppComponent{
             let registerDataArray = this.registerData.split(" ")
             for (let index = 0; index < registerDataArray.length; index++) {
                 const element = registerDataArray[index];
-                newRegistersData.push(Number(element))
+                if (!isDecimalCase) {
+                    if (element.substring(0, 2) !== "0x") {
+                        this.status = `Error: current number mode is hexadecimal, but current register's data is ${element}`
+                        return
+                    }
+                }
+                newRegistersData.push(parseInt(element))
             }
             this.http.post(request, {"registers": newRegistersData}).subscribe({error: error => console.log(error)});
         }
