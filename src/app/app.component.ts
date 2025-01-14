@@ -90,12 +90,19 @@ export class AppComponent{
     registerData: string
     manuallyRegistersWork(): void {
         let request = `${this.URLHead}/registers?server_id=${this.server_id}&slave_id=${this.slaveID}&type=${this.registerType}&start_index=${this.startIndex}`
+        console.log(this.operation)
         if (this.operation === "read") {
             request += `&count=${this.count}`
             this.http.get(request).subscribe({next:(data:any) => this.registerData=data, error: error => console.error(error)});
             return
         } else {
-            this.http.post(request, {registers: JSON.parse(`[${this.registerData}]`)}).subscribe({error: error => console.log(error)});
+            let newRegistersData: number[]=[];
+            let registerDataArray = this.registerData.split(" ")
+            for (let index = 0; index < registerDataArray.length; index++) {
+                const element = registerDataArray[index];
+                newRegistersData.push(Number(element))
+            }
+            this.http.post(request, {"registers": newRegistersData}).subscribe({error: error => console.log(error)});
         }
     }
     subscription = interval(500).subscribe(val => this.getActualTime());
@@ -103,7 +110,7 @@ export class AppComponent{
     getStartEndTime(): void {
         if (this.server_id === -1) {
             this.startEndTimes.start_time = "-";
-            this.startEndTimes.end_time = "-";
+            this.startEndTimes.end_time = "-";``
             return
         }
         let request = `${this.URLHead}/time/start&end?server_id=${this.server_id}`
